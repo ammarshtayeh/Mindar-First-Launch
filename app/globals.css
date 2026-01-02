@@ -1,0 +1,264 @@
+@import "tailwindcss";
+
+
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to sure everything still looks the same.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+@layer base {
+  /* Light Theme - Mindar (Clean Cyan & Purple) */
+  :root,
+  [data-theme="light"] {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+ 
+    /* Logo Colors Extraction */
+    /* Primary: Deep Purple (Base) */
+    /* Secondary: Vibrant Pink/Magenta (Accent) - Replacing Turquoise */
+    
+    --primary: 270 80% 55%; /* Deep Purple */
+    --primary-foreground: 210 40% 98%;
+ 
+    --secondary: 300 90% 60%; /* Vibrant Pink */
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
+    --accent: 300 90% 60%; /* Pink Accent */
+    --accent-foreground: 210 40% 98%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 270 80% 55%;
+    --radius: 1rem;
+  }
+
+  /* Dark Theme - Mindar (Deep Space with Neon) */
+  [data-theme="dark"] {
+    --background: 240 30% 6%; /* Deep Space */
+    --foreground: 210 40% 98%;
+    
+    --card: 240 25% 10%;
+    --card-foreground: 210 40% 98%;
+ 
+    --popover: 240 25% 10%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --primary: 180 100% 50%; /* Pure Neon Cyan */
+    --primary-foreground: 240 30% 6%;
+ 
+    --secondary: 280 100% 70%; /* Neon Purple */
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 240 20% 15%;
+    --muted-foreground: 215 20% 65%;
+ 
+    --accent: 280 100% 70%;
+    --accent-foreground: 210 40% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --border: 240 20% 15%;
+    --input: 240 20% 15%;
+    --ring: 180 100% 50%;
+    --radius: 1rem;
+  }
+
+  /* Focus Theme (Ultra-minimal for concentration) */
+  [data-theme="focus"] {
+    --background: 0 0% 98%;
+    --foreground: 0 0% 10%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+ 
+    --primary: 210 50% 45%;
+    --primary-foreground: 0 0% 100%;
+ 
+    --secondary: 0 0% 95%;
+    --secondary-foreground: 0 0% 10%;
+ 
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 40%;
+ 
+    --accent: 210 50% 45%;
+    --accent-foreground: 0 0% 100%;
+ 
+    --destructive: 0 50% 50%;
+    --destructive-foreground: 0 0% 98%;
+ 
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 210 50% 45%;
+    --radius: 0.75rem;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', 'Cairo', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Light theme background */
+  [data-theme="light"] body {
+    background: linear-gradient(to bottom, #ffffff 0%, #f0f9fa 100%);
+    background-attachment: fixed;
+  }
+
+  /* Dark theme background */
+  [data-theme="dark"] body {
+    background-image: 
+      radial-gradient(circle at 20% 20%, rgba(17, 160, 165, 0.1) 0%, transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(17, 58, 93, 0.2) 0%, transparent 40%);
+    background-attachment: fixed;
+  }
+
+  /* Focus theme - no background patterns */
+  [data-theme="focus"] body {
+    background-image: none;
+  }
+
+  /* Space effect elements */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: 
+      radial-gradient(1px 1px at 20% 30%, white 100%, transparent),
+      radial-gradient(1px 1px at 40% 70%, white 100%, transparent),
+      radial-gradient(2px 2px at 60% 10%, white 100%, transparent),
+      radial-gradient(1px 1px at 80% 50%, white 100%, transparent),
+      radial-gradient(2px 2px at 10% 90%, white 100%, transparent);
+    background-size: 200% 200%;
+    opacity: 0.1;
+    pointer-events: none;
+    z-index: -1;
+    animation: space-float 100s linear infinite;
+  }
+
+  [data-theme="dark"] body::before {
+    opacity: 0.3;
+  }
+
+  @keyframes space-float {
+    from { background-position: 0 0; }
+    to { background-position: 100% 100%; }
+  }
+}
+
+@layer utilities {
+  /* Theme-aware glow effects */
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+  }
+  .glow-primary-lg {
+    box-shadow: 0 0 40px hsl(var(--primary) / 0.4);
+  }
+  .text-glow {
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
+  }
+  .border-glow {
+    box-shadow: inset 0 0 15px hsl(var(--primary) / 0.1), 0 0 15px hsl(var(--primary) / 0.1);
+  }
+
+  /* Calm animations - reduced intensity */
+  .calm-pulse {
+    animation: calm-pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes calm-pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.9;
+    }
+  }
+
+  /* Focus mode - disable all animations and effects */
+  [data-theme="focus"] .glow-primary,
+  [data-theme="focus"] .glow-primary-lg,
+  [data-theme="focus"] .text-glow,
+  [data-theme="focus"] .border-glow {
+    box-shadow: none;
+    text-shadow: none;
+  }
+
+  [data-theme="focus"] .animate-pulse,
+  [data-theme="focus"] .animate-bounce,
+  [data-theme="focus"] .calm-pulse {
+    animation: none;
+  }
+
+  /* Glassmorphism effect */
+  .glassmorphism {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
