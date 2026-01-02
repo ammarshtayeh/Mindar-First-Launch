@@ -6,11 +6,12 @@ interface GamificationState {
   badges: any[]
 }
 
-const initialState: GamificationState = {
+const savedData = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user_gamification_data') || 'null') : null;
+const initialState: GamificationState = savedData || {
   xp: 0,
   level: 1,
   badges: [],
-}
+};
 
 const gamificationSlice = createSlice({
   name: 'gamification',

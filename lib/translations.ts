@@ -87,6 +87,8 @@ export const translations = {
       completed: "You completed quiz: {title}",
       noMistakes: "Impressive! No mistakes to avenge! 🎉",
       xpEarned: "You earned +{xp} XP! Reached level {level}",
+      strengthMap: "Strength & Weakness Map",
+      smartDetails: "Smart Details for Geniuses",
     },
     medic: {
       title: "Smart Medic 🩺",
@@ -194,6 +196,8 @@ export const translations = {
       completed: "لقد أتممت كويز: {title}",
       noMistakes: "ما شاء الله عليك، ما عندك أغلاط تنتقم منها! 🎉",
       xpEarned: "ربحت +{xp} XP! وصلت لمستوى {level}",
+      strengthMap: "خارطة القوة والضعف",
+      smartDetails: "تفاصيل للأذكياء",
     },
     medic: {
       title: "المسعف الذكي 🩺",

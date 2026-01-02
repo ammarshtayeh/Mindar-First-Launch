@@ -43,29 +43,42 @@ export function AnalyticsDashboard({ topicPerformance, overallScore, totalQuesti
         animate={{ opacity: 1, x: 0 }}
         className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-[3rem] p-10 shadow-xl"
       >
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-4">
           <Target className="w-8 h-8 text-primary" />
-          <h3 className="text-2xl font-black">خارطة القوة والضعف</h3>
+          <h3 className="text-2xl font-black">{t('results.strengthMap')}</h3>
         </div>
         
-        <div className="h-[400px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-              <PolarGrid stroke="currentColor" strokeOpacity={0.1} />
-              <PolarAngleAxis 
-                dataKey="subject" 
-                tick={{ fill: 'currentColor', fontSize: 12, fontWeight: 'bold' }} 
-              />
-              <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-              <Radar
-                name="Performance"
-                dataKey="A"
-                stroke="hsl(var(--primary))"
-                fill="hsl(var(--primary))"
-                fillOpacity={0.6}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
+        <div className="h-[400px] w-full flex items-center justify-center">
+          {topicPerformance.length >= 3 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                <PolarGrid stroke="currentColor" strokeOpacity={0.1} />
+                <PolarAngleAxis 
+                  dataKey="subject" 
+                  tick={{ fill: 'currentColor', fontSize: 12, fontWeight: 'bold' }} 
+                />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                <Radar
+                  name="Performance"
+                  dataKey="A"
+                  stroke="hsl(var(--primary))"
+                  fill="hsl(var(--primary))"
+                  fillOpacity={0.6}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-center space-y-4 px-10">
+                <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                    <AlertTriangle className="w-10 h-10 text-primary opacity-50" />
+                </div>
+                <p className="text-xl font-black opacity-40 leading-relaxed">
+                    {language === 'ar' 
+                      ? 'ما في مواضيع كافية عشان أرسم الخريطة. المرة الجاي رح أحاول أفصّل المواضيع أكثر!' 
+                      : 'Not enough topics to draw the map. I will try to be more specific next time!'}
+                </p>
+            </div>
+          )}
         </div>
       </motion.div>
 
@@ -77,7 +90,7 @@ export function AnalyticsDashboard({ topicPerformance, overallScore, totalQuesti
       >
         <div className="flex items-center gap-4 mb-8">
           <Brain className="w-8 h-8 text-purple-500" />
-          <h3 className="text-2xl font-black">تفاصيل للأذكياء</h3>
+          <h3 className="text-2xl font-black">{t('results.smartDetails')}</h3>
         </div>
 
         <div className="flex-1 h-[300px]">
@@ -85,7 +98,8 @@ export function AnalyticsDashboard({ topicPerformance, overallScore, totalQuesti
             <BarChart data={topicPerformance}>
               <XAxis 
                 dataKey="topic" 
-                tick={false}
+                tick={{ fill: 'currentColor', fontSize: 10, fontWeight: 'bold' }}
+                interval={0}
               />
               <YAxis domain={[0, 100]} hide />
               <Tooltip 
@@ -111,26 +125,28 @@ export function AnalyticsDashboard({ topicPerformance, overallScore, totalQuesti
           </ResponsiveContainer>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mt-8">
-            <div className="bg-primary/5 p-4 rounded-2xl border border-primary/20">
-                <div className="flex items-center gap-2 text-primary mb-1">
-                    <Zap className="w-4 h-4" />
-                    <span className="text-xs font-black uppercase">أقوى موضوع</span>
+        {topicPerformance.length > 1 && (
+            <div className="grid grid-cols-2 gap-4 mt-8">
+                <div className="bg-primary/5 p-4 rounded-2xl border border-primary/20">
+                    <div className="flex items-center gap-2 text-primary mb-1">
+                        <Zap className="w-4 h-4" />
+                        <span className="text-xs font-black uppercase">أقوى موضوع</span>
+                    </div>
+                    <p className="font-black text-lg truncate">
+                        {[...topicPerformance].sort((a,b) => b.percentage - a.percentage)[0]?.topic || '...'}
+                    </p>
                 </div>
-                <p className="font-black text-lg truncate">
-                    {[...topicPerformance].sort((a,b) => b.percentage - a.percentage)[0]?.topic || '...'}
-                </p>
-            </div>
-            <div className="bg-red-500/5 p-4 rounded-2xl border border-red-500/20">
-                <div className="flex items-center gap-2 text-red-500 mb-1">
-                    <BookOpen className="w-4 h-4" />
-                    <span className="text-xs font-black uppercase">محتاج مراجعة</span>
+                <div className="bg-red-500/5 p-4 rounded-2xl border border-red-500/20">
+                    <div className="flex items-center gap-2 text-red-500 mb-1">
+                        <BookOpen className="w-4 h-4" />
+                        <span className="text-xs font-black uppercase">محتاج مراجعة</span>
+                    </div>
+                    <p className="font-black text-lg truncate">
+                        {[...topicPerformance].sort((a,b) => a.percentage - b.percentage)[0]?.topic || '...'}
+                    </p>
                 </div>
-                <p className="font-black text-lg truncate">
-                    {[...topicPerformance].sort((a,b) => a.percentage - b.percentage)[0]?.topic || '...'}
-                </p>
             </div>
-        </div>
+        )}
       </motion.div>
  
       {/* Smart Medic Prescription (New) */}

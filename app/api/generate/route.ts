@@ -47,7 +47,8 @@ export async function POST(req: Request) {
                         "question": "Question text...",
                         "options": ["Option A", "Option B", "Option C", "Option D"], // REQUIRED for MC/TF
                         "answer": "Option A", // EXACT MATCH of the correct option string
-                        "explanation": "Quote from text proving the answer."
+                        "explanation": "Quote from text proving the answer.",
+                        "topic": "Concept-level topic (e.g. 'Photosynthesis' or 'Cell Division') to enable detailed analytics."
                     }
                 ],
                 "vocabulary": [ { "word": "...", "definition": "...", "context": "..." } ],

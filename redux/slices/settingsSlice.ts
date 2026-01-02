@@ -5,10 +5,11 @@ interface SettingsState {
   voiceEnabled: boolean
 }
 
-const initialState: SettingsState = {
+const savedSettings = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('app-settings') || 'null') : null;
+const initialState: SettingsState = savedSettings || {
   language: 'ar',
   voiceEnabled: true,
-}
+};
 
 const settingsSlice = createSlice({
   name: 'settings',

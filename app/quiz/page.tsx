@@ -135,9 +135,10 @@ export default function QuizPage() {
                 .trim();
             isCorrect = normalize(text) === normalize(currentQuestion.answer)
         } else {
-            // For descriptive/explanation, we mark it as "submitted" 
-            // We show the explanation as the "correct" reference for the user to compare
-            isCorrect = true // Still mark as blue/green for UI but user will see comparison
+            // For descriptive/explanation, we mark it as "evaluated" neutrally
+            // Use'null' for isCorrect or just a special flag if we had one. 
+            // In our current system, we'll keep it true for progress but the UI will handle it differently.
+            isCorrect = true 
         }
 
         setAnswers(prev => ({
@@ -369,8 +370,11 @@ export default function QuizPage() {
                                         className={`
                                             w-10 h-10 rounded-xl font-black text-sm transition-all duration-300
                                             ${isCurrent ? 'ring-2 ring-primary ring-offset-2 scale-110 bg-primary text-primary-foreground shadow-lg' : 
-                                              isAnswered ? (isCorrect ? 'bg-green-500 text-white' : 'bg-red-500 text-white') : 
-                                              'bg-secondary/50 text-muted-foreground hover:bg-secondary'}
+                                                isAnswered ? (
+                                                  quiz.questions[idx].type === 'explanation' ? 'bg-primary text-white' :
+                                                  (isCorrect ? 'bg-green-500 text-white' : 'bg-red-500 text-white')
+                                                ) : 
+                                                'bg-secondary/50 text-muted-foreground hover:bg-secondary'}
                                         `}
                                     >
                                         {idx + 1}
