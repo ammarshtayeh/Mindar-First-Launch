@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Groq from "groq-sdk";
 
+export const maxDuration = 60; // Allow up to 60 seconds for AI generation (Vercel limit)
+export const dynamic = 'force-dynamic';
+
 
 
 export async function POST(req: Request) {
@@ -45,7 +48,7 @@ export async function POST(req: Request) {
                     {
                         "id": 1,
                         "type": "multiple-choice | true-false | fill-in-the-blanks | explanation",
-                        "question": "...",
+                        "question": "The question text. For 'fill-in-the-blanks', use '_______' to denote the missing part.",
                         "options": ["...", "...", "...", "..."], // Required ONLY for multiple-choice
                         "answer": "...", // For T/F use 'True' or 'False'. For others, the correct string.
                         "explanation": "Exact quote or reference from text explaining why this is correct.",
@@ -87,11 +90,11 @@ export async function POST(req: Request) {
         ].filter(Boolean) as string[];
 
         const configs = [
-            { id: "gemini-1.5-flash", version: "v1" },
-            { id: "gemini-1.5-flash-8b", version: "v1" },
+            { id: "gemini-1.5-flash", version: "v1beta" },
+            { id: "gemini-1.5-flash-8b", version: "v1beta" },
             { id: "gemini-2.0-flash-lite-preview-02-05", version: "v1beta" },
             { id: "gemini-2.0-flash", version: "v1beta" },
-            { id: "gemini-1.5-pro", version: "v1" },
+            { id: "gemini-1.5-pro", version: "v1beta" },
             { id: "gemini-pro", version: "v1" }
         ];
 

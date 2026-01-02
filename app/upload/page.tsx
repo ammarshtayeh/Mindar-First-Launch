@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -53,11 +53,13 @@ export default function UploadPage() {
     }
 
     const validateAndAddFiles = (newFiles: File[]) => {
-        const MAX_SIZE = 100 * 1024 * 1024; // 100MB per file
+        // No strict size limit for client-side functionality, but let's warn for crazy sizes
+        const MAX_SIZE = 150 * 1024 * 1024; // 150MB warning
         const validFiles: File[] = []
         let hasError = false
 
         newFiles.forEach(file => {
+             // We can accept larger files comfortably now
             if (file.size > MAX_SIZE) {
                 hasError = true
             } else {
@@ -66,16 +68,46 @@ export default function UploadPage() {
         })
 
         if (hasError) {
-            setError(language === 'ar' ? "بعض الملفات كبيرة جداً! الحد الأقصى للملف الواحد 100MB" : "Some files are too large! Max file size is 100MB.")
-        } else {
-            setError(null)
+             // Gentle warning
+             console.warn("Some files are very large, browser may lag.");
         }
-
+        
+        setError(null)
         setFiles(prev => [...prev, ...validFiles])
     }
 
     const removeFile = (index: number) => {
         setFiles(prev => prev.filter((_, i) => i !== index))
+    }
+
+    // --- CLIENT SIDE PARSING LOGIC ---
+
+    const readPdfText = async (file: File): Promise<string> => {
+        // Dynamic import to avoid "DOMMatrix is not defined" error during SSR
+        const pdfjs = await import('pdfjs-dist');
+        // Set worker source dynamically
+        if (!pdfjs.GlobalWorkerOptions.workerSrc) {
+             pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+        }
+
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+        let fullText = "";
+        
+        // Limit pages to avoid browser crash on massive books (optional, maybe 100 pages?)
+        // For now, let's try reading all but with a safety check or batching
+        // Reading page by page
+        for (let i = 1; i <= pdf.numPages; i++) {
+            try {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map((item: any) => item.str).join(' ');
+                fullText += `\n--- Page ${i} ---\n${pageText}`;
+            } catch (err) {
+                console.warn(`Skipping page ${i} due to error`, err);
+            }
+        }
+        return fullText;
     }
 
     const handleGenerate = async () => {
@@ -87,56 +119,41 @@ export default function UploadPage() {
         const failedFiles: string[] = []
         
         try {
-            // Process files sequentially to track progress
             for (let i = 0; i < files.length; i++) {
                 setCurrentFileIndex(i + 1)
                 const file = files[i]
-                const formData = new FormData()
-                formData.append("file", file)
+                let text = ""
 
                 try {
-                    const parseRes = await fetch("/api/parse", {
-                        method: "POST",
-                        body: formData
-                    })
-                    
-                    if (!parseRes.ok) {
-                        const errorText = await parseRes.text();
-                        let errDetails;
-                        try {
-                            const errJson = JSON.parse(errorText);
-                            errDetails = errJson.details || errJson.error;
-                        } catch {
-                            errDetails = parseRes.statusText;
+                    if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+                        // Client-Side PDF Parse
+                        text = await readPdfText(file);
+                        if (!text.trim()) {
+                             throw new Error("Scanned PDF or empty (OCR not enabled client-side yet).");
                         }
-                        
-                        console.warn(`Failed to parse ${file.name}: ${errDetails}`);
-                        failedFiles.push(`${file.name} (${errDetails})`);
-                        continue; // Skip this file and try the next one
+                    } else {
+                        // Fallback to Server API for DOCX/PPTX (or implement client-side libraries for them later)
+                        // For now, we still use the server API for non-PDFs as they are usually smaller
+                        const formData = new FormData()
+                        formData.append("file", file)
+                        const parseRes = await fetch("/api/parse", { method: "POST", body: formData })
+                        if (!parseRes.ok) throw new Error("Server parse failed");
+                        const resJson = await parseRes.json()
+                        text = resJson.text;
                     }
-                    
-                    const { text } = await parseRes.json()
-                    combinedText += `\n\n--- Source: ${file.name} ---\n\n${text}`
 
-                } catch (innerError: any) {
-                    console.error(`Network or parse error on ${file.name}:`, innerError);
-                    failedFiles.push(`${file.name} (Check connection/format)`);
+                    combinedText += `\n\n--- Source: ${file.name} ---\n\n${text}`
+                } catch (err: any) {
+                    console.error(`Failed to parse ${file.name}:`, err);
+                    failedFiles.push(`${file.name} (${err.message})`);
                 }
             }
 
             if (!combinedText.trim()) {
-                // If ALL files failed, then we show the main error
                 const errorMsg = failedFiles.length > 0 
-                    ? (language === 'ar' ? `فشلنا في قراءة كل الملفات:\n${failedFiles.join('\n')}` : `Failed to read all files:\n${failedFiles.join('\n')}`)
+                    ? (language === 'ar' ? `فشلنا في قراءة الملفات:\n${failedFiles.join('\n')}` : `Failed to read files:\n${failedFiles.join('\n')}`)
                     : "No text content found.";
                 throw new Error(errorMsg)
-            }
-
-            // If some failed but others succeeded, notify via toast or just logging (for now, we'll append to error state if needed, but proceeding is prioritized)
-            if (failedFiles.length > 0) {
-                // Ideally use a Toast here, but we'll use a temporary non-blocking way or append to the success message
-                console.log("Some files failed:", failedFiles);
-                // We could set a warning, but let's proceed to generation
             }
 
             const genRes = await fetch("/api/generate", {
@@ -157,12 +174,8 @@ export default function UploadPage() {
 
             const quizData = await genRes.json()
             
-            // Inject a warning into the quiz metadata if some files failed, so the user sees it in the Hub
             if (failedFiles.length > 0) {
-                 quizData.metadata = { 
-                     ...quizData.metadata, 
-                     uploadWarnings: failedFiles 
-                 };
+                 quizData.metadata = { ...quizData.metadata, uploadWarnings: failedFiles };
             }
 
             localStorage.setItem("currentQuiz", JSON.stringify(quizData))
@@ -382,8 +395,8 @@ export default function UploadPage() {
                                                 <span>{t('upload.generating')}</span>
                                                 <span className="text-xs opacity-70 mt-1">
                                                     {language === 'ar' 
-                                                        ? `جاري معالجة الملف ${currentFileIndex} من ${files.length}...` 
-                                                        : `Processing file ${currentFileIndex} of ${files.length}...`}
+                                                        ? `جاري قراءة الملف (محلياً) ${currentFileIndex} من ${files.length}...` 
+                                                        : `Reading file locally ${currentFileIndex} of ${files.length}...`}
                                                 </span>
                                             </div>
                                         </div>

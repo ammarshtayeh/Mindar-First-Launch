@@ -372,15 +372,15 @@ export default function QuizPage() {
                             })}
                         </div>
 
-                        <CardTitle className="text-3xl md:text-5xl font-black text-foreground leading-[1.3] text-center">
+                        <CardTitle className="text-3xl md:text-5xl font-black text-foreground leading-[1.3] text-center" dir="auto">
                             {currentQuestion.question}
                         </CardTitle>
                     </CardHeader>
 
                     <CardContent className="p-10 sm:p-16 pt-0">
                         <div className="grid grid-cols-1 gap-5">
-                            {(currentQuestion.type === 'multiple-choice' || currentQuestion.type === 'true-false') && 
-                                (currentQuestion.options || (currentQuestion.type === 'true-false' ? (language === 'ar' ? ['صح', 'خطأ'] : ['True', 'False']) : [])).map((option, idx) => {
+                            {((currentQuestion.type === 'multiple-choice' || currentQuestion.type === 'true-false')) && 
+                                (currentQuestion.options && currentQuestion.options.length > 0 ? currentQuestion.options : (currentQuestion.type === 'true-false' ? (language === 'ar' ? ['صح', 'خطأ'] : ['True', 'False']) : [])).map((option, idx) => {
                                     const isSelected = currentAnswer?.selectedOption === option
                                     const isCorrect = option === currentQuestion.answer
                                     
