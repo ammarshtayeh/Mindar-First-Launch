@@ -17,9 +17,17 @@ const settingsSlice = createSlice({
   reducers: {
     setLanguage: (state, action: PayloadAction<'ar' | 'en'>) => {
       state.language = action.payload
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('app-settings', JSON.stringify(state))
+      }
     },
     toggleVoice: (state) => {
       state.voiceEnabled = !state.voiceEnabled
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('app-settings', JSON.stringify(state))
+        // Sync with voiceManager's independent localStorage key for legacy support/independent usage
+        localStorage.setItem('voice_master_enabled', String(state.voiceEnabled))
+      }
     },
   },
 })

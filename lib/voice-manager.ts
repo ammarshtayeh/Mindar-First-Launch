@@ -40,6 +40,13 @@ class VoiceManager {
       this.synth = window.speechSynthesis
       this.enabled = localStorage.getItem('voice_master_enabled') !== 'false'
       this.loadVoice()
+      
+      // Listen for updates from other components or Redux (via custom event)
+      window.addEventListener('voice_settings_update', (e: any) => {
+        if (e.detail && typeof e.detail.enabled === 'boolean') {
+          this.enabled = e.detail.enabled
+        }
+      })
     }
   }
 
@@ -81,16 +88,23 @@ class VoiceManager {
   }
 
   speak(text: string) {
-    if (!this.enabled || !this.synth || !this.voice) return
+    if (!this.enabled || !this.synth) return
+    
+    // Safety: ensure a voice is selected if it wasn't earlier
+    if (!this.voice) {
+      this.loadVoice()
+    }
+
     this.synth.cancel()
 
     const utterance = new SpeechSynthesisUtterance(text)
-    utterance.voice = this.voice
-    utterance.lang = 'ar-SA' // Standard Arabic code, though we seek a natural voice
+    if (this.voice) {
+      utterance.voice = this.voice
+    }
+    utterance.lang = 'ar-SA'
     
-    // Adjusting parameters for a more realistic, less robotic sound
-    utterance.rate = 0.9  // Slightly slower for clarity
-    utterance.pitch = 1.0 // Natural pitch
+    utterance.rate = 0.9
+    utterance.pitch = 1.0
     utterance.volume = 1.0
     
     this.synth.speak(utterance)

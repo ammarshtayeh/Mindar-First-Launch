@@ -41,13 +41,18 @@ export function Navbar() {
     setIsMounted(true)
   }, [])
 
+  useEffect(() => {
+    if (isMounted) {
+      voiceManager.setEnabled(voiceEnabled)
+    }
+  }, [voiceEnabled, isMounted])
+
   const nextLevelXP = Math.pow(level, 2) * 50
   const currentLevelXP = Math.pow(level - 1, 2) * 50
   const progress = ((xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100
 
   const toggleVoiceHandler = () => {
     dispatch(toggleVoice())
-    voiceManager.toggleMasterEnabled()
   }
 
   const setLanguageHandler = (lang: 'ar' | 'en') => {
