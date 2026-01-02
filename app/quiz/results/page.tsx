@@ -185,7 +185,7 @@ export default function ResultsPage() {
               <Link href="/upload">
                 <Button 
                   variant="outline" 
-                   className="h-14 px-8 rounded-2xl border-primary bg-primary/5 text-primary hover:bg-primary hover:text-white gap-2 font-black transition-all hover:scale-105 shadow-lg group"
+                   className="h-14 px-8 rounded-2xl border-2 border-primary bg-background/80 text-primary hover:bg-primary hover:text-primary-foreground backdrop-blur-md shadow-lg transition-all gap-2 font-black group"
                 >
                   <RotateCcw className={`w-5 h-5 transition-transform group-hover:rotate-180 ${language === 'en' ? 'rotate-180' : ''}`} />
                   {t('hub.change')}

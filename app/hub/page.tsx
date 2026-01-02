@@ -142,7 +142,7 @@ export default function StudyHub() {
             </div>
             
             <Link href="/upload">
-                <Button variant="outline" className="h-14 px-8 rounded-2xl border-primary/20 hover:bg-primary/5 gap-2 font-black">
+                <Button variant="outline" className="h-14 px-8 rounded-2xl border-2 border-primary bg-background/80 text-primary hover:bg-primary hover:text-primary-foreground backdrop-blur-md shadow-lg transition-all gap-2 font-black">
                     <ArrowLeft className={`w-5 h-5 ${language === 'en' ? 'rotate-180' : ''}`} />
                     {t('hub.change')}
                 </Button>
