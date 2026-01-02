@@ -24,45 +24,33 @@ export async function POST(req: Request) {
             system: You are a strict and precise exam generator.
             Your Goal: Generate a quiz based ONLY on the provided text.
             
-            CRITICAL RULES:
-            1. **LANGUAGE MATCHING**: The quiz MUST be in the SAME language as the source text provided below. If the text is Arabic, the questions MUST be Arabic. If English, English. Do NOT translate unless explicitly asked.
-            2. **ACCURACY IS PARAMOUNT**: Every answer MUST be explicitly found in the text. Do not use outside knowledge.
-            3. **NO HALLUCINATIONS**: If a specific detail is not in the text, do not ask about it.
+            CRITICAL RULES (Prevention of Hallucinations):
+            1. **STRICT GROUNDING**: All questions and answers MUST be derived directly from the text. If it's not in the text, DO NOT ask it.
+            2. **ANSWER CONSISTENCY**: For 'multiple-choice', the 'answer' field MUST BE an EXACT string match to one of the 'options'. 
+            3. **LANGUAGE MATCHING**: Output must match the source text language (Arabic/English).
             
-            - Target Language: ${language} (If "SAME AS SOURCE TEXT", detect dominant language of input).
-            - Difficulty: ${difficulty} (Adjust complexity of questions).
-            - Topic: ${topic} (Focus on this area).
-            - **MULTI-FILE COVERAGE**: The provided text may come from multiple different files (chapters). Balance the questions across correct topics.
+            - Target Language: ${language} (Detect if "SAME AS SOURCE TEXT").
+            - Difficulty: ${difficulty}.
+            - Topic: ${topic}.
             
             Text: ${text.substring(0, 60000)}
             Questions: ${numQuestions}.
-            Difficulty: ${difficulty}.
-            Requested Types: ${Array.isArray(body.types) ? body.types.join(', ') : type}.
-            Flashcards Count: 15 (IMPORTANT).
             
             Return RAW JSON ONLY with this schema:
             {
-                "title": "Appropriate Title",
-                "metadata": { "topics": [], "chapters": [] },
+                "title": "Title",
                 "questions": [
                     {
                         "id": 1,
                         "type": "multiple-choice | true-false | fill-in-the-blanks | explanation",
-                        "question": "The question text. For 'fill-in-the-blanks', use '_______' to denote the missing part.",
-                        "options": ["...", "...", "...", "..."], // Required ONLY for multiple-choice
-                        "answer": "...", // For T/F use 'True' or 'False'. For others, the correct string.
-                        "explanation": "Exact quote or reference from text explaining why this is correct.",
-                        "topic": "Specific Topic Name",
-                        "chapter": "..."
+                        "question": "Question text...",
+                        "options": ["Option A", "Option B", "Option C", "Option D"], // REQUIRED for MC/TF
+                        "answer": "Option A", // EXACT MATCH of the correct option string
+                        "explanation": "Quote from text proving the answer."
                     }
                 ],
-                "vocabulary": [
-                    { "word": "...", "definition": "...", "context": "..." }
-                ],
-                "flashcards": [
-                    // GENERATE EXACTLY 15 FLASHCARDS
-                    { "front": "Term/Question", "back": "Definition/Answer" }
-                ]
+                "vocabulary": [ { "word": "...", "definition": "...", "context": "..." } ],
+                "flashcards": [ { "front": "...", "back": "..." } ]
             }
         `;
 
@@ -117,6 +105,34 @@ export async function POST(req: Request) {
                     
                     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
                     const quizData = JSON.parse(jsonMatch ? jsonMatch[0] : responseText);
+                    
+                    // --- VERIFICATION & HALLUCINATION CHECK LAYER ---
+                    if (quizData.questions && Array.isArray(quizData.questions)) {
+                        quizData.questions = quizData.questions.map((q: any) => {
+                            // 1. Ensure Multi-choice answers match options exactly
+                            if (q.type === 'multiple-choice' || q.type === 'true-false') {
+                                if (q.options && Array.isArray(q.options)) {
+                                    // Fuzzy match check
+                                    const exactMatch = q.options.find((opt: string) => opt === q.answer);
+                                    if (!exactMatch) {
+                                        // Attempt to recover: trimming, case-insensitive
+                                        const looseMatch = q.options.find((opt: string) => opt.toLowerCase().trim() === q.answer.toLowerCase().trim());
+                                        if (looseMatch) {
+                                            q.answer = looseMatch; // Auto-correct
+                                        } else {
+                                            // Hallucination detected: Answer is NOT in options.
+                                            // Fallback: Set answer to first option (better than crashing) or flag it.
+                                            // Here we set it to the first option to ensure playability, but ideally we regenerate.
+                                            q.answer = q.options[0];
+                                            q.explanation += " [Auto-Correction: Original answer mismatch]";
+                                        }
+                                    }
+                                }
+                            }
+                            return q;
+                        });
+                    }
+                    // ------------------------------------------------
                     
                     return NextResponse.json({ ...quizData, _provider: 'gemini', _model: config.id, _key: apiKey.substring(0, 5) + '...' });
                 } catch (err: any) {
