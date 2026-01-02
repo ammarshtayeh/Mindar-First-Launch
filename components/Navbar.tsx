@@ -28,7 +28,7 @@ const navItems = [
 
 export function Navbar() {
   const pathname = usePathname()
-  const { t } = useI18n()
+  const { t, setLanguage: setI18nLanguage } = useI18n()
   const dispatch = useDispatch()
   
   // Redux State
@@ -52,8 +52,7 @@ export function Navbar() {
 
   const setLanguageHandler = (lang: 'ar' | 'en') => {
     dispatch(setLanguage(lang))
-    // We also need to update the i18n context if possible, or refactor i18n to use Redux totally. 
-    // For now, let's keep the hook for translation text but sync checking.
+    setI18nLanguage(lang)
   }
 
   return (
