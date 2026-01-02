@@ -9,8 +9,12 @@ import Link from "next/link"
 import { MotivationalBanner } from "@/components/motivational-banner"
 import { useI18n } from "@/lib/i18n"
 
+import { useDispatch } from "react-redux"
+import { setQuiz } from "@/redux/slices/quizSlice"
+
 export default function UploadPage() {
     const { t, language } = useI18n()
+    const dispatch = useDispatch()
     const [files, setFiles] = useState<File[]>([])
     const [isDragging, setIsDragging] = useState(false)
     const [isProcessing, setIsProcessing] = useState(false)
@@ -119,21 +123,15 @@ export default function UploadPage() {
         const failedFiles: string[] = []
         
         try {
-            for (let i = 0; i < files.length; i++) {
-                setCurrentFileIndex(i + 1)
-                const file = files[i]
-                let text = ""
-
+            // Parallel Processing Start
+            const processFile = async (file: File, index: number) => {
                 try {
+                    setCurrentFileIndex(index + 1) // Just visual indication, might jump around in parallel
+                    let text = ""
                     if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-                        // Client-Side PDF Parse
                         text = await readPdfText(file);
-                        if (!text.trim()) {
-                             throw new Error("Scanned PDF or empty (OCR not enabled client-side yet).");
-                        }
+                        if (!text.trim()) throw new Error("Scanned PDF or empty.");
                     } else {
-                        // Fallback to Server API for DOCX/PPTX (or implement client-side libraries for them later)
-                        // For now, we still use the server API for non-PDFs as they are usually smaller
                         const formData = new FormData()
                         formData.append("file", file)
                         const parseRes = await fetch("/api/parse", { method: "POST", body: formData })
@@ -141,13 +139,17 @@ export default function UploadPage() {
                         const resJson = await parseRes.json()
                         text = resJson.text;
                     }
-
-                    combinedText += `\n\n--- Source: ${file.name} ---\n\n${text}`
+                    return `\n\n--- Source: ${file.name} ---\n\n${text}`
                 } catch (err: any) {
                     console.error(`Failed to parse ${file.name}:`, err);
                     failedFiles.push(`${file.name} (${err.message})`);
+                    return "";
                 }
-            }
+            };
+
+            const results = await Promise.all(files.map((file, i) => processFile(file, i)));
+            combinedText = results.join("");
+            // Parallel Processing End
 
             if (!combinedText.trim()) {
                 const errorMsg = failedFiles.length > 0 
@@ -178,9 +180,10 @@ export default function UploadPage() {
                  quizData.metadata = { ...quizData.metadata, uploadWarnings: failedFiles };
             }
 
-            localStorage.setItem("currentQuiz", JSON.stringify(quizData))
-            window.dispatchEvent(new Event('quiz_generated'))
-            router.push("/quiz")
+             // localStorage.setItem("currentQuiz", JSON.stringify(quizData))
+             // window.dispatchEvent(new Event('quiz_generated'))
+             dispatch(setQuiz(quizData))
+             router.push("/quiz")
 
         } catch (error: any) {
             console.error(error)

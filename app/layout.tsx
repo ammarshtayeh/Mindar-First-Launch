@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import { AppContent } from "@/components/app-content";
 import { Navbar } from "@/components/Navbar";
 import { I18nProvider } from "@/lib/i18n";
+import { ReduxProvider } from "@/redux/provider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -37,10 +38,12 @@ export default function RootLayout({
         className={`${inter.variable} ${cairo.variable} ${orbitron.variable} antialiased`}
       >
         <ThemeProvider>
-          <I18nProvider>
-            <Navbar />
-            <AppContent>{children}</AppContent>
-          </I18nProvider>
+          <ReduxProvider>
+            <I18nProvider>
+              <Navbar />
+              <AppContent>{children}</AppContent>
+            </I18nProvider>
+          </ReduxProvider>
         </ThemeProvider>
       </body>
     </html>

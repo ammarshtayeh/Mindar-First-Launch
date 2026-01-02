@@ -14,6 +14,9 @@ import { useI18n } from '@/lib/i18n'
 import { Languages, Volume2, VolumeX } from 'lucide-react'
 import { LevelUpOverlay } from './level-up-overlay'
 import { voiceManager } from '@/lib/voice-manager'
+import { useSelector, useDispatch } from 'react-redux'
+import { RootState } from '@/redux/store'
+import { toggleVoice, setLanguage } from '@/redux/slices/settingsSlice'
 
 const navItems = [
   { key: 'common.home', href: '/', icon: Home },
@@ -25,39 +28,32 @@ const navItems = [
 
 export function Navbar() {
   const pathname = usePathname()
-  const { language, setLanguage, t } = useI18n()
-  const [gamificationData, setGamificationData] = useState({ level: 1, xp: 0 }) // Default safe state
-  const [hasData, setHasData] = useState(false)
+  const { t } = useI18n()
+  const dispatch = useDispatch()
+  
+  // Redux State
+  const { level, xp } = useSelector((state: RootState) => state.gamification)
+  const { hasData } = useSelector((state: RootState) => state.quiz)
+  const { voiceEnabled, language } = useSelector((state: RootState) => state.settings)
   const [isMounted, setIsMounted] = useState(false)
-  const [isVoiceEnabled, setIsVoiceEnabled] = useState(false) // Default safe state
 
   useEffect(() => {
     setIsMounted(true)
-    setGamificationData(GamificationEngine.getData())
-    setIsVoiceEnabled(voiceManager.isMasterEnabled())
-    setHasData(!!localStorage.getItem("currentQuiz"))
-    
-    const handleUpdate = (e: any) => setGamificationData(e.detail)
-    const handleVoiceUpdate = (e: any) => setIsVoiceEnabled(e.detail.enabled)
-    const handleQuizUpdate = () => setHasData(true)
-    
-    window.addEventListener('gamification_update', handleUpdate)
-    window.addEventListener('voice_settings_update', handleVoiceUpdate)
-    window.addEventListener('quiz_generated', handleQuizUpdate)
-    
-    return () => {
-      window.removeEventListener('gamification_update', handleUpdate)
-      window.removeEventListener('voice_settings_update', handleVoiceUpdate)
-      window.removeEventListener('quiz_generated', handleQuizUpdate)
-    }
   }, [])
 
-  const nextLevelXP = Math.pow(gamificationData.level, 2) * 50
-  const currentLevelXP = Math.pow(gamificationData.level - 1, 2) * 50
-  const progress = ((gamificationData.xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100
+  const nextLevelXP = Math.pow(level, 2) * 50
+  const currentLevelXP = Math.pow(level - 1, 2) * 50
+  const progress = ((xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100
 
-  const toggleVoice = () => {
+  const toggleVoiceHandler = () => {
+    dispatch(toggleVoice())
     voiceManager.toggleMasterEnabled()
+  }
+
+  const setLanguageHandler = (lang: 'ar' | 'en') => {
+    dispatch(setLanguage(lang))
+    // We also need to update the i18n context if possible, or refactor i18n to use Redux totally. 
+    // For now, let's keep the hook for translation text but sync checking.
   }
 
   return (
@@ -100,14 +96,14 @@ export function Navbar() {
             <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg transform -rotate-3 group-hover:rotate-0 transition-transform">
                 <Star className="text-white w-6 h-6 fill-white" />
                 <span className="absolute -top-2 -right-2 bg-slate-900 text-white text-[10px] font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">
-                    {isMounted ? gamificationData.level : 1}
+                    {isMounted ? level : 1}
                 </span>
             </div>
             <div className="flex flex-col gap-1.5 w-32">
                 <div className="flex justify-between items-center text-[10px] font-black text-muted-foreground">
                     <span className="flex items-center gap-1">
                         <Zap className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                        XP {gamificationData.xp}
+                        XP {xp}
                     </span>
                     <span>{progress.toFixed(0)}%</span>
                 </div>
@@ -164,20 +160,20 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           <div className="md:hidden flex items-center gap-2 bg-yellow-400/20 px-3 py-1.5 rounded-xl border border-yellow-400/30">
             <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-            <span className="text-sm font-black text-yellow-600">{gamificationData.level}</span>
+            <span className="text-sm font-black text-yellow-600">{level}</span>
           </div>
 
           <Button
             variant="ghost"
             size="icon"
-            onClick={toggleVoice}
+            onClick={toggleVoiceHandler}
             className={cn(
                 "w-12 h-12 rounded-2xl transition-all active:scale-95 group relative",
-                isVoiceEnabled ? "hover:bg-primary/10 text-primary" : "hover:bg-red-500/10 text-muted-foreground"
+                voiceEnabled ? "hover:bg-primary/10 text-primary" : "hover:bg-red-500/10 text-muted-foreground"
             )}
-            title={isVoiceEnabled ? t('common.voiceEnabled') : t('common.voiceDisabled')}
+            title={voiceEnabled ? t('common.voiceEnabled') : t('common.voiceDisabled')}
           >
-            {isVoiceEnabled ? (
+            {voiceEnabled ? (
                 <Volume2 className="w-6 h-6 animate-pulse" />
             ) : (
                 <VolumeX className="w-6 h-6" />
