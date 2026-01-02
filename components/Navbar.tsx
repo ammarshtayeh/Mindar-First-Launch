@@ -58,7 +58,7 @@ export function Navbar() {
   return (
     <>
     <LevelUpOverlay />
-    <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-b border-primary/10 shadow-xl transition-all duration-500">
+    <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-primary/10 shadow-sm transition-all duration-500">
       <div className="max-w-[2000px] mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
         
         {/* Right Section: Logo & Time & XP */}

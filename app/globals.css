@@ -199,7 +199,7 @@
     opacity: 0.1;
     pointer-events: none;
     z-index: -1;
-    animation: space-float 100s linear infinite;
+    /* animation: space-float 100s linear infinite; */
   }
 
   [data-theme="dark"] body::before {
@@ -260,5 +260,14 @@
   .glassmorphism {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Utility to hide scrollbar but keep functionality */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 }
