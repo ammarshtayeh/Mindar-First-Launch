@@ -182,7 +182,7 @@ export function Navbar() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setLanguage(language === 'ar' ? 'en' : 'ar')}
+            onClick={() => setLanguageHandler(language === 'ar' ? 'en' : 'ar')}
             className="w-12 h-12 rounded-2xl hover:bg-primary/10 transition-all active:scale-95"
             title={language === 'ar' ? 'English' : 'العربية'}
           >
