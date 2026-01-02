@@ -179,7 +179,8 @@ export default function UploadPage() {
             }
 
             localStorage.setItem("currentQuiz", JSON.stringify(quizData))
-            router.push("/hub")
+            window.dispatchEvent(new Event('quiz_generated'))
+            router.push("/quiz")
 
         } catch (error: any) {
             console.error(error)

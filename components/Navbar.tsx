@@ -39,13 +39,16 @@ export function Navbar() {
     
     const handleUpdate = (e: any) => setGamificationData(e.detail)
     const handleVoiceUpdate = (e: any) => setIsVoiceEnabled(e.detail.enabled)
+    const handleQuizUpdate = () => setHasData(true)
     
     window.addEventListener('gamification_update', handleUpdate)
     window.addEventListener('voice_settings_update', handleVoiceUpdate)
+    window.addEventListener('quiz_generated', handleQuizUpdate)
     
     return () => {
       window.removeEventListener('gamification_update', handleUpdate)
       window.removeEventListener('voice_settings_update', handleVoiceUpdate)
+      window.removeEventListener('quiz_generated', handleQuizUpdate)
     }
   }, [])
 
