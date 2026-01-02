@@ -32,6 +32,7 @@ export async function POST(req: Request) {
             - Target Language: ${language} (Detect if "SAME AS SOURCE TEXT").
             - Difficulty: ${difficulty}.
             - Topic: ${topic}.
+            - **STRICT QUESTION TYPES**: You MUST ONLY generate these types: ${Array.isArray(body.types) ? body.types.join(', ') : type}. DO NOT generate any other types.
             
             Text: ${text.substring(0, 60000)}
             Questions: ${numQuestions}.

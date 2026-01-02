@@ -124,9 +124,9 @@ export function Flashcards({ cards, isOpen, onClose, isInline = false }: Flashca
                 variant="outline"
                 size="lg"
                 onClick={handlePrev}
-                className="h-20 w-20 rounded-[2rem] border-4 border-primary/20 bg-white/50 backdrop-blur-md hover:bg-primary hover:text-primary-foreground hover:scale-110 transition-all shadow-xl text-primary"
+                className="h-24 w-24 rounded-[2.5rem] border-4 border-primary/20 bg-white/50 backdrop-blur-md hover:bg-primary hover:text-primary-foreground hover:scale-110 transition-all shadow-xl text-primary"
               >
-                {language === 'ar' ? <ArrowRight className="w-10 h-10" /> : <ArrowLeft className="w-10 h-10" />}
+                {language === 'ar' ? <ArrowRight className="w-12 h-12" /> : <ArrowLeft className="w-12 h-12" />}
               </Button>
               
               <div className="flex gap-3">
@@ -142,9 +142,9 @@ export function Flashcards({ cards, isOpen, onClose, isInline = false }: Flashca
                 variant="outline"
                 size="lg"
                 onClick={handleNext}
-                className="h-20 w-20 rounded-[2rem] border-4 border-primary/20 bg-white/50 backdrop-blur-md hover:bg-primary hover:text-primary-foreground hover:scale-110 transition-all shadow-xl text-primary"
+                className="h-24 w-24 rounded-[2.5rem] border-4 border-primary/20 bg-white/50 backdrop-blur-md hover:bg-primary hover:text-primary-foreground hover:scale-110 transition-all shadow-xl text-primary"
               >
-                {language === 'ar' ? <ArrowLeft className="w-10 h-10" /> : <ArrowRight className="w-10 h-10" />}
+                {language === 'ar' ? <ArrowLeft className="w-12 h-12" /> : <ArrowRight className="w-12 h-12" />}
               </Button>
             </div>
           </div>

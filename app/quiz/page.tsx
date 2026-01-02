@@ -128,10 +128,16 @@ export default function QuizPage() {
 
         let isCorrect = false
         if (currentQuestion.type === 'fill-in-the-blanks') {
-            isCorrect = text.toLowerCase().trim() === currentQuestion.answer.toLowerCase().trim()
+            // Normalize: remove extra spaces, quotes, and punctuation for better matching
+            const normalize = (s: string) => s.toLowerCase()
+                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"")
+                .replace(/\s{2,}/g," ")
+                .trim();
+            isCorrect = normalize(text) === normalize(currentQuestion.answer)
         } else {
-            // Descriptive: Always "correct" for now or just marked as answered
-            isCorrect = true
+            // For descriptive/explanation, we mark it as "submitted" 
+            // We show the explanation as the "correct" reference for the user to compare
+            isCorrect = true // Still mark as blue/green for UI but user will see comparison
         }
 
         setAnswers(prev => ({
@@ -139,10 +145,14 @@ export default function QuizPage() {
             [currentQuestionIndex]: { textAnswer: text, isCorrect }
         }))
         
-        if (isCorrect) {
-          voiceManager.speakFeedback('correct')
+        if (currentQuestion.type === 'fill-in-the-blanks') {
+            if (isCorrect) {
+              voiceManager.speakFeedback('correct')
+            } else {
+              voiceManager.speakFeedback('wrong')
+            }
         } else {
-          voiceManager.speakFeedback('wrong')
+            voiceManager.speakFeedback('welcome') // neutral or informative
         }
     }
 
