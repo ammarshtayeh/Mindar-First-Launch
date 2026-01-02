@@ -106,7 +106,7 @@ export default function UploadPage() {
                 const page = await pdf.getPage(i);
                 const textContent = await page.getTextContent();
                 const pageText = textContent.items.map((item: any) => item.str).join(' ');
-                fullText += `\n--- Page ${i} ---\n${pageText}`;
+                fullText += `\n\n### PAGE [${i}] ###\n\n${pageText}\n\n`;
             } catch (err) {
                 console.warn(`Skipping page ${i} due to error`, err);
             }
@@ -377,7 +377,7 @@ export default function UploadPage() {
                                             {t('upload.questionsCount')}: {numQuestions}
                                         </h3>
                                         <input
-                                            type="range" min="10" max="50" step="5"
+                                            type="range" min="1" max="20" step="1"
                                             value={numQuestions}
                                             onChange={(e) => setNumQuestions(parseInt(e.target.value))}
                                             className="w-full h-2 bg-secondary rounded-full appearance-none cursor-pointer accent-primary"

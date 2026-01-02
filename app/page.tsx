@@ -60,7 +60,42 @@ export default function Home() {
                         {t('common.getStarted')} <Upload className="ml-3 w-6 h-6" />
                     </Button>
                 </Link>
-                <Button variant="outline" size="lg" className="h-20 px-12 text-2xl font-black rounded-2xl border-2 border-primary bg-background/80 text-primary hover:bg-primary hover:text-primary-foreground backdrop-blur-md shadow-lg transition-all">
+                <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="h-20 px-12 text-2xl font-black rounded-2xl border-2 border-primary bg-background/80 text-primary hover:bg-primary hover:text-primary-foreground backdrop-blur-md shadow-lg transition-all"
+                    onClick={() => {
+                        const sampleQuiz = {
+                            title: "Human Anatomy 101 (Sample)",
+                            questions: [
+                                {
+                                    question: "What is the largest organ in the human body?",
+                                    options: ["Heart", "Liver", "Skin", "Lungs"],
+                                    answer: "Skin",
+                                    explanation: "The skin is the largest organ of the body, with a total area of about 20 square feet.",
+                                    topic: "Anatomy"
+                                },
+                                {
+                                    question: "How many bones are in the adult human body?",
+                                    options: ["206", "305", "150", "210"],
+                                    answer: "206",
+                                    explanation: "Adults have 206 bones, while infants are born with around 300.",
+                                    topic: "Skeletal System"
+                                }
+                            ],
+                            flashcards: [
+                                { front: "Mitochondria", back: "The powerhouse of the cell." },
+                                { front: "DNA", back: "Deoxyribonucleic acid, the hereditary material in humans." }
+                            ],
+                            vocabulary: [
+                                { word: "Homeostasis", definition: "A state of steady internal, physical, and chemical conditions maintained by living systems." }
+                            ],
+                            timestamp: Date.now()
+                        };
+                        localStorage.setItem("currentQuiz", JSON.stringify(sampleQuiz));
+                        window.location.href = "/hub";
+                    }}
+                >
                     <Play className="mr-3 w-6 h-6 fill-current" /> {t('common.seeSample')}
                 </Button>
             </motion.div>

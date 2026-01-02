@@ -69,12 +69,14 @@ export function Flashcards({ cards, isOpen, onClose, isInline = false }: Flashca
                   </p>
                 </div>
               </div>
-              <button 
+              <Button 
+                variant="ghost" 
+                size="icon"
                 onClick={onClose}
-                className="p-4 hover:bg-secondary rounded-2xl transition-all"
+                className="w-14 h-14 hover:bg-red-500/10 hover:text-red-500 rounded-2xl transition-all border-2 border-transparent hover:border-red-500/20"
               >
                 <X className="w-8 h-8" />
-              </button>
+              </Button>
             </div>
 
             <div className="relative h-[450px] perspective-1000">
@@ -119,21 +121,21 @@ export function Flashcards({ cards, isOpen, onClose, isInline = false }: Flashca
               </motion.div>
             </div>
 
-            <div className="flex justify-center items-center gap-8 pt-6">
+            <div className="flex justify-center items-center gap-4 sm:gap-8 pt-6">
               <Button
                 variant="outline"
                 size="lg"
                 onClick={handlePrev}
-                className="h-24 w-24 rounded-[2.5rem] border-4 border-primary/20 bg-white/50 backdrop-blur-md hover:bg-primary hover:text-primary-foreground hover:scale-110 transition-all shadow-xl text-primary"
+                className="h-16 w-16 sm:h-24 sm:w-24 rounded-2xl sm:rounded-[2.5rem] border-2 sm:border-4 border-primary bg-primary/10 backdrop-blur-md hover:bg-primary hover:text-primary-foreground hover:scale-110 transition-all shadow-xl text-primary"
               >
-                {language === 'ar' ? <ArrowRight className="w-12 h-12" /> : <ArrowLeft className="w-12 h-12" />}
+                {language === 'ar' ? <ArrowRight className="w-8 h-8 sm:w-12 sm:h-12 stroke-[3]" /> : <ArrowLeft className="w-8 h-8 sm:w-12 sm:h-12 stroke-[3]" />}
               </Button>
               
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3 px-2 overflow-x-auto no-scrollbar max-w-[150px] sm:max-w-none">
                 {cards.map((_, idx) => (
                   <div 
                     key={idx}
-                    className={`h-4 rounded-full transition-all duration-500 ${idx === currentIndex ? 'w-12 bg-primary shadow-[0_0_15px_rgba(var(--primary),0.5)]' : 'w-4 bg-primary/10'}`}
+                    className={`h-2 sm:h-4 rounded-full transition-all duration-500 shrink-0 ${idx === currentIndex ? 'w-8 sm:w-12 bg-primary shadow-[0_0_15px_rgba(var(--primary),0.5)]' : 'w-2 sm:w-4 bg-primary/10'}`}
                   />
                 ))}
               </div>
@@ -142,9 +144,9 @@ export function Flashcards({ cards, isOpen, onClose, isInline = false }: Flashca
                 variant="outline"
                 size="lg"
                 onClick={handleNext}
-                className="h-24 w-24 rounded-[2.5rem] border-4 border-primary/20 bg-white/50 backdrop-blur-md hover:bg-primary hover:text-primary-foreground hover:scale-110 transition-all shadow-xl text-primary"
+                className="h-16 w-16 sm:h-24 sm:w-24 rounded-2xl sm:rounded-[2.5rem] border-2 sm:border-4 border-primary bg-primary/10 backdrop-blur-md hover:bg-primary hover:text-primary-foreground hover:scale-110 transition-all shadow-xl text-primary"
               >
-                {language === 'ar' ? <ArrowLeft className="w-12 h-12" /> : <ArrowRight className="w-12 h-12" />}
+                {language === 'ar' ? <ArrowLeft className="w-8 h-8 sm:w-12 sm:h-12 stroke-[3]" /> : <ArrowRight className="w-8 h-8 sm:w-12 sm:h-12 stroke-[3]" />}
               </Button>
             </div>
           </div>

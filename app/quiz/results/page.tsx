@@ -15,7 +15,8 @@ import {
   History,
   Sword,
   BookOpen,
-  Zap
+  Zap,
+  Target
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -42,21 +43,37 @@ export default function ResultsPage() {
       const results = JSON.parse(stored)
       setData(results)
       
-      const topicMap: Record<string, { total: number; correct: number }> = {}
+      const topicMap: Record<string, { total: number; correct: number; missedPages: Set<number> }> = {}
       results.questions.forEach((q: any, idx: number) => {
         const topic = q.topic || 'عام'
-        if (!topicMap[topic]) topicMap[topic] = { total: 0, correct: 0 }
+        if (!topicMap[topic]) topicMap[topic] = { total: 0, correct: 0, missedPages: new Set() }
         topicMap[topic].total++
-        if (results.answers[idx]?.isCorrect) topicMap[topic].correct++
+        
+        const isCorrect = results.answers[idx]?.isCorrect
+        if (isCorrect) {
+          topicMap[topic].correct++
+        } else {
+          // Collect the page number if it exists and is not null/undefined
+          if (q.pageNumber !== undefined && q.pageNumber !== null && q.pageNumber !== 0) {
+            topicMap[topic].missedPages.add(q.pageNumber)
+          }
+        }
       })
 
       const topicPerf = Object.entries(topicMap).map(([topic, stats]) => ({
         topic,
         score: stats.correct,
         total: stats.total,
-        percentage: Math.round((stats.correct / stats.total) * 100)
+        percentage: Math.round((stats.correct / stats.total) * 100),
+        missedPages: Array.from(stats.missedPages).sort((a, b) => a - b)
       }))
       setTopics(topicPerf)
+ 
+      // Track mistakes per topic for "Mistake Location" Explorer
+      const mistakes = results.questions
+        .filter((q: any, idx: number) => !results.answers[idx]?.isCorrect)
+        .map((q: any) => q.topic || 'عام')
+      results.mistakes = mistakes; // Informative for later if needed
 
       // Calculate and award XP
       const xp = GamificationEngine.calculateQuizXP(results.score, results.total, 120); // Dummy time for now
@@ -74,6 +91,31 @@ export default function ResultsPage() {
       }
     }
   }, [])
+
+  // Prepare flashcards data: prioritize generated ones or fallback to questions
+  const flashcardsData = React.useMemo(() => {
+    if (!data) return []
+    
+    // 1. Try dedicated flashcards field
+    if (data.flashcards && Array.isArray(data.flashcards) && data.flashcards.length > 0) {
+      return data.flashcards.map((f: any) => ({
+        question: f.front || f.question || "---",
+        answer: f.back || f.answer || "---",
+        explanation: f.explanation || ''
+      }))
+    }
+    
+    // 2. Fallback to questions
+    if (data.questions && Array.isArray(data.questions) && data.questions.length > 0) {
+      return data.questions.map((q: any) => ({
+        question: q.question || "---",
+        answer: q.answer || "---",
+        explanation: q.explanation || ''
+      }))
+    }
+    
+    return []
+  }, [data])
 
   if (!data) return null
 
@@ -97,19 +139,6 @@ export default function ResultsPage() {
     localStorage.setItem("currentQuiz", JSON.stringify(revengeQuiz))
     router.push('/quiz')
   }
-
-  // Prepare flashcards data: prioritize generated ones or fallback to questions
-  const flashcardsData = data.flashcards 
-    ? data.flashcards.map((f: any) => ({
-        question: f.front || f.question,
-        answer: f.back || f.answer,
-        explanation: f.explanation || ''
-      }))
-    : data.questions.map((q: any) => ({
-        question: q.question,
-        answer: q.answer,
-        explanation: q.explanation
-      }))
 
   return (
     <main className="min-h-screen pt-40 px-6 bg-background font-cairo overflow-x-hidden pb-32">
@@ -152,16 +181,26 @@ export default function ResultsPage() {
             <p className="text-2xl text-muted-foreground font-bold">
               {t('results.completed', { title: data.title })}
             </p>
-            <div className="pt-4">
+            <div className="pt-4 flex flex-wrap justify-center gap-4">
               <Link href="/upload">
                 <Button 
                   variant="outline" 
-                  className="h-14 px-8 rounded-2xl border-primary bg-primary/5 text-primary hover:bg-primary hover:text-white gap-2 font-black transition-all hover:scale-105 shadow-lg group"
+                   className="h-14 px-8 rounded-2xl border-primary bg-primary/5 text-primary hover:bg-primary hover:text-white gap-2 font-black transition-all hover:scale-105 shadow-lg group"
                 >
                   <RotateCcw className={`w-5 h-5 transition-transform group-hover:rotate-180 ${language === 'en' ? 'rotate-180' : ''}`} />
                   {t('hub.change')}
                 </Button>
               </Link>
+              {topics.some(t => t.score < t.total) && (
+                <Button 
+                  onClick={() => document.getElementById('mistake-explorer')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="h-14 px-8 rounded-2xl bg-red-500 text-white hover:bg-red-600 gap-2 font-black transition-all hover:scale-105 shadow-lg relative overflow-hidden group"
+                >
+                  <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                  <Target className="w-5 h-5 animate-pulse" />
+                  {language === 'ar' ? 'حدد لي مكان الأخطاء' : 'Locate my mistakes'}
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -253,6 +292,57 @@ export default function ResultsPage() {
             totalQuestions={data.total} 
           />
         </div>
+ 
+        {/* Mistake Location Explorer (New) */}
+        {topics.some(t => t.score < t.total) && (
+            <motion.div 
+                id="mistake-explorer"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-500/5 border-2 border-red-500/20 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden"
+            >
+                {/* Glow Effect */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent animate-pulse" />
+                <div className="flex items-center gap-4 mb-8">
+                    <div className="w-12 h-12 bg-red-500 text-white rounded-2xl flex items-center justify-center">
+                        <Target className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h3 className="text-3xl font-black">{language === 'ar' ? 'حددنا وين الخلل بالضبط 🎯' : 'Found exactly where to improve 🎯'}</h3>
+                        <p className="text-muted-foreground font-bold">{language === 'ar' ? 'هذه الأجزاء من المادة محتاجة منك مراجعة عشان تسيطر عليها.' : 'These parts of the material need review to master them.'}</p>
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {topics.filter(t => t.score < t.total).map((topic, idx) => (
+                        <div key={idx} className="bg-background/50 p-6 rounded-2xl border border-border/50 flex flex-col justify-between group transition-all hover:border-red-500/30">
+                            <div>
+                                <h4 className="font-black text-xl mb-2">{topic.topic}</h4>
+                                {topic.missedPages && topic.missedPages.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mb-4">
+                                        <span className="text-[10px] font-black uppercase text-muted-foreground w-full mb-1">
+                                            {language === 'ar' ? 'صفحات الأخطاء:' : 'Mistake Pages:'}
+                                        </span>
+                                        {topic.missedPages.map((page: number) => (
+                                            <span key={page} className="px-2 py-0.5 bg-red-500/10 text-red-500 rounded-md text-[10px] font-black">
+                                                {language === 'ar' ? `ص ${page}` : `P. ${page}`}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex items-center justify-between border-t border-border/50 pt-4 mt-2">
+                                <span className="text-sm font-bold text-red-500">
+                                    {language === 'ar' ? `غلطت في ${topic.total - topic.score} أسئلة` : `${topic.total - topic.score} mistakes`}
+                                </span>
+                                <div className="text-[10px] font-black uppercase bg-red-500/10 px-2 py-0.5 rounded text-red-500">
+                                    {topic.percentage}% Accuracy
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </motion.div>
+        )}
 
         {/* Action Buttons Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-10">

@@ -264,8 +264,8 @@ export function AnalyticsDashboard({ topicPerformance, overallScore, totalQuesti
                         <div>
                             <h3 className="text-4xl font-black">{t('medic.title')}</h3>
                             <p className="text-xl text-muted-foreground font-bold">{t('medic.diagnosis')}: {
-                                overallScore / totalQuestions >= 0.9 ? t('medic.good') :
-                                overallScore / totalQuestions >= 0.6 ? t('medic.warn') :
+                                (overallScore / totalQuestions) >= 0.9 ? t('medic.good') :
+                                (overallScore / totalQuestions) >= 0.7 ? t('medic.warn') :
                                 t('medic.critical')
                             }</p>
                         </div>

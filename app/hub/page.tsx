@@ -57,10 +57,15 @@ export default function StudyHub() {
         const randomAction = actions[Math.floor(Math.random() * actions.length)]
         
         setActivities(prev => {
-            const newAct = { name: randomName, action: randomAction, time: 'Just now' }
-            return [newAct, ...prev.slice(0, 3)] // Keep last 4
+            const newAct = { 
+                name: randomName, 
+                action: randomAction, 
+                time: language === 'ar' ? 'الآن' : 'Just now' 
+            }
+            // Add a little randomness to when they appear to feel less "robotic"
+            return [newAct, ...prev.slice(0, 3)]
         })
-    }, 4000) // Update every 4 seconds
+    }, Math.random() * 3000 + 3000) // Random interval between 3-6s
 
     return () => clearInterval(interval)
   }, [language])

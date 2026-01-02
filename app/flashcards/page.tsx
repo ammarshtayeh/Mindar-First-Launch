@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Flashcards } from '@/components/flashcards'
-import { Loader2, ArrowLeft, BookOpen } from 'lucide-react'
+import { Loader2, ArrowLeft, BookOpen, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useI18n } from '@/lib/i18n'
@@ -19,19 +19,51 @@ export default function FlashcardsPage() {
   const router = useRouter()
 
   useEffect(() => {
-    if (currentQuiz) {
+    const handleSync = () => {
+      if (currentQuiz) {
         setQuizData(currentQuiz)
         setLoading(false)
-    } else {
+      } else {
         const stored = localStorage.getItem("currentQuiz")
         if (stored) {
-            try {
-                setQuizData(JSON.parse(stored))
-            } catch (e) { console.error(e) }
+          try {
+            const parsed = JSON.parse(stored)
+            setQuizData(parsed)
+          } catch (e) {
+            console.error("Flashcards: Failed to parse stored quiz", e)
+          }
         }
         setLoading(false)
+      }
     }
+
+    handleSync()
   }, [currentQuiz])
+
+  // Normalize flashcards data: keys from API are front/back, component expects question/answer
+  const cards = React.useMemo(() => {
+    if (!quizData) return []
+    
+    // 1. Try dedicated flashcards field
+    if (quizData.flashcards && Array.isArray(quizData.flashcards) && quizData.flashcards.length > 0) {
+      return quizData.flashcards.map((f: any) => ({
+        question: f.front || f.question || "---",
+        answer: f.back || f.answer || "---",
+        explanation: f.explanation || ''
+      }))
+    }
+    
+    // 2. Fallback to questions
+    if (quizData.questions && Array.isArray(quizData.questions) && quizData.questions.length > 0) {
+      return quizData.questions.map((q: any) => ({
+        question: q.question || "---",
+        answer: q.answer || "---",
+        explanation: q.explanation || ''
+      }))
+    }
+    
+    return []
+  }, [quizData])
 
   if (loading) {
     return (
@@ -42,7 +74,7 @@ export default function FlashcardsPage() {
     )
   }
 
-  if (!quizData || (!quizData.flashcards && !quizData.questions)) {
+  if (!quizData || cards.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center mb-8 text-slate-400">
@@ -58,30 +90,20 @@ export default function FlashcardsPage() {
       </div>
     )
   }
-
-  // Normalize flashcards data: keys from API are front/back, component expects question/answer
-  const cards = quizData.flashcards 
-    ? quizData.flashcards.map((f: any) => ({
-        question: f.front || f.question,
-        answer: f.back || f.answer,
-        explanation: f.explanation || ''
-      }))
-    : quizData.questions.map((q: any) => ({
-        question: q.question,
-        answer: q.answer,
-        explanation: q.explanation
-      }))
-
   return (
     <main className="min-h-screen pt-44 pb-20 bg-background overflow-hidden">
       <div className="max-w-6xl mx-auto px-6 h-[calc(100vh-12rem)] flex flex-col">
         <div className="flex items-center justify-between mb-8">
-             <Link href="/">
-                <Button variant="ghost" className="gap-2 font-bold">
+             <Link href="/hub">
+                <Button variant="ghost" className="gap-2 font-black text-muted-foreground hover:text-primary transition-colors">
                     <ArrowLeft className={`w-5 h-5 ${language === 'en' ? '' : 'rotate-180'}`} />
-                    {t('common.homeBtn')}
+                    {t('common.back')}
                 </Button>
-             </Link>
+            </Link>
+            <div className="flex items-center gap-3 bg-primary/10 px-4 py-2 rounded-2xl border border-primary/20">
+                <Zap className="w-5 h-5 text-primary fill-primary" />
+                <span className="font-black text-primary uppercase tracking-widest text-[10px]">MINDAR</span>
+            </div>
              <h1 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
                 {t('common.flashcards')}: {quizData.title}
              </h1>

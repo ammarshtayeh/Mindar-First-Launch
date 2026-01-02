@@ -10,7 +10,10 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { text, numQuestions = 10, difficulty = "Medium", type = "multiple-choice", language: requestedLang, topic: requestedTopic } = body;
+        let { text, numQuestions = 10, difficulty = "Medium", type = "multiple-choice", language: requestedLang, topic: requestedTopic } = body;
+        
+        // Enforce limit: 1-20 questions
+        numQuestions = Math.max(1, Math.min(20, numQuestions));
         
         // Default to detecting language from text if not specific
         const language = requestedLang || "SAME AS SOURCE TEXT";
@@ -48,7 +51,8 @@ export async function POST(req: Request) {
                         "options": ["Option A", "Option B", "Option C", "Option D"], // REQUIRED for MC/TF
                         "answer": "Option A", // EXACT MATCH of the correct option string
                         "explanation": "Quote from text proving the answer.",
-                        "topic": "Concept-level topic (e.g. 'Photosynthesis' or 'Cell Division') to enable detailed analytics."
+                        "topic": "Concept-level topic (e.g. 'Photosynthesis' or 'Cell Division') to enable detailed analytics.",
+                        "pageNumber": 5 // CRITICAL: Extract the EXACT page number where this information is found. Look for "### PAGE [X] ###" markers in the text. If no marker is found, use null.
                     }
                 ],
                 "vocabulary": [ { "word": "...", "definition": "...", "context": "..." } ],

@@ -129,7 +129,7 @@ async function performGeminiOCR(buffer: Buffer, mimeType: string): Promise<strin
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
             
             const result = await model.generateContent([
-                "Extract all visible text from this document accurately. Preserve headers and structure where possible. Do not add any conversational text.",
+                "Extract all visible text from this document perfectly. CRITICAL: If you can determine page numbers, include them using the marker '### PAGE [X] ###' before the text of each page. Preserve all headers and data structure.",
                 {
                     inlineData: {
                         data: base64Data,

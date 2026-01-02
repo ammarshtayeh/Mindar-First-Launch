@@ -69,7 +69,7 @@ export default function QuizPage() {
  
     // Auto-read question on change
     useEffect(() => {
-        if (quiz && !showResult && isAutoReadEnabled) {
+        if (quiz && quiz.questions && quiz.questions[currentQuestionIndex] && !showResult && isAutoReadEnabled) {
             const q = quiz.questions[currentQuestionIndex]
             voiceManager.speak(q.question)
         }

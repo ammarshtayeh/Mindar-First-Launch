@@ -65,8 +65,8 @@ export function Navbar() {
         
         {/* Right Section: Logo & Time & XP */}
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-4 group">
-            <div className="w-24 h-24 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl border-2 border-primary/20 overflow-hidden glow-primary relative">
+          <Link href="/" className="flex items-center gap-3 sm:gap-4 group">
+            <div className="w-12 h-12 md:w-24 md:h-24 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl border-2 border-primary/20 overflow-hidden glow-primary relative">
               <img 
                 src="/logo.png" 
                 alt="Logo" 
@@ -80,15 +80,15 @@ export function Navbar() {
                 className="hidden absolute inset-0 items-center justify-center bg-gradient-to-tr from-primary to-primary/60 text-white"
                 style={{ display: 'none' }}
               >
-                 <BrainCircuit className="w-8 h-8" />
+                 <BrainCircuit className="w-6 h-6 md:w-8 md:h-8" />
               </div>
             </div>
             <div className="flex flex-col">
-                <span className="text-2xl font-black tracking-tighter hidden md:block bg-clip-text text-transparent bg-gradient-to-r from-foreground to-primary leading-none">
+                <span className="text-xl md:text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-foreground to-primary leading-none">
                     {t('home.title')}
                 </span>
-                <span className="text-[10px] uppercase font-black tracking-widest text-primary/60 hidden md:block mt-1">
-                    Interactive Learning Space
+                <span className="text-[8px] md:text-[10px] uppercase font-black tracking-widest text-primary/60 mt-0.5">
+                    MINDAR
                 </span>
             </div>
           </Link>
