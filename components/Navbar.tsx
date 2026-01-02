@@ -55,6 +55,8 @@ export function Navbar() {
     setI18nLanguage(lang)
   }
 
+  if (!isMounted) return null
+
   return (
     <>
     <LevelUpOverlay />
