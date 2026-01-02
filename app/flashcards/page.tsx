@@ -8,24 +8,30 @@ import { Loader2, ArrowLeft, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useI18n } from '@/lib/i18n'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/redux/store'
 
 export default function FlashcardsPage() {
   const { t, language } = useI18n()
+  const { currentQuiz } = useSelector((state: RootState) => state.quiz)
   const [quizData, setQuizData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
-    const stored = localStorage.getItem("currentQuiz")
-    if (stored) {
-      try {
-        setQuizData(JSON.parse(stored))
-      } catch (e) {
-        console.error("Failed to parse quiz data", e)
-      }
+    if (currentQuiz) {
+        setQuizData(currentQuiz)
+        setLoading(false)
+    } else {
+        const stored = localStorage.getItem("currentQuiz")
+        if (stored) {
+            try {
+                setQuizData(JSON.parse(stored))
+            } catch (e) { console.error(e) }
+        }
+        setLoading(false)
     }
-    setLoading(false)
-  }, [])
+  }, [currentQuiz])
 
   if (loading) {
     return (

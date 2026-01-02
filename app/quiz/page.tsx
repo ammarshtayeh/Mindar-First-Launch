@@ -10,6 +10,8 @@ import { voiceManager } from "@/lib/voice-manager"
 import { VocabularyPanel } from "@/components/vocabulary-panel"
 import { useI18n } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
+import { useSelector } from "react-redux"
+import { RootState } from "@/redux/store"
 
 interface Question {
     id: number;
@@ -34,6 +36,7 @@ interface QuizData {
 
 export default function QuizPage() {
     const { t, language } = useI18n()
+    const { currentQuiz } = useSelector((state: RootState) => state.quiz)
     const [quiz, setQuiz] = useState<QuizData | null>(null)
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
     const [answers, setAnswers] = useState<Record<number, { selectedOption?: string, textAnswer?: string, isCorrect?: boolean }>>({})
@@ -44,19 +47,25 @@ export default function QuizPage() {
     const router = useRouter()
 
     useEffect(() => {
-        const stored = localStorage.getItem("currentQuiz")
-        if (stored) {
-            try {
-                setQuiz(JSON.parse(stored))
-                voiceManager.speakFeedback('welcome')
-            } catch (e) {
-                console.error("Failed to load quiz", e)
-                router.push("/upload")
+        if (currentQuiz) {
+            setQuiz(currentQuiz)
+            if (!quiz) { // Only speak on first load
+                 voiceManager.speakFeedback('welcome')
             }
         } else {
-            router.push("/upload")
+             // Redux not populated yet or empty? Check localstorage as fallback or redirect
+             const stored = localStorage.getItem("currentQuiz")
+             if (stored) {
+                 // Dispatch to Redux to sync? 
+                 // For now just set state locally to avoid redirect loop if hydration is slow
+                 try {
+                     setQuiz(JSON.parse(stored))
+                 } catch(e) { router.push("/upload") }
+             } else {
+                 router.push("/upload")
+             }
         }
-    }, [router])
+    }, [currentQuiz, router])
  
     // Auto-read question on change
     useEffect(() => {
