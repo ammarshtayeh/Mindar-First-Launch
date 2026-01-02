@@ -27,7 +27,7 @@ import { Flashcards } from '@/components/flashcards'
 import { GamificationEngine } from '@/lib/gamification'
 
 export default function ResultsPage() {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
   const [data, setData] = useState<any>(null)
   const [topics, setTopics] = useState<any[]>([])
   const [isFlashcardsOpen, setIsFlashcardsOpen] = useState(false)
@@ -145,13 +145,24 @@ export default function ResultsPage() {
             </span>
           </motion.div>
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             <h1 className="text-6xl font-black tracking-tighter">
               {percentage >= 90 ? t('results.legendary') : percentage >= 70 ? t('results.wellDone') : t('results.keepGoing')}
             </h1>
             <p className="text-2xl text-muted-foreground font-bold">
               {t('results.completed', { title: data.title })}
             </p>
+            <div className="pt-4">
+              <Link href="/upload">
+                <Button 
+                  variant="outline" 
+                  className="h-14 px-8 rounded-2xl border-primary bg-primary/5 text-primary hover:bg-primary hover:text-white gap-2 font-black transition-all hover:scale-105 shadow-lg group"
+                >
+                  <RotateCcw className={`w-5 h-5 transition-transform group-hover:rotate-180 ${language === 'en' ? 'rotate-180' : ''}`} />
+                  {t('hub.change')}
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
 

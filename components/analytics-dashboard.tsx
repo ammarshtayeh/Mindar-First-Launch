@@ -15,9 +15,10 @@ import {
   Tooltip,
   Cell
 } from 'recharts'
-import { motion } from 'framer-motion'
-import { Brain, Target, Zap, BookOpen, Stethoscope, Pill, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Brain, Target, Zap, BookOpen, Stethoscope, Pill, AlertTriangle, CheckCircle2, X, Maximize2 } from 'lucide-react'
 import { useI18n } from '@/lib/i18n'
+import { Button } from '@/components/ui/button'
 
 interface AnalyticsDashboardProps {
   topicPerformance: { topic: string; score: number; total: number; percentage: number }[];
@@ -27,6 +28,8 @@ interface AnalyticsDashboardProps {
 
 export function AnalyticsDashboard({ topicPerformance, overallScore, totalQuestions }: AnalyticsDashboardProps) {
   const { t, language } = useI18n()
+  const [activePopup, setActivePopup] = React.useState<'radar' | 'bar' | null>(null)
+
   const radarData = topicPerformance.map(t => ({
     subject: t.topic,
     A: t.percentage,
@@ -41,11 +44,15 @@ export function AnalyticsDashboard({ topicPerformance, overallScore, totalQuesti
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-[3rem] p-10 shadow-xl"
+        onClick={() => topicPerformance.length >= 3 && setActivePopup('radar')}
+        className={`bg-card/50 backdrop-blur-xl border border-border/50 rounded-[3rem] p-10 shadow-xl transition-all relative group ${topicPerformance.length >= 3 ? 'cursor-zoom-in hover:border-primary/50' : ''}`}
       >
-        <div className="flex items-center gap-4 mb-4">
-          <Target className="w-8 h-8 text-primary" />
-          <h3 className="text-2xl font-black">{t('results.strengthMap')}</h3>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <Target className="w-8 h-8 text-primary" />
+            <h3 className="text-2xl font-black">{t('results.strengthMap')}</h3>
+          </div>
+          {topicPerformance.length >= 3 && <Maximize2 className="w-5 h-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />}
         </div>
         
         <div className="h-[400px] w-full flex items-center justify-center">
@@ -86,11 +93,15 @@ export function AnalyticsDashboard({ topicPerformance, overallScore, totalQuesti
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-[3rem] p-10 shadow-xl flex flex-col"
+        onClick={() => setActivePopup('bar')}
+        className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-[3rem] p-10 shadow-xl flex flex-col cursor-zoom-in group hover:border-primary/50 transition-all relative"
       >
-        <div className="flex items-center gap-4 mb-8">
-          <Brain className="w-8 h-8 text-purple-500" />
-          <h3 className="text-2xl font-black">{t('results.smartDetails')}</h3>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Brain className="w-8 h-8 text-purple-500" />
+            <h3 className="text-2xl font-black">{t('results.smartDetails')}</h3>
+          </div>
+          <Maximize2 className="w-5 h-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
 
         <div className="flex-1 h-[300px]">
@@ -148,6 +159,89 @@ export function AnalyticsDashboard({ topicPerformance, overallScore, totalQuesti
             </div>
         )}
       </motion.div>
+
+      {/* Popups */}
+      <AnimatePresence>
+        {activePopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-10 bg-background/80 backdrop-blur-xl"
+            onClick={() => setActivePopup(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-card border-2 border-primary/20 w-full max-w-5xl rounded-[3.5rem] p-8 sm:p-12 shadow-3xl relative"
+              onClick={e => e.stopPropagation()}
+            >
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="absolute top-6 right-6 rounded-full hover:bg-primary/10"
+                onClick={() => setActivePopup(null)}
+              >
+                <X className="w-6 h-6" />
+              </Button>
+
+              <div className="flex items-center gap-4 mb-10">
+                {activePopup === 'radar' ? (
+                  <>
+                    <Target className="w-10 h-10 text-primary" />
+                    <h2 className="text-4xl font-black">{t('results.strengthMap')}</h2>
+                  </>
+                ) : (
+                  <>
+                    <Brain className="w-10 h-10 text-purple-500" />
+                    <h2 className="text-4xl font-black">{t('results.smartDetails')}</h2>
+                  </>
+                )}
+              </div>
+
+              <div className="h-[60vh] w-full">
+                {activePopup === 'radar' ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                      <PolarGrid stroke="currentColor" strokeOpacity={0.1} />
+                      <PolarAngleAxis 
+                        dataKey="subject" 
+                        tick={{ fill: 'currentColor', fontSize: 14, fontWeight: 'bold' }} 
+                      />
+                      <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                      <Radar
+                        name="Performance"
+                        dataKey="A"
+                        stroke="hsl(var(--primary))"
+                        fill="hsl(var(--primary))"
+                        fillOpacity={0.6}
+                      />
+                      <Tooltip />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={topicPerformance}>
+                      <XAxis 
+                        dataKey="topic" 
+                        tick={{ fill: 'currentColor', fontSize: 12, fontWeight: 'bold' }}
+                      />
+                      <YAxis domain={[0, 100]} />
+                      <Tooltip />
+                      <Bar dataKey="percentage" radius={[15, 15, 15, 15]}>
+                        {topicPerformance.map((entry, index) => (
+                          <Cell key={`cell-popup-${index}`} fill={colors[index % colors.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
  
       {/* Smart Medic Prescription (New) */}
       <motion.div
