@@ -149,35 +149,23 @@ export default function QuizPage() {
             if (currentQuestion.type === 'multiple-choice' || currentQuestion.type === 'true-false') {
                 const options = (currentQuestion.options || (currentQuestion.type === 'true-false' ? (language === 'ar' ? ['صح', 'خطأ'] : ['True', 'False']) : []))
                 
-                // 1. Check for ordinal phrases (First, Second, etc.)
-                const ordinalMatches = {
-                    en: ['first', 'second', 'third', 'fourth'],
-                    ar: ['الأول', 'الثاني', 'الثالث', 'الرابع', 'الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'واحد', 'اثنين', 'تلاتة', 'اربعة']
+                // Define matchers for indices 0-3
+                const matchers: Record<number, string[]> = {
+                    0: ['first', 'one', 'number one', 'الاولى', 'الأولى', 'الاجابة الاولى', 'الاجابة الأولى', 'رقم واحد', 'أ', 'واحد', 'الأول', 'الاول'],
+                    1: ['second', 'two', 'number two', 'الثانية', 'الثانيه', 'الاجابة الثانية', 'رقم اثنين', 'ب', 'اثنين', 'الثاني'],
+                    2: ['third', 'three', 'number three', 'الثالثة', 'الثالثه', 'الاجابة الثالثة', 'رقم ثلاثة', 'رقم تلاتة', 'ج', 'تلاتة', 'ثلاثة', 'الثالث'],
+                    3: ['fourth', 'four', 'number four', 'الرابعة', 'الرابعه', 'الاجابة الرابعة', 'رقم اربعة', 'د', 'اربعة', 'الرابع']
                 }
 
                 let matchedIdx = -1
-                if (language === 'ar') {
-                    // Safe matching for Arabic: check for specific keywords or exact single letter
-                    const isA = lowerText === 'أ' || lowerText === 'ا' || lowerText.includes('الأول') || lowerText.includes('واحد') || lowerText.includes('الف') || lowerText.startsWith('ا ') || lowerText.startsWith('أ ')
-                    const isB = lowerText === 'ب' || lowerText.includes('الثاني') || lowerText.includes('اثنين') || lowerText.includes('با') || lowerText.startsWith('ب ')
-                    const isC = lowerText === 'ج' || lowerText.includes('الثالث') || lowerText.includes('تلاتة') || lowerText.includes('جيم') || lowerText.startsWith('ج ')
-                    const isD = lowerText === 'د' || lowerText.includes('الرابع') || lowerText.includes('اربعة') || lowerText.includes('دال') || lowerText.startsWith('د ')
-                    
-                    if (isA) matchedIdx = 0
-                    else if (isB) matchedIdx = 1
-                    else if (isC) matchedIdx = 2
-                    else if (isD) matchedIdx = 3
-                } else {
-                    const words = lowerText.split(' ')
-                    const isA = words.includes('a') || lowerText.includes('first') || lowerText.includes('one') || lowerText === 'a'
-                    const isB = words.includes('b') || lowerText.includes('second') || lowerText.includes('two') || lowerText === 'b'
-                    const isC = words.includes('c') || lowerText.includes('third') || lowerText.includes('three') || lowerText === 'c'
-                    const isD = words.includes('d') || lowerText.includes('fourth') || lowerText.includes('four') || lowerText === 'd'
-
-                    if (isA) matchedIdx = 0
-                    else if (isB) matchedIdx = 1
-                    else if (isC) matchedIdx = 2
-                    else if (isD) matchedIdx = 3
+                
+                // Check exact matches or inclusions
+                for (const [idxStr, phrases] of Object.entries(matchers)) {
+                    const idx = parseInt(idxStr)
+                    if (phrases.some(phrase => lowerText.includes(phrase) || lowerText === phrase)) {
+                        matchedIdx = idx
+                        break
+                    }
                 }
 
                 if (matchedIdx !== -1 && options[matchedIdx]) {
@@ -185,7 +173,7 @@ export default function QuizPage() {
                     return
                 }
                 
-                // 2. Direct match or partial match
+                // 2. Direct match or partial match (Fallback)
                 let matchedOption = options.find(opt => 
                     lowerText.includes(opt.toLowerCase()) || 
                     opt.toLowerCase().includes(lowerText)
@@ -281,7 +269,7 @@ export default function QuizPage() {
                 </div>
 
                 <Card className="bg-card/50 backdrop-blur-xl border-border/50 shadow-2xl rounded-[3rem] overflow-hidden">
-                    <CardHeader className="p-10 sm:p-16 pb-8">
+                    <CardHeader className="p-6 sm:p-10 md:p-16 pb-6 md:pb-8">
                         <div className="flex justify-between items-center mb-10">
                             <span className="bg-primary/10 text-primary px-6 py-2 rounded-2xl text-lg font-black border border-primary/20 flex items-center gap-2">
                                 <span className="opacity-60">{t('common.question')}</span>
@@ -372,12 +360,12 @@ export default function QuizPage() {
                             })}
                         </div>
 
-                        <CardTitle className="text-3xl md:text-5xl font-black text-foreground leading-[1.3] text-center" dir="auto">
+                        <CardTitle className="text-2xl sm:text-3xl md:text-5xl font-black text-foreground leading-[1.3] text-center" dir="auto">
                             {currentQuestion.question}
                         </CardTitle>
                     </CardHeader>
 
-                    <CardContent className="p-10 sm:p-16 pt-0">
+                    <CardContent className="p-6 sm:p-10 md:p-16 pt-0">
                         <div className="grid grid-cols-1 gap-5">
                             {((currentQuestion.type === 'multiple-choice' || currentQuestion.type === 'true-false')) && 
                                 (currentQuestion.options && currentQuestion.options.length > 0 ? currentQuestion.options : (currentQuestion.type === 'true-false' ? (language === 'ar' ? ['صح', 'خطأ'] : ['True', 'False']) : [])).map((option, idx) => {
@@ -401,7 +389,7 @@ export default function QuizPage() {
                                             onClick={() => handleOptionSelect(option)}
                                             disabled={isAnswered}
                                             className={`
-                                                p-6 rounded-[1.8rem] text-left text-xl font-bold transition-all duration-300 border-2
+                                                p-4 sm:p-6 rounded-[1.8rem] text-left text-lg sm:text-xl font-bold transition-all duration-300 border-2
                                                 ${btnClass}
                                             `}
                                         >
@@ -510,7 +498,7 @@ export default function QuizPage() {
                         </div>
                     </CardContent>
 
-                    <CardFooter className="p-10 sm:p-16 pt-0 flex justify-between gap-4">
+                    <CardFooter className="p-6 sm:p-10 md:p-16 pt-0 flex justify-between gap-4">
                         <Button
                             variant="outline"
                             onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
