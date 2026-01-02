@@ -60,98 +60,53 @@ export async function POST(req: Request) {
             }
         `;
 
-        // 1. Try Groq first if key exists (it's the most reliable fallback right now)
+        // --- DUAL-MODEL ROTATION STRATEGY ---
+        const useGeminiFirst = Math.random() > 0.5;
         const groqKey = process.env.GROQ_API_KEY;
-        if (groqKey) {
-            try {
-                const groq = new Groq({ apiKey: groqKey });
-                const completion = await groq.chat.completions.create({
-                    messages: [{ role: "user", content: prompt + "\n\nRETURN ONLY JSON" }],
-                    model: "llama-3.3-70b-versatile",
-                    temperature: 0.3, // Lower temperature for accuracy
-                    response_format: { type: "json_object" }
-                });
-                const data = JSON.parse(completion.choices[0].message.content || "{}");
-                return NextResponse.json({ ...data, _provider: 'groq' });
-            } catch (e) {
-                console.error("Groq failed, switching to Gemini...");
-            }
+        const geminiApiKey = process.env.GEMINI_API_KEY;
+
+        if (useGeminiFirst) {
+            console.log("ROTATION: Trying Gemini 2.0 Flash Lite first...");
+            const geminiResult = await tryGemini(geminiApiKey, "gemini-2.0-flash-lite-preview-02-05", prompt);
+            if (geminiResult) return geminiResult;
+            
+            console.log("ROTATION: Gemini failed, trying Groq fallback...");
+            const groqResult = await tryGroq(groqKey, prompt);
+            if (groqResult) return groqResult;
+        } else {
+            console.log("ROTATION: Trying Groq first...");
+            const groqResult = await tryGroq(groqKey, prompt);
+            if (groqResult) return groqResult;
+
+            console.log("ROTATION: Groq failed, trying Gemini 2.0 Flash Lite fallback...");
+            const geminiResult = await tryGemini(geminiApiKey, "gemini-2.0-flash-lite-preview-02-05", prompt);
+            if (geminiResult) return geminiResult;
         }
 
-        // 2. Gemini Multi-Model Fallback (Rotation Strategy)
-        const apiKeys = [
-            process.env.GEMINI_API_KEY
-        ].filter(Boolean) as string[];
-
+        // --- DEEP FALLBACK CHAIN (If both primary models fail) ---
         const configs = [
             { id: "gemini-1.5-flash", version: "v1beta" },
             { id: "gemini-1.5-flash-8b", version: "v1beta" },
-            { id: "gemini-2.0-flash-lite-preview-02-05", version: "v1beta" },
             { id: "gemini-2.0-flash", version: "v1beta" },
-            { id: "gemini-1.5-pro", version: "v1beta" },
-            { id: "gemini-pro", version: "v1" }
+            { id: "gemini-1.5-pro", version: "v1beta" }
         ];
 
         let lastError: any = null;
-        
-        // Key Rotation Loop
-        keyLoop: for (const apiKey of apiKeys) {
-            const genAI = new GoogleGenerativeAI(apiKey);
-            
+        if (geminiApiKey) {
+            const genAI = new GoogleGenerativeAI(geminiApiKey);
             for (const config of configs) {
                 try {
                     const model = genAI.getGenerativeModel(
                         { model: config.id, generationConfig: { temperature: 0.3 } },
                         { apiVersion: config.version as any }
                     );
-
                     const result = await model.generateContent(prompt);
-                    const response = await result.response;
-                    const responseText = response.text();
-                    
-                    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-                    const quizData = JSON.parse(jsonMatch ? jsonMatch[0] : responseText);
-                    
-                    // --- VERIFICATION & HALLUCINATION CHECK LAYER ---
-                    if (quizData.questions && Array.isArray(quizData.questions)) {
-                        quizData.questions = quizData.questions.map((q: any) => {
-                            // 1. Ensure Multi-choice answers match options exactly
-                            if (q.type === 'multiple-choice' || q.type === 'true-false') {
-                                if (q.options && Array.isArray(q.options)) {
-                                    // Fuzzy match check
-                                    const exactMatch = q.options.find((opt: string) => opt === q.answer);
-                                    if (!exactMatch) {
-                                        // Attempt to recover: trimming, case-insensitive
-                                        const looseMatch = q.options.find((opt: string) => opt.toLowerCase().trim() === q.answer.toLowerCase().trim());
-                                        if (looseMatch) {
-                                            q.answer = looseMatch; // Auto-correct
-                                        } else {
-                                            // Hallucination detected: Answer is NOT in options.
-                                            // Fallback: Set answer to first option (better than crashing) or flag it.
-                                            // Here we set it to the first option to ensure playability, but ideally we regenerate.
-                                            q.answer = q.options[0];
-                                            q.explanation += " [Auto-Correction: Original answer mismatch]";
-                                        }
-                                    }
-                                }
-                            }
-                            return q;
-                        });
-                    }
-                    // ------------------------------------------------
-                    
-                    return NextResponse.json({ ...quizData, _provider: 'gemini', _model: config.id, _key: apiKey.substring(0, 5) + '...' });
+                    const responseText = (await result.response).text();
+                    const quizData = parseAndVerifyQuiz(responseText);
+                    return NextResponse.json({ ...quizData, _provider: 'gemini_fallback', _model: config.id });
                 } catch (err: any) {
-                    console.warn(`FAILED Gemini ${config.id} (Key: ${apiKey.substring(0,5)}...):`, err.message);
+                    console.warn(`DEEP FALLBACK FAILED: ${config.id}`, err.message);
                     lastError = err;
-                    
-                    // If Quota Exceeded (429), Switch KEY immediately
-                    if (err.message && (err.message.includes('429') || err.message.includes('quota') || err.message.includes('limit'))) {
-                        console.warn("Quota exceeded for this key. Rotating to next key...");
-                        continue keyLoop;
-                    }
-                    // For other errors (500, 503), try next MODEL with same key
-                    continue;
                 }
             }
         }
@@ -170,4 +125,66 @@ export async function POST(req: Request) {
     } catch (error: any) {
         return NextResponse.json({ error: "خطأ مجهول", details: error.message }, { status: 500 });
     }
+}
+
+// --- HELPER CONTEXT ---
+
+async function tryGroq(apiKey: string | undefined, prompt: string) {
+    if (!apiKey) return null;
+    try {
+        const groq = new Groq({ apiKey });
+        const completion = await groq.chat.completions.create({
+            messages: [{ role: "user", content: prompt + "\n\nRETURN ONLY JSON" }],
+            model: "llama-3.3-70b-versatile",
+            temperature: 0.3,
+            response_format: { type: "json_object" }
+        });
+        const data = JSON.parse(completion.choices[0].message.content || "{}");
+        return NextResponse.json({ ...data, _provider: 'groq' });
+    } catch (e) {
+        console.warn("Groq attempt failed");
+        return null;
+    }
+}
+
+async function tryGemini(apiKey: string | undefined, modelId: string, prompt: string) {
+    if (!apiKey) return null;
+    try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel(
+            { model: modelId, generationConfig: { temperature: 0.3 } },
+            { apiVersion: "v1beta" }
+        );
+        const result = await model.generateContent(prompt);
+        const responseText = (await result.response).text();
+        const quizData = parseAndVerifyQuiz(responseText);
+        return NextResponse.json({ ...quizData, _provider: 'gemini', _model: modelId });
+    } catch (e) {
+        console.warn(`Gemini ${modelId} attempt failed`);
+        return null;
+    }
+}
+
+function parseAndVerifyQuiz(responseText: string) {
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    const quizData = JSON.parse(jsonMatch ? jsonMatch[0] : responseText);
+    
+    if (quizData.questions && Array.isArray(quizData.questions)) {
+        quizData.questions = quizData.questions.map((q: any) => {
+            if ((q.type === 'multiple-choice' || q.type === 'true-false') && q.options && Array.isArray(q.options)) {
+                const exactMatch = q.options.find((opt: string) => opt === q.answer);
+                if (!exactMatch) {
+                    const looseMatch = q.options.find((opt: string) => opt.toLowerCase().trim() === q.answer.toLowerCase().trim());
+                    if (looseMatch) {
+                        q.answer = looseMatch;
+                    } else {
+                        q.answer = q.options[0];
+                        q.explanation += " [Auto-Correction: Original answer mismatch]";
+                    }
+                }
+            }
+            return q;
+        });
+    }
+    return quizData;
 }

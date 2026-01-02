@@ -122,28 +122,38 @@ export async function POST(req: NextRequest) {
 async function performGeminiOCR(buffer: Buffer, mimeType: string): Promise<string> {
     const base64Data = buffer.toString("base64");
     
-    // Try keys in rotation
+    // Try models in rotation to balance load
+    const models = ["gemini-2.0-flash-lite-preview-02-05", "gemini-1.5-flash"];
+    const useSecondModelFirst = Math.random() > 0.5;
+    if (useSecondModelFirst) models.reverse();
+
     for (const apiKey of API_KEYS) {
-        try {
-            const genAI = new GoogleGenerativeAI(apiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            
-            const result = await model.generateContent([
-                "Extract all visible text from this document perfectly. CRITICAL: If you can determine page numbers, include them using the marker '### PAGE [X] ###' before the text of each page. Preserve all headers and data structure.",
-                {
-                    inlineData: {
-                        data: base64Data,
-                        mimeType: mimeType
+        const genAI = new GoogleGenerativeAI(apiKey);
+        for (const modelId of models) {
+            try {
+                console.log(`OCR ROTATION: Trying ${modelId}...`);
+                const model = genAI.getGenerativeModel(
+                    { model: modelId },
+                    { apiVersion: "v1beta" }
+                );
+                
+                const result = await model.generateContent([
+                    "Extract all visible text from this document perfectly. CRITICAL: If you can determine page numbers, include them using the marker '### PAGE [X] ###' before the text of each page. Preserve all headers and data structure.",
+                    {
+                        inlineData: {
+                            data: base64Data,
+                            mimeType: mimeType
+                        }
                     }
-                }
-            ]);
-            
-            const text = result.response.text();
-            if (text && text.length > 20) return text;
-            
-        } catch (e) {
-            console.warn(`OCR Key failed, trying next...`);
-            continue;
+                ]);
+                
+                const text = result.response.text();
+                if (text && text.length > 20) return text;
+                
+            } catch (e: any) {
+                console.warn(`OCR Model ${modelId} failed:`, e.message);
+                continue;
+            }
         }
     }
     throw new Error("OCR Failed: All API keys exhausted or model refused content.");
