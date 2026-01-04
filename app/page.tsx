@@ -3,12 +3,12 @@ import Link from "next/link"
 import { motion, Variants } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { FileText, Brain, Sparkles, Upload, Play, Zap, ShieldCheck, Globe, PenTool } from "lucide-react"
+import { FileText, Brain, Sparkles, Upload, Play, Zap, ShieldCheck, Globe, PenTool, Info } from "lucide-react"
 import { MotivationalBanner } from "@/components/motivational-banner"
 import { useI18n } from "@/lib/i18n"
 
 export default function Home() {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
   const container: Variants = {
     hidden: { opacity: 0 },
     show: {
@@ -24,6 +24,8 @@ export default function Home() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-6 pt-32 relative overflow-hidden">
+
+        
         {/* Animated Background Elements - theme aware */}
         <div className="absolute top-10 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[150px] pointer-events-none calm-pulse" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
@@ -98,6 +100,15 @@ export default function Home() {
                 >
                     <Play className="mr-3 w-6 h-6 fill-current" /> {t('common.seeSample')}
                 </Button>
+            </motion.div>
+
+            <motion.div variants={item} className="mt-2">
+                 <Link href="/about">
+                    <Button variant="ghost" className="text-muted-foreground hover:text-primary font-bold text-lg hover:bg-primary/5 rounded-full px-8 py-6 gap-2 transition-all">
+                         <Info className="w-5 h-5" />
+                         {language === 'ar' ? 'اكتشف قصتنا' : 'Discover Our Story'}
+                    </Button>
+                </Link>
             </motion.div>
 
             <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20 w-full">

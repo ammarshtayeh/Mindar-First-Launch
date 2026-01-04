@@ -11,7 +11,8 @@ import {
   BarChart3,
   Sparkles,
   Loader2,
-  Trash2
+  Trash2,
+  Info
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -149,6 +150,15 @@ export default function StudyHub() {
 
   return (
     <main className="min-h-screen pt-44 pb-20 px-6 relative overflow-hidden bg-background">
+      {/* About Link */}
+      <div className="absolute top-6 right-6 z-50">
+          <Link href="/about">
+            <Button variant="ghost" className="text-foreground font-bold text-lg hover:bg-primary/10 rounded-full px-6 gap-2">
+                <Info className="w-5 h-5 text-primary" />
+                {language === 'ar' ? 'قصتنا' : 'Our Story'}
+            </Button>
+          </Link>
+      </div>
       {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
       
