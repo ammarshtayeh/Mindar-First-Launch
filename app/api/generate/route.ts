@@ -31,11 +31,12 @@ export async function POST(req: Request) {
             1. **STRICT GROUNDING**: All questions and answers MUST be derived directly from the text. If it's not in the text, DO NOT ask it.
             2. **ANSWER CONSISTENCY**: For 'multiple-choice', the 'answer' field MUST BE an EXACT string match to one of the 'options'. 
             3. **LANGUAGE MATCHING**: Output must match the source text language (Arabic/English).
+            4. **STRICT TYPE ADHERENCE**: ONLY generate questions of the types specified below. If a type is NOT specified, DO NOT include it in the output.
             
             - Target Language: ${language} (Detect if "SAME AS SOURCE TEXT").
             - Difficulty: ${difficulty}.
             - Topic: ${topic}.
-            - **STRICT QUESTION TYPES**: You MUST ONLY generate these types: ${Array.isArray(body.types) ? body.types.join(', ') : type}. DO NOT generate any other types.
+            - **STRICT QUESTION TYPES ALLOWED**: [${Array.isArray(body.types) ? body.types.join(', ') : type}]. DO NOT generate any other types under any circumstances.
             
             Text: ${text.substring(0, 60000)}
             Questions: ${numQuestions}.
@@ -46,9 +47,9 @@ export async function POST(req: Request) {
                 "questions": [
                     {
                         "id": 1,
-                        "type": "multiple-choice | true-false | fill-in-the-blanks | explanation",
+                        "type": "Exactly one of the allowed types from the list above",
                         "question": "Question text...",
-                        "options": ["Option A", "Option B", "Option C", "Option D"], // REQUIRED for MC/TF
+                        "options": ["Option A", "Option B", "Option C", "Option D"], // REQUIRED for 'multiple-choice' and 'true-false'
                         "answer": "Option A", // EXACT MATCH of the correct option string
                         "explanation": "Quote from text proving the answer.",
                         "topic": "Concept-level topic (e.g. 'Photosynthesis' or 'Cell Division') to enable detailed analytics.",

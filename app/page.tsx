@@ -55,7 +55,7 @@ export default function Home() {
             </motion.p>
 
             <motion.div variants={item} className="flex flex-col sm:flex-row gap-6 mt-4">
-                <Link href="/upload">
+                <Link href="/hub">
                     <Button size="lg" className="h-20 px-12 text-2xl font-black rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.05] transition-all shadow-[0_20px_50px_hsl(var(--primary)/0.25)] ring-4 ring-primary/20">
                         {t('common.getStarted')} <Upload className="ml-3 w-6 h-6" />
                     </Button>

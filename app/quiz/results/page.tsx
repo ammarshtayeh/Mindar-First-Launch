@@ -16,7 +16,9 @@ import {
   Sword,
   BookOpen,
   Zap,
-  Target
+  Target,
+  CheckCircle,
+  XCircle
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -182,7 +184,7 @@ export default function ResultsPage() {
               {t('results.completed', { title: data.title })}
             </p>
             <div className="pt-4 flex flex-wrap justify-center gap-4">
-              <Link href="/upload">
+              <Link href="/hub">
                 <Button 
                   variant="outline" 
                    className="h-14 px-8 rounded-2xl border-2 border-primary bg-background/80 text-primary hover:bg-primary hover:text-primary-foreground backdrop-blur-md shadow-lg transition-all gap-2 font-black group"
@@ -191,6 +193,13 @@ export default function ResultsPage() {
                   {t('hub.change')}
                 </Button>
               </Link>
+              <Button 
+                onClick={() => document.getElementById('quiz-review')?.scrollIntoView({ behavior: 'smooth' })}
+                className="h-14 px-8 rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 gap-2 font-black transition-all hover:scale-105 shadow-lg"
+              >
+                <FileText className="w-5 h-5" />
+                {language === 'ar' ? 'مراجعة الإجابات' : 'Review Answers'}
+              </Button>
               {topics.some(t => t.score < t.total) && (
                 <Button 
                   onClick={() => document.getElementById('mistake-explorer')?.scrollIntoView({ behavior: 'smooth' })}
@@ -344,9 +353,78 @@ export default function ResultsPage() {
             </motion.div>
         )}
 
+        {/* Quiz Review Section (New) */}
+        <motion.div 
+            id="quiz-review"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="space-y-8 pt-20"
+        >
+            <div className="flex items-center gap-4">
+                <History className="w-10 h-10 text-primary" />
+                <h2 className="text-4xl font-black">{language === 'ar' ? 'مراجعة الأسئلة' : 'Question Review'}</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-6">
+                {data.questions.map((q: any, idx: number) => {
+                    const answer = data.answers[idx]
+                    const isCorrect = answer?.isCorrect
+                    
+                    return (
+                        <div 
+                            key={idx}
+                            className={`p-6 md:p-8 rounded-[2.5rem] border-2 transition-all bg-card/40 backdrop-blur-xl ${isCorrect ? 'border-green-500/20' : 'border-red-500/20'}`}
+                        >
+                            <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-6">
+                                <div className="flex items-start gap-4 flex-1 min-w-0">
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black shrink-0 ${isCorrect ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                                        {idx + 1}
+                                    </div>
+                                    <h3 className="text-lg md:text-xl font-black leading-tight break-words" dir="auto">{q.question}</h3>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    {q.pageNumber && q.pageNumber > 0 && (
+                                        <div className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 flex items-center gap-1.5">
+                                            <FileText className="w-3 h-3 text-primary" />
+                                            <span className="text-[10px] font-black text-primary">
+                                                {language === 'ar' ? `ص ${q.pageNumber}` : `P.${q.pageNumber}`}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {isCorrect ? <CheckCircle className="text-green-500 w-8 h-8 shrink-0" /> : <XCircle className="text-red-500 w-8 h-8 shrink-0" />}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <div className="p-4 rounded-2xl bg-background/50 border border-border/50">
+                                    <p className="text-[10px] font-black uppercase opacity-60 mb-1">{language === 'ar' ? 'إجابتك:' : 'Your Answer:'}</p>
+                                    <p className={`font-bold break-words ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                                        {answer?.selectedOption || answer?.textAnswer || (language === 'ar' ? 'لم تتم الإجابة' : 'Not answered')}
+                                    </p>
+                                </div>
+                                {!isCorrect && (
+                                    <div className="p-4 rounded-2xl bg-green-500/5 border border-green-500/20">
+                                        <p className="text-[10px] font-black uppercase text-green-600/60 mb-1">{language === 'ar' ? 'الإجابة الصحيحة:' : 'Correct Answer:'}</p>
+                                        <p className="font-bold text-green-600 break-words">{q.answer}</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {q.explanation && (
+                                <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10">
+                                    <p className="text-xs font-black uppercase text-primary/60 mb-2">{language === 'ar' ? 'الشرح:' : 'Explanation:'}</p>
+                                    <p className="text-sm font-medium opacity-80 italic break-words" dir="auto">{q.explanation}</p>
+                                </div>
+                            )}
+                        </div>
+                    )
+                })}
+            </div>
+        </motion.div>
+
         {/* Action Buttons Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-10">
-          <Link href="/upload">
+          <Link href="/hub">
             <Button size="lg" className="w-full h-20 text-xl font-black rounded-2xl bg-primary text-primary-foreground shadow-xl">
               <RotateCcw className="mr-2 w-5 h-5" /> {t('common.newQuiz')}
             </Button>

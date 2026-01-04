@@ -82,7 +82,7 @@ export default function FlashcardsPage() {
         </div>
         <h1 className="text-4xl font-black mb-4">{language === 'ar' ? 'ما في بطاقات لسه! 🗂️' : 'No flashcards yet! 🗂️'}</h1>
         <p className="text-xl text-muted-foreground mb-8 max-w-md">{language === 'ar' ? 'ارفع ملف واعمل كويز عشان نولّدلك بطاقات مراجعة أسطورية.' : 'Upload a file and create a quiz to generate legendary review cards.'}</p>
-        <Link href="/upload">
+        <Link href="/hub">
           <Button size="lg" className="h-16 px-12 text-xl font-black rounded-2xl">
             {t('common.upload')}
           </Button>

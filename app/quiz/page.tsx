@@ -89,6 +89,7 @@ export default function QuizPage() {
               timestamp: new Date().toISOString()
             }
             
+            voiceManager.stopSpeak()
             localStorage.setItem('lastQuizResults', JSON.stringify(results))
             router.push('/quiz/results')
         }
@@ -267,6 +268,18 @@ export default function QuizPage() {
             />
 
             <div className="z-10 w-full max-w-5xl mx-auto mt-16">
+                <div className="flex justify-between items-center mb-6 px-4">
+                    <Link href="/hub">
+                        <Button 
+                            variant="ghost" 
+                            onClick={() => voiceManager.stopSpeak()}
+                            className="rounded-2xl font-black gap-2 hover:bg-primary/10 text-primary"
+                        >
+                            <ArrowLeft className={`w-5 h-5 ${language === 'en' ? 'rotate-180' : ''}`} />
+                            {language === 'ar' ? 'العودة للمركز' : 'Return to Hub'}
+                        </Button>
+                    </Link>
+                </div>
                 {/* Question Navigation Bubbles */}
                 <div className="flex flex-wrap justify-center gap-3 mb-10">
                     {quiz.questions.map((_, idx) => {
