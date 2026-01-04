@@ -39,6 +39,18 @@ export default function StudyHub() {
     type: 'quiz'
   })
 
+  // Load persisted text on mount
+  useEffect(() => {
+    const savedText = localStorage.getItem("hub_source_text")
+    if (savedText) setExtractedText(savedText)
+  }, [])
+
+  // Persist text when updated
+  const handleTextReady = (text: string) => {
+      setExtractedText(text)
+      localStorage.setItem("hub_source_text", text)
+  }
+
   const [activities, setActivities] = useState([
     { name: language === 'ar' ? 'أحمد' : 'Ahmed', action: 'started studying', time: '2m ago' },
     { name: language === 'ar' ? 'سارة' : 'Sara', action: 'completed a quiz', time: '5m ago' },
@@ -94,7 +106,7 @@ export default function StudyHub() {
               method: "POST",
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ 
-                  text: extractedText || (quizData ? "RE-GENERATE FROM EXISTING" : ""), // Fallback if re-generating
+                  text: extractedText, // STRICT: Only use currently extracted text, never fall back to old quizData
                   ...settings,
                   language: language === 'ar' ? 'Arabic' : 'English'
               })
@@ -192,18 +204,25 @@ export default function StudyHub() {
             {quizData && (
                 <Button 
                     variant="outline" 
-                    onClick={() => dispatch(clearQuiz())}
+                    onClick={() => {
+                        dispatch(clearQuiz())
+                        setExtractedText("") 
+                        // STRICT RESET: Wipe ALL persistence to prevent hallucinations/old data
+                        localStorage.removeItem("hub_source_text") 
+                        localStorage.removeItem("lastQuizResults")
+                        localStorage.removeItem("challengeQuiz")
+                    }}
                     className="h-14 px-8 rounded-2xl border-2 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all gap-2 font-black"
                 >
                     <Trash2 className="w-5 h-5" />
-                    {language === 'ar' ? 'مسح البيانات' : 'Clear Data'}
+                    {language === 'ar' ? 'تغيير المادة' : 'Change Material'}
                 </Button>
             )}
         </div>
 
         {/* Upload Section Integrated */}
         <UploadSection 
-            onTextReady={(text) => setExtractedText(text)} 
+            onTextReady={handleTextReady} 
             isProcessing={isGenerating} 
         />
 

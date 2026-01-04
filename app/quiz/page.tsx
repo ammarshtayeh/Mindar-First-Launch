@@ -107,6 +107,13 @@ export default function QuizPage() {
     const isAnswered = !!currentAnswer
     const progress = ((currentQuestionIndex + (showResult ? 1 : 0)) / quiz.questions.length) * 100
 
+    // Enhanced robust type checking
+    const qType = currentQuestion.type?.toLowerCase().trim() || 'multiple-choice';
+    const isMC = ['multiple-choice', 'multiple_choice', 'mcq'].includes(qType);
+    const isTF = ['true-false', 'true_false', 'boolean'].includes(qType);
+    const isFill = ['fill-in-the-blanks', 'fill-in-the-blank', 'fill_in_the_blanks', 'clean_text', 'cloze'].includes(qType);
+    const isExplain = ['explanation', 'essay', 'short-answer', 'short_answer', 'open-ended', 'descriptive'].includes(qType);
+
     const handleOptionSelect = (option: string) => {
         if (isAnswered) return
         
@@ -128,13 +135,17 @@ export default function QuizPage() {
         if (!text.trim()) return
 
         let isCorrect = false
-        if (currentQuestion.type === 'fill-in-the-blanks') {
+        if (isFill) {
             // Normalize: remove extra spaces, quotes, and punctuation for better matching
-            const normalize = (s: string) => s.toLowerCase()
+            const normalize = (s: string) => (s || "").toLowerCase()
                 .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"")
                 .replace(/\s{2,}/g," ")
                 .trim();
-            isCorrect = normalize(text) === normalize(currentQuestion.answer)
+            
+            const clientAnswer = normalize(text);
+            const serverAnswer = normalize(currentQuestion.answer || ""); // Safe fallback if answer is missing
+            
+            isCorrect = clientAnswer === serverAnswer && serverAnswer.length > 0;
         } else {
             // For descriptive/explanation, we mark it as "evaluated" neutrally
             // Use'null' for isCorrect or just a special flag if we had one. 
@@ -147,7 +158,7 @@ export default function QuizPage() {
             [currentQuestionIndex]: { textAnswer: text, isCorrect }
         }))
         
-        if (currentQuestion.type === 'fill-in-the-blanks') {
+        if (isFill) {
             if (isCorrect) {
               voiceManager.speakFeedback('correct')
             } else {
@@ -167,8 +178,8 @@ export default function QuizPage() {
             const lowerText = text.toLowerCase().trim()
             console.log("Processing voice input:", lowerText)
 
-            if (currentQuestion.type === 'multiple-choice' || currentQuestion.type === 'true-false') {
-                const options = (currentQuestion.options || (currentQuestion.type === 'true-false' ? (language === 'ar' ? ['صح', 'خطأ'] : ['True', 'False']) : []))
+            if (isMC || isTF) {
+                const options = (currentQuestion.options || (isTF ? (language === 'ar' ? ['صح', 'خطأ'] : ['True', 'False']) : []))
                 
                 // Define matchers for indices 0-3
                 const matchers: Record<number, string[]> = {
@@ -201,7 +212,7 @@ export default function QuizPage() {
                 )
 
                 // 3. Fuzzy match for True/False (Common Arabic variations)
-                if (!matchedOption && currentQuestion.type === 'true-false') {
+                if (!matchedOption && isTF) {
                     if (lowerText.includes('صح') || lowerText.includes('صحيح') || lowerText.includes('true') || lowerText.includes('يس')) {
                         matchedOption = language === 'ar' ? 'صح' : 'True'
                     } else if (lowerText.includes('خطأ') || lowerText.includes('غلط') || lowerText.includes('خاطئ') || lowerText.includes('false') || lowerText.includes('نو')) {
@@ -384,7 +395,7 @@ export default function QuizPage() {
                                             w-10 h-10 rounded-xl font-black text-sm transition-all duration-300
                                             ${isCurrent ? 'ring-2 ring-primary ring-offset-2 scale-110 bg-primary text-primary-foreground shadow-lg' : 
                                                 isAnswered ? (
-                                                  quiz.questions[idx].type === 'explanation' ? 'bg-primary text-white' :
+                                                  quiz.questions[idx].type === 'explanation' || ['explanation', 'essay', 'short-answer'].includes(quiz.questions[idx].type) ? 'bg-primary text-white' :
                                                   (isCorrect ? 'bg-green-500 text-white' : 'bg-red-500 text-white')
                                                 ) : 
                                                 'bg-secondary/50 text-muted-foreground hover:bg-secondary'}
@@ -403,8 +414,8 @@ export default function QuizPage() {
 
                     <CardContent className="p-6 sm:p-10 md:p-16 pt-0">
                         <div className="grid grid-cols-1 gap-5">
-                            {((currentQuestion.type === 'multiple-choice' || currentQuestion.type === 'true-false')) && 
-                                (currentQuestion.options && currentQuestion.options.length > 0 ? currentQuestion.options : (currentQuestion.type === 'true-false' ? (language === 'ar' ? ['صح', 'خطأ'] : ['True', 'False']) : [])).map((option, idx) => {
+                            {(isMC || isTF) && 
+                                (currentQuestion.options && currentQuestion.options.length > 0 ? currentQuestion.options : (isTF ? (language === 'ar' ? ['صح', 'خطأ'] : ['True', 'False']) : [])).map((option, idx) => {
                                     const isSelected = currentAnswer?.selectedOption === option
                                     const isCorrect = option === currentQuestion.answer
                                     
@@ -452,7 +463,7 @@ export default function QuizPage() {
                             }
  
                             {/* Fill in the Blanks */}
-                            {currentQuestion.type === 'fill-in-the-blanks' && (
+                            {isFill && (
                                 <div className="space-y-4">
                                     <input 
                                         type="text"
@@ -484,7 +495,7 @@ export default function QuizPage() {
                             )}
  
                             {/* Explanation / Descriptive */}
-                            {currentQuestion.type === 'explanation' && (
+                            {isExplain && (
                                 <div className="space-y-4">
                                     <textarea 
                                         placeholder={t('quiz.typeExplanation')}

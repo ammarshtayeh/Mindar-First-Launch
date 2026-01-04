@@ -39,28 +39,56 @@ export default function ChallengeCreatePage() {
     }
   }
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!file) return
     setIsGenerating(true)
-    setTimeout(() => {
-      const roomId = Math.random().toString(36).substring(7)
-      const roomLink = `${window.location.origin}/challenge/room-${roomId}`
-      
-      const quizData = localStorage.getItem("challengeQuiz") || localStorage.getItem("currentQuiz")
-      const questionsCount = quizData ? JSON.parse(quizData).questions.length : 15
+    
+    // INTEGRATION FIX: Use the shared API logic
+    try {
+        const formData = new FormData()
+        formData.append("file", file)
+        
+        // 1. Parse
+        const parseRes = await fetch("/api/parse", { method: "POST", body: formData })
+        if (!parseRes.ok) throw new Error("Parse failed")
+        const { text } = await parseRes.json()
+        
+        // 2. Generate
+        const genRes = await fetch("/api/generate", {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                text, 
+                numQuestions: 15,
+                types: ['multiple-choice'], // Challenge is usually fast paced
+                language: 'Arabic' // Default to Arabic for now as per user preference
+            })
+        })
+        if (!genRes.ok) throw new Error("Gen failed")
+        const quizData = await genRes.json()
 
-      localStorage.setItem(`challenge-room-${roomId}`, JSON.stringify({
-        title: `تحدي: ${file.name}`,
-        creator: "أنا",
-        type: selectedType,
-        questionsCount: questionsCount,
-        participants: selectedType === 'عام للقاعة' ? 42 : 0,
-        createdAt: Date.now()
-      }))
+        // 3. Create Room
+        const roomId = Math.random().toString(36).substring(7)
+        const roomLink = `${window.location.origin}/challenge/room-${roomId}`
+        
+        localStorage.setItem(`challenge-room-${roomId}`, JSON.stringify({
+            title: `تحدي: ${file.name}`,
+            creator: "أنا",
+            type: selectedType,
+            questionsCount: quizData.questions.length,
+            quizData: quizData, // Store the REAL generated quiz
+            participants: selectedType === 'عام للقاعة' ? 42 : 0,
+            createdAt: Date.now()
+        }))
 
-      setGeneratedLink(roomLink)
-      setIsGenerating(false)
-    }, 2000)
+        setGeneratedLink(roomLink)
+    } catch (e) {
+        console.error(e)
+        // Fallback or Alert? For now, silent fail or alert
+        alert("فشلت عملية التوليد، تأكد من الملف")
+    } finally {
+        setIsGenerating(false)
+    }
   }
 
   const copyToClipboard = () => {

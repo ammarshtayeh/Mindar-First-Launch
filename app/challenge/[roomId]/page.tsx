@@ -1,6 +1,6 @@
 "use client"
 
-import React, { use } from 'react'
+import React, { use, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Swords, Trophy, Timer, User, ShieldCheck, Flame, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
@@ -13,10 +13,16 @@ export default function ChallengeRoomPage({ params }: { params: Promise<{ roomId
   const resolvedParams = use(params)
   const roomId = resolvedParams.roomId
 
-  // Try to load from localStorage first
-  const localId = roomId.replace('room-', '')
-  const savedData = typeof window !== 'undefined' ? localStorage.getItem(`challenge-room-${localId}`) : null
-  const roomData = savedData ? JSON.parse(savedData) : null
+  const [roomData, setRoomData] = useState<any>(null)
+
+  useEffect(() => {
+    // Try to load from localStorage after mount
+    const localId = roomId.replace('room-', '')
+    const savedData = localStorage.getItem(`challenge-room-${localId}`)
+    if (savedData) {
+        setRoomData(JSON.parse(savedData))
+    }
+  }, [roomId])
 
   // Mock data for the challenge (fallback)
   const creator = { 

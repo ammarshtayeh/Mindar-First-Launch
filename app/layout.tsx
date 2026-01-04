@@ -36,6 +36,7 @@ export default function RootLayout({
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${cairo.variable} ${orbitron.variable} antialiased`}
+        suppressHydrationWarning
       >
         <ThemeProvider>
           <ReduxProvider>

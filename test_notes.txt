@@ -1,0 +1,7 @@
+This is a test file for the Mindar quiz application.
+It contains simple text about the solar system.
+The sun is a star at the center of the solar system.
+Earth is the third planet from the sun.
+Mars is known as the red planet.
+Jupiter is the largest planet.
+Saturn has rings.

@@ -23,6 +23,16 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'No text provided' }, { status: 400 });
         }
 
+        // Calculate distribution
+        const selectedTypes = Array.isArray(body.types) && body.types.length > 0 ? body.types : [type];
+        const baseCount = Math.floor(numQuestions / selectedTypes.length);
+        const remainder = numQuestions % selectedTypes.length;
+        
+        const distributionNote = selectedTypes.map((t: string, i: number) => {
+            const count = baseCount + (i < remainder ? 1 : 0);
+            return `${count} questions of type '${t}'`;
+        }).join(', ');
+
         const prompt = `
             system: You are a strict and precise exam generator.
             Your Goal: Generate a quiz based ONLY on the provided text.
@@ -31,15 +41,17 @@ export async function POST(req: Request) {
             1. **STRICT GROUNDING**: All questions and answers MUST be derived directly from the text. If it's not in the text, DO NOT ask it.
             2. **ANSWER CONSISTENCY**: For 'multiple-choice', the 'answer' field MUST BE an EXACT string match to one of the 'options'. 
             3. **LANGUAGE MATCHING**: Output must match the source text language (Arabic/English).
-            4. **STRICT TYPE ADHERENCE**: ONLY generate questions of the types specified below. If a type is NOT specified, DO NOT include it in the output.
+            4. **STRICT TYPE ADHERENCE**: ONLY generate questions of the types specified below.
+            5. **DISTRIBUTION**: You MUST structure the quiz to have exactly: [ ${distributionNote} ]. Do not output all questions as one type.
             
             - Target Language: ${language} (Detect if "SAME AS SOURCE TEXT").
             - Difficulty: ${difficulty}.
             - Topic: ${topic}.
-            - **STRICT QUESTION TYPES ALLOWED**: [${Array.isArray(body.types) ? body.types.join(', ') : type}]. DO NOT generate any other types under any circumstances.
             
             Text: ${text.substring(0, 60000)}
             Questions: ${numQuestions}.
+            
+            Return RAW JSON ONLY with this schema:
             
             Return RAW JSON ONLY with this schema:
             {
