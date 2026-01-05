@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // User profiles - users can read/write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Tasks - users can manage their own tasks
+    match /tasks/{taskId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // Activity Feed - allow authenticated read/write for now
+    match /activity_feed/{activityId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Quiz History
+    match /quiz_history/{historyId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

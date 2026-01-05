@@ -32,6 +32,8 @@ export const translations = {
       submit: "Submit Answer",
       voiceEnabled: "Voice Feedback: ON",
       voiceDisabled: "Voice Feedback: OFF",
+      leaderboard: "Leaderboard",
+      history: "History",
     },
     home: {
       badge: "Expertly crafted quizzes, lightning fast 🚀",
@@ -106,6 +108,10 @@ export const translations = {
       studying: "{name} is crushing {topic}",
       finished: "{name} just finished a quiz!",
       beFirst: "Be the first to finish today!",
+      action_started_study: "{name} started studying",
+      action_completed_quiz: "{name} completed a quiz",
+      action_joined_challenge: "{name} joined a challenge",
+      action_is_on_fire: "{name} is on fire 🔥",
     }
   },
   ar: {
@@ -141,6 +147,8 @@ export const translations = {
       submit: "إرسال الجواب",
       voiceEnabled: "المساعد الصوتي: مفعل",
       voiceDisabled: "المساعد الصوتي: معطل",
+      leaderboard: "الأوائل",
+      history: "سجلي",
     },
     home: {
       badge: "كويزات أسطورية، بلمح البصر 🚀",
@@ -215,6 +223,10 @@ export const translations = {
       studying: "{name} عم بدعك في {topic}",
       finished: "{name} لسه مخلص كويز!",
       beFirst: "كن أول من ينهي دراسته اليوم!",
+      action_started_study: "{name} بدأ يدرس حالياً",
+      action_completed_quiz: "{name} أنهى اختباراً بنجاح",
+      action_joined_challenge: "{name} دخل في تحدي جديد",
+      action_is_on_fire: "{name} شغال نار 🔥",
     }
   }
 };

@@ -41,17 +41,15 @@ export async function POST(req: Request) {
             1. **STRICT GROUNDING**: All questions and answers MUST be derived directly from the text. If it's not in the text, DO NOT ask it.
             2. **ANSWER CONSISTENCY**: For 'multiple-choice', the 'answer' field MUST BE an EXACT string match to one of the 'options'. 
             3. **LANGUAGE MATCHING**: Output must match the source text language (Arabic/English).
-            4. **STRICT TYPE ADHERENCE**: ONLY generate questions of the types specified below.
+            4. **STRICT TYPE ADHERENCE**: ONLY generate questions of the types specified below: [ ${selectedTypes.join(', ')} ].
             5. **DISTRIBUTION**: You MUST structure the quiz to have exactly: [ ${distributionNote} ]. Do not output all questions as one type.
             
-            - Target Language: ${language} (Detect if "SAME AS SOURCE TEXT").
+            - Target Language: ${requestedLang || "SAME AS SOURCE TEXT"}
             - Difficulty: ${difficulty}.
             - Topic: ${topic}.
             
             Text: ${text.substring(0, 60000)}
-            Questions: ${numQuestions}.
-            
-            Return RAW JSON ONLY with this schema:
+            Total Questions: ${numQuestions}.
             
             Return RAW JSON ONLY with this schema:
             {
@@ -59,17 +57,17 @@ export async function POST(req: Request) {
                 "questions": [
                     {
                         "id": 1,
-                        "type": "Exactly one of the allowed types from the list above",
+                        "type": "The specific type from the allowed list above",
                         "question": "Question text...",
                         "options": ["Option A", "Option B", "Option C", "Option D"], // REQUIRED for 'multiple-choice' and 'true-false'
-                        "answer": "Option A", // EXACT MATCH of the correct option string
+                        "answer": "Option A", // EXACT MATCH of the correct option string. For 'fill-in-the-blanks', provide the missing word.
                         "explanation": "Quote from text proving the answer.",
-                        "topic": "Concept-level topic (e.g. 'Photosynthesis' or 'Cell Division') to enable detailed analytics.",
-                        "pageNumber": 5 // CRITICAL: Extract the EXACT page number where this information is found. Look for "### PAGE [X] ###" markers in the text. If no marker is found, use null.
+                        "topic": "Concept-level topic",
+                        "pageNumber": null 
                     }
                 ],
-                "vocabulary": [ { "word": "...", "definition": "...", "context": "..." } ],
-                "flashcards": [ { "front": "...", "back": "..." } ]
+                "vocabulary": [],
+                "flashcards": []
             }
         `;
 

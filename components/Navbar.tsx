@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from "@/components/ui/button"
-import { Home, ClipboardList, BookOpen, BrainCircuit, Swords, Star, Zap } from 'lucide-react'
+import { Home, ClipboardList, BookOpen, BrainCircuit, Swords, Star, Zap, Trophy, History } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from "@/components/theme-toggle"
 import { DateTimeDisplay } from "@/components/date-time-display"
@@ -17,12 +17,18 @@ import { voiceManager } from '@/lib/voice-manager'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '@/redux/store'
 import { toggleVoice, setLanguage } from '@/redux/slices/settingsSlice'
+import { useAuth } from '@/hooks/useAuth'
+import { logout } from '@/lib/services/authService'
+import { AuthForm } from './auth-form'
+import { User as UserIcon, LogOut } from 'lucide-react'
 
 const navItems = [
   { key: 'common.home', href: '/', icon: Home },
   { key: 'common.quiz', href: '/quiz', icon: BrainCircuit },
   { key: 'common.flashcards', href: '/flashcards', icon: BookOpen },
   { key: 'common.challenge', href: '/challenge', icon: Swords },
+  { key: 'common.leaderboard', href: '/leaderboard', icon: Trophy },
+  { key: 'common.history', href: '/profile/history', icon: History },
   { key: 'common.todo', href: '/todo', icon: ClipboardList },
 ]
 
@@ -35,6 +41,8 @@ export function Navbar() {
   const { level, xp } = useSelector((state: RootState) => state.gamification)
   const { hasData } = useSelector((state: RootState) => state.quiz)
   const { voiceEnabled, language } = useSelector((state: RootState) => state.settings)
+  const { user, loading: authLoading } = useAuth()
+  const [showAuthModal, setShowAuthModal] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
@@ -70,8 +78,8 @@ export function Navbar() {
         
         {/* Right Section: Logo & Time & XP */}
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-3 sm:gap-4 group">
-            <div className="w-12 h-12 md:w-24 md:h-24 rounded-xl md:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl border-2 border-primary/20 overflow-hidden glow-primary relative">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
+            <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg border-2 border-primary/20 overflow-hidden glow-primary relative">
               <img 
                 src="/logo.png" 
                 alt="Logo" 
@@ -85,11 +93,11 @@ export function Navbar() {
                 className="hidden absolute inset-0 items-center justify-center bg-gradient-to-tr from-primary to-primary/60 text-white"
                 style={{ display: 'none' }}
               >
-                 <BrainCircuit className="w-6 h-6 md:w-8 md:h-8" />
+                 <BrainCircuit className="w-5 h-5 md:w-6 md:h-6" />
               </div>
             </div>
             <div className="flex flex-col">
-                <span className="text-xl md:text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-foreground to-primary leading-none">
+                <span className="text-lg md:text-xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-foreground to-primary leading-none">
                     {t('home.title')}
                 </span>
                 <span className="text-[8px] md:text-[10px] uppercase font-black tracking-widest text-primary/60 mt-0.5">
@@ -197,9 +205,63 @@ export function Navbar() {
           </Button>
 
           <ThemeToggle />
+
+          {/* User Profile / Auth Button */}
+          <div className="relative">
+            {user ? (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  className="hidden md:flex items-center gap-2 pr-4 pl-2 h-12 rounded-2xl bg-primary/5 hover:bg-primary/10 border border-primary/10"
+                >
+                   <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+                      <UserIcon className="w-5 h-5" />
+                   </div>
+                   <span className="text-sm font-black truncate max-w-[100px] text-slate-900 dark:text-slate-100">
+                      {user.email?.split('@')[0]}
+                   </span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => logout()}
+                  className="w-12 h-12 rounded-2xl hover:bg-red-500/10 text-red-500 transition-all active:scale-95"
+                  title="Logout"
+                >
+                  <LogOut className="w-6 h-6" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={() => setShowAuthModal(true)}
+                className="h-12 px-8 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-500 dark:to-indigo-500 text-white font-black shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_25px_rgba(124,58,237,0.5)] hover:scale-[1.05] active:scale-[0.95] transition-all border border-white/20"
+              >
+                {t('Login') || 'دخول'}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </nav>
+
+    {/* Auth Modal Overlay */}
+    <AnimatePresence>
+      {showAuthModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowAuthModal(false)}
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+          />
+          <AuthForm 
+            onSuccess={() => setShowAuthModal(false)} 
+            onClose={() => setShowAuthModal(false)} 
+          />
+        </div>
+      )}
+    </AnimatePresence>
     </>
   )
 }

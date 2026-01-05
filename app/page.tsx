@@ -102,14 +102,6 @@ export default function Home() {
                 </Button>
             </motion.div>
 
-            <motion.div variants={item} className="mt-2">
-                 <Link href="/about">
-                    <Button variant="ghost" className="text-muted-foreground hover:text-primary font-bold text-lg hover:bg-primary/5 rounded-full px-8 py-6 gap-2 transition-all">
-                         <Info className="w-5 h-5" />
-                         {language === 'ar' ? 'اكتشف قصتنا' : 'Discover Our Story'}
-                    </Button>
-                </Link>
-            </motion.div>
 
             <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20 w-full">
                 <FeatureCard 

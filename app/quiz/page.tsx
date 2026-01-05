@@ -12,6 +12,8 @@ import { useI18n } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
+import { saveQuizResult, logActivity } from "@/lib/services/dbService"
+import { auth } from "@/lib/firebase"
 
 interface Question {
     id: number;
@@ -89,6 +91,27 @@ export default function QuizPage() {
               timestamp: new Date().toISOString()
             }
             
+            // Save to Firebase if user is logged in
+            if (auth.currentUser) {
+                saveQuizResult({
+                    userId: auth.currentUser.uid,
+                    quizTitle: quiz.title,
+                    score,
+                    totalQuestions: total,
+                    percentage: (score / total) * 100,
+                    quizData: {
+                        questionsCount: total,
+                        correctAnswers: score
+                    }
+                }).catch(err => console.error("Failed to save to Firebase:", err));
+
+                logActivity(
+                    auth.currentUser.uid, 
+                    auth.currentUser.displayName || auth.currentUser.email?.split('@')[0] || "Student", 
+                    'action_completed_quiz'
+                );
+            }
+
             voiceManager.stopSpeak()
             localStorage.setItem('lastQuizResults', JSON.stringify(results))
             router.push('/quiz/results')

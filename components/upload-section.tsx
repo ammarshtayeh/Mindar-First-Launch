@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button"
 
 interface UploadSectionProps {
     onTextReady: (text: string, title?: string) => void;
+    onClear?: () => void;
     isProcessing?: boolean;
 }
 
-export function UploadSection({ onTextReady, isProcessing: externalProcessing }: UploadSectionProps) {
+export function UploadSection({ onTextReady, onClear, isProcessing: externalProcessing }: UploadSectionProps) {
     const { t, language } = useI18n()
     const [files, setFiles] = useState<File[]>([])
     const [processedMaterials, setProcessedMaterials] = useState<string[]>([])
@@ -27,6 +28,8 @@ export function UploadSection({ onTextReady, isProcessing: externalProcessing }:
             const newFiles = Array.from(e.target.files)
             setFiles(prev => [...prev, ...newFiles])
             setError(null)
+            // Reset input so same file can be selected again
+            e.target.value = ""
         }
     }
 
@@ -35,7 +38,14 @@ export function UploadSection({ onTextReady, isProcessing: externalProcessing }:
     }
 
     const clearProcessed = (material: string) => {
-        setProcessedMaterials(prev => prev.filter(m => m !== material))
+        setProcessedMaterials(prev => {
+            const newState = prev.filter(m => m !== material);
+            if (newState.length === 0 && onClear) {
+                // Defer state update to next tick to avoid "Cannot update while rendering" error
+                setTimeout(() => onClear(), 0);
+            }
+            return newState;
+        })
     }
 
     const parseFile = async (file: File): Promise<string> => {

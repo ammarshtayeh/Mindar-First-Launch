@@ -2,10 +2,14 @@
 
 import React, { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Swords, Upload, Link as LinkIcon, Copy, Check, Users, ShieldAlert, Sparkles, FileText, X } from 'lucide-react'
+import { Swords, Upload, Copy, Check, Users, ShieldAlert, Sparkles, FileText, X } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import { createRoom } from "@/lib/services/roomsService"
+import { useAuth } from "@/hooks/useAuth"
+import { AuthForm } from "@/components/auth-form"
+import { logActivity } from "@/lib/services/dbService"
 
 export default function ChallengeCreatePage() {
   const [isGenerating, setIsGenerating] = useState(false)
@@ -14,7 +18,12 @@ export default function ChallengeCreatePage() {
   const [file, setFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [selectedType, setSelectedType] = useState('رأس برأس')
+  const [selectedQuestionTypes, setSelectedQuestionTypes] = useState<string[]>(['multiple-choice'])
+  const [numQuestions, setNumQuestions] = useState(15)
+  const [showAuthModal, setShowAuthModal] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  const { user } = useAuth()
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -34,58 +43,59 @@ export default function ChallengeCreatePage() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0])
-      // Reset input value to allow selecting the same file again if needed
       e.target.value = ''
     }
   }
 
   const handleGenerate = async () => {
     if (!file) return
+    
+    if (!user) {
+      setShowAuthModal(true)
+      return
+    }
+
     setIsGenerating(true)
     
-    // INTEGRATION FIX: Use the shared API logic
     try {
         const formData = new FormData()
         formData.append("file", file)
         
-        // 1. Parse
         const parseRes = await fetch("/api/parse", { method: "POST", body: formData })
         if (!parseRes.ok) throw new Error("Parse failed")
         const { text } = await parseRes.json()
         
-        // 2. Generate
         const genRes = await fetch("/api/generate", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 text, 
-                numQuestions: 15,
-                types: ['multiple-choice'], // Challenge is usually fast paced
-                language: 'Arabic' // Default to Arabic for now as per user preference
+                numQuestions,
+                types: selectedQuestionTypes,
+                language: 'Arabic'
             })
         })
         if (!genRes.ok) throw new Error("Gen failed")
         const quizData = await genRes.json()
 
-        // 3. Create Room
-        const roomId = Math.random().toString(36).substring(7)
-        const roomLink = `${window.location.origin}/challenge/room-${roomId}`
+        const roomName = `تحدي: ${file.name}`
+        const creatorName = user.displayName || user.email?.split('@')[0] || "Student"
         
-        localStorage.setItem(`challenge-room-${roomId}`, JSON.stringify({
-            title: `تحدي: ${file.name}`,
-            creator: "أنا",
-            type: selectedType,
-            questionsCount: quizData.questions.length,
-            quizData: quizData, // Store the REAL generated quiz
-            participants: selectedType === 'عام للقاعة' ? 42 : 0,
-            createdAt: Date.now()
-        }))
-
+        const roomId = await createRoom(
+            roomName,
+            user.uid,
+            creatorName,
+            quizData
+        )
+        
+        // Log activity
+        logActivity(user.uid, creatorName, 'action_joined_challenge');
+        
+        const roomLink = `${window.location.origin}/challenge/${roomId}`
         setGeneratedLink(roomLink)
-    } catch (e) {
+    } catch (e: any) {
         console.error(e)
-        // Fallback or Alert? For now, silent fail or alert
-        alert("فشلت عملية التوليد، تأكد من الملف")
+        alert(e.message || "فشلت عملية التوليد، تأكد من الملف")
     } finally {
         setIsGenerating(false)
     }
@@ -109,8 +119,6 @@ export default function ChallengeCreatePage() {
   return (
     <div className="min-h-screen pt-24 pb-20 px-4">
       <div className="max-w-4xl mx-auto">
-        
-        {/* Hero Section */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -127,10 +135,7 @@ export default function ChallengeCreatePage() {
           </p>
         </motion.div>
 
-        {/* Creation Steps */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          
-          {/* Step 1: Upload */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -189,14 +194,67 @@ export default function ChallengeCreatePage() {
             </Card>
           </motion.div>
 
-          {/* Step 2: Settings */}
-          {/* ... (remains same) */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
             className="flex flex-col gap-4"
           >
+            <div className="p-6 bg-white dark:bg-slate-900 rounded-[2rem] border-2 border-slate-100 dark:border-slate-800 shadow-sm">
+                <h3 className="font-black mb-4 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-purple-500" />
+                    تخصيص الأسئلة
+                </h3>
+                
+                <div className="space-y-6">
+                    <div>
+                        <p className="text-sm font-bold text-slate-500 mb-3">عدد الأسئلة: <span className="text-red-500 text-lg">{numQuestions}</span></p>
+                        <input 
+                            type="range" 
+                            min="5" 
+                            max="30" 
+                            step="1" 
+                            value={numQuestions}
+                            onChange={(e) => setNumQuestions(parseInt(e.target.value))}
+                            className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-500"
+                        />
+                    </div>
+
+                    <div>
+                        <p className="text-sm font-bold text-slate-500 mb-3">أنواع الأسئلة (سيتم التوزيع بالتساوي):</p>
+                        <div className="flex flex-wrap gap-2">
+                            {[
+                                { id: 'multiple-choice', label: 'اختيارات' },
+                                { id: 'true-false', label: 'صح/خطأ' },
+                                { id: 'fill-in-the-blanks', label: 'أكمل الفراغ' },
+                                { id: 'short-essay', label: 'مقالي قصير' }
+                            ].map(t => (
+                                <button 
+                                    key={t.id} 
+                                    onClick={() => {
+                                        if (selectedQuestionTypes.includes(t.id)) {
+                                            if (selectedQuestionTypes.length > 1) {
+                                                setSelectedQuestionTypes(prev => prev.filter(x => x !== t.id))
+                                            }
+                                        } else {
+                                            setSelectedQuestionTypes(prev => [...prev, t.id])
+                                        }
+                                    }}
+                                    className={cn(
+                                        "px-4 py-2 rounded-xl text-xs font-bold border transition-all",
+                                        selectedQuestionTypes.includes(t.id)
+                                            ? "bg-purple-500 text-white border-purple-500 shadow-lg shadow-purple-500/30" 
+                                            : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-transparent hover:border-purple-500/30"
+                                    )}
+                                >
+                                    {t.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div className="p-6 bg-white dark:bg-slate-900 rounded-[2rem] border-2 border-slate-100 dark:border-slate-800 shadow-sm">
                 <h3 className="font-black mb-4 flex items-center gap-2">
                     <Users className="w-5 h-5 text-blue-500" />
@@ -234,7 +292,6 @@ export default function ChallengeCreatePage() {
           </motion.div>
         </div>
 
-        {/* Action Button */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -270,11 +327,16 @@ export default function ChallengeCreatePage() {
             >
                 <h3 className="text-2xl font-black text-green-700 dark:text-green-400 mb-4">التحدي جاهز يا بطل! 🔥</h3>
                 <div className="flex flex-col sm:flex-row items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-green-200 dark:border-green-800 shadow-inner">
-                    <code className="text-slate-600 dark:text-slate-300 font-mono text-xs sm:text-sm break-all flex-1">
+                    <code className="text-black dark:text-slate-200 font-mono text-xs sm:text-sm break-all flex-1 text-right font-bold">
                         {generatedLink}
                     </code>
                     <div className="flex gap-2">
-                        <Button onClick={copyToClipboard} size="sm" variant="outline" className="rounded-xl border-green-200 gap-2">
+                        <Button 
+                            onClick={copyToClipboard} 
+                            size="sm" 
+                            variant="outline" 
+                            className="rounded-xl border-green-500/50 text-green-700 dark:text-green-400 hover:bg-green-500 hover:text-white transition-all gap-2 font-black"
+                        >
                             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                             {copied ? 'تم النسخ' : 'نسخ'}
                         </Button>
@@ -286,8 +348,25 @@ export default function ChallengeCreatePage() {
             </motion.div>
           )}
         </motion.div>
-
       </div>
+
+      <AnimatePresence>
+        {showAuthModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAuthModal(false)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <AuthForm 
+              onSuccess={() => setShowAuthModal(false)} 
+              onClose={() => setShowAuthModal(false)} 
+            />
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   BrainCircuit, 
@@ -12,7 +12,9 @@ import {
   Sparkles,
   Loader2,
   Trash2,
-  Info
+  Info,
+  User,
+  X
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -25,6 +27,8 @@ import { ActivitySettingsModal } from '@/components/activity-settings-modal'
 import { useDispatch, useSelector } from 'react-redux'
 import { setQuiz, clearQuiz } from '@/redux/slices/quizSlice'
 import { RootState } from '@/redux/store'
+import { onRecentActivities, logActivity, UserActivity } from '@/lib/services/dbService'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function StudyHub() {
   const { t, language } = useI18n()
@@ -38,6 +42,8 @@ export default function StudyHub() {
     open: false,
     type: 'quiz'
   })
+  const [showRadar, setShowRadar] = useState(false)
+  const [resetKey, setResetKey] = useState(0)
 
   // Load persisted text on mount
   useEffect(() => {
@@ -51,50 +57,60 @@ export default function StudyHub() {
       localStorage.setItem("hub_source_text", text)
   }
 
-  const [activities, setActivities] = useState([
-    { name: language === 'ar' ? 'أحمد' : 'Ahmed', action: 'started studying', time: '2m ago' },
-    { name: language === 'ar' ? 'سارة' : 'Sara', action: 'completed a quiz', time: '5m ago' },
-    { name: language === 'ar' ? 'علي' : 'Ali', action: 'is on fire 🔥', time: '8m ago' }
-  ])
+  const [activities, setActivities] = useState<UserActivity[]>([])
+  const { user } = useAuth()
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
-    if (quizData) {
-      // Voice Greeting
-      setTimeout(() => {
-        voiceManager.speakFeedback('hub')
-      }, 1000)
+    setIsMounted(true)
+  }, [])
+  
+  // Real-time Activity Listener (only when authenticated)
+  useEffect(() => {
+    if (!user) {
+      setActivities([]); // Clear activities when logged out
+      return;
     }
-  }, [quizData])
-
-  useEffect(() => {
-    const names = language === 'ar' 
-        ? ['محمد', 'خالد', 'فاطمة', 'نور', 'يوسف', 'مريم', 'عمر', 'ليلى'] 
-        : ['Mike', 'Emma', 'John', 'Sarah', 'David', 'Lisa', 'Tom', 'Anna']
     
-    const actions = language === 'ar'
-        ? ['بدأ اختبار جديد', 'أنهى مراجعة البطاقات', 'حصل على وسام جديد 🏅', 'يدرس بتركيز عالي 🧠', 'تجاوز مستواك!']
-        : ['started a new quiz', 'finished reviewing cards', 'earned a new badge 🏅', 'is studying hard 🧠', 'surpassed your rank!']
+    const unsubscribe = onRecentActivities((data) => {
+      setActivities(data)
+    }, 10)
+    
+    return () => unsubscribe()
+  }, [user])
 
-    const interval = setInterval(() => {
-        const randomName = names[Math.floor(Math.random() * names.length)]
-        const randomAction = actions[Math.floor(Math.random() * actions.length)]
-        
-        setActivities(prev => {
-            const newAct = { 
-                name: randomName, 
-                action: randomAction, 
-                time: language === 'ar' ? 'الآن' : 'Just now' 
-            }
-            return [newAct, ...prev.slice(0, 3)]
-        })
-    }, Math.random() * 3000 + 3000)
+  // Auto-log initial entry in Hub (Material ready) - ONLY ONCE PER SESSION
+  useEffect(() => {
+    if (extractedText && user) {
+        // Use sessionStorage to persist state across refreshes
+        const sessionKey = `logged_study_${user.uid}`
+        const alreadyLogged = sessionStorage.getItem(sessionKey)
 
-    return () => clearInterval(interval)
-  }, [language])
+        if (!alreadyLogged) {
+            logActivity(user.uid, user.displayName || user.email?.split('@')[0] || "Student", 'action_started_study')
+            sessionStorage.setItem(sessionKey, 'true')
+        }
+    }
+  }, [extractedText, user])
 
   const handleStartActivity = (type: 'quiz' | 'flashcards' | 'challenge') => {
       voiceManager.stopSpeak()
       setSettingsModal({ open: true, type })
+  }
+
+
+
+  const handleClear = () => {
+    dispatch(clearQuiz())
+    setExtractedText("") 
+    // Force UploadSection to re-mount/clear
+    setResetKey(prev => prev + 1)
+    
+    // STRICT RESET
+    localStorage.removeItem("hub_source_text") 
+    localStorage.removeItem("lastQuizResults")
+    localStorage.removeItem("challengeQuiz")
+    if (user) sessionStorage.removeItem(`logged_study_${user.uid}`)
   }
 
   const generateWithSettings = async (settings: { numQuestions: number, difficulty: string, types: string[] }) => {
@@ -162,16 +178,6 @@ export default function StudyHub() {
 
   return (
     <main className="min-h-screen pt-44 pb-20 px-6 relative overflow-hidden bg-background">
-      {/* About Link */}
-      <div className="absolute top-6 right-6 z-50">
-          <Link href="/about">
-            <Button variant="ghost" className="text-foreground font-bold text-lg hover:bg-primary/10 rounded-full px-6 gap-2">
-                <Info className="w-5 h-5 text-primary" />
-                {language === 'ar' ? 'قصتنا' : 'Our Story'}
-            </Button>
-          </Link>
-      </div>
-      {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
       
       <div className="max-w-6xl mx-auto relative z-10">
@@ -196,33 +202,28 @@ export default function StudyHub() {
                       <>Ready for the <span className="text-primary italic">Grind</span>? 🚀</>
                     )}
                 </motion.h1>
-                <p className="text-xl text-muted-foreground mt-4 font-bold max-w-2xl">
+                <p className="text-xl text-muted-foreground mt-4 font-bold max-w-2xl" suppressHydrationWarning>
                     {extractedText ? (language === 'ar' ? 'تم تجهيز المادة! الآن اختر كيف تريد أن تدرس.' : 'Material ready! Now choose how you want to study.') : (quizData ? t('hub.subtitle', { title: quizData.title }) : (language === 'ar' ? 'ارفع مادتك الدراسية لنبدأ العمل!' : 'Upload your study material to start!'))}
                 </p>
             </div>
             
-            {quizData && (
+            {isMounted && quizData && (
                 <Button 
                     variant="outline" 
-                    onClick={() => {
-                        dispatch(clearQuiz())
-                        setExtractedText("") 
-                        // STRICT RESET: Wipe ALL persistence to prevent hallucinations/old data
-                        localStorage.removeItem("hub_source_text") 
-                        localStorage.removeItem("lastQuizResults")
-                        localStorage.removeItem("challengeQuiz")
-                    }}
+                    onClick={handleClear}
                     className="h-14 px-8 rounded-2xl border-2 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all gap-2 font-black"
                 >
                     <Trash2 className="w-5 h-5" />
-                    {language === 'ar' ? 'تغيير المادة' : 'Change Material'}
+                    <span>{language === 'ar' ? 'تغيير المادة' : 'Change Material'}</span>
                 </Button>
             )}
         </div>
 
         {/* Upload Section Integrated */}
         <UploadSection 
+            key={resetKey}
             onTextReady={handleTextReady} 
+            onClear={handleClear}
             isProcessing={isGenerating} 
         />
 
@@ -317,13 +318,21 @@ export default function StudyHub() {
             className="lg:col-span-2 bg-card/40 backdrop-blur-2xl border border-border/50 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden"
         >
             <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
+                <div 
+                    className="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => setShowRadar(true)}
+                >
                     <div className="w-12 h-12 bg-green-500/20 text-green-500 rounded-2xl flex items-center justify-center animate-pulse">
                         <Zap className="w-6 h-6 fill-green-500" />
                     </div>
                     <div>
-                        <h3 className="text-2xl font-black">{t('radar.title')}</h3>
-                        <p className="text-sm font-bold opacity-60">{t('radar.online', { count: 12 })}</p>
+                        <h3 className="text-2xl font-black flex items-center gap-2">
+                             {t('radar.title')} 
+                             <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-lg">
+                                {language === 'ar' ? 'عرض الكل' : 'View All'}
+                             </span>
+                        </h3>
+                        <p className="text-sm font-bold opacity-60">{t('radar.online', { count: activities.length })}</p>
                     </div>
                 </div>
                 <div className="flex -space-x-4">
@@ -335,32 +344,134 @@ export default function StudyHub() {
                 </div>
             </div>
  
-            <div className="space-y-4 h-[220px] overflow-hidden relative">
-                <AnimatePresence mode='popLayout'>
-                    {activities.map((act, i) => (
-                        <motion.div 
-                            key={`${act.name}-${act.time}-${i}`}
-                            initial={{ opacity: 0, x: -20, scale: 0.9 }}
-                            animate={{ opacity: 1, x: 0, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                            layout
-                            className="flex items-center justify-between p-4 bg-background/30 rounded-2xl border border-border/50 group hover:border-primary/50 transition-colors"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black shrink-0">
-                                    {act.name[0]}
-                                </div>
-                                <p className="font-bold text-sm truncate max-w-[180px]">
-                                    <span className="text-primary">{act.name}</span> {act.action}
-                                </p>
+            <div className="space-y-4 h-[220px] overflow-hidden relative" onClick={() => setShowRadar(true)}>
+                {!user ? (
+                    <div className="flex flex-col items-center justify-center h-full opacity-60">
+                        <User className="w-16 h-16 mb-3" />
+                        <p className="font-bold text-lg">{language === 'ar' ? 'عليك تسجيل الدخول' : 'Please log in'}</p>
+                        <p className="text-sm opacity-70 mt-1">{language === 'ar' ? 'لمشاهدة نشاط الزملاء' : 'to see peer activity'}</p>
+                    </div>
+                ) : (
+                    <AnimatePresence mode='popLayout'>
+                        {activities.slice(0, 4).map((act, i) => {
+                            const timeAgo = act.timestamp 
+                                ? (Math.floor((Date.now() - act.timestamp.toMillis()) / 60000))
+                                : 0;
+                            
+                            const timeStr = language === 'ar' 
+                                ? (timeAgo === 0 ? 'الآن' : `منذ ${timeAgo} د`)
+                                : (timeAgo === 0 ? 'Just now' : `${timeAgo}m ago`);
+
+                            return (
+                                <motion.div 
+                                    key={act.timestamp?.toMillis() || i}
+                                    initial={{ opacity: 0, x: -20, scale: 0.9 }}
+                                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                                    layout
+                                    className="flex items-center justify-between p-4 bg-background/30 rounded-2xl border border-border/50 group hover:border-primary/50 transition-colors cursor-pointer"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black shrink-0">
+                                            {act.userName?.[0] || 'S'}
+                                        </div>
+                                        <p className="font-bold text-sm truncate max-w-[220px] text-black dark:text-slate-200">
+                                            {t(`radar.${act.actionKey}`, { name: act.userName })}
+                                        </p>
+                                    </div>
+                                    <span className="text-[10px] font-black opacity-40 italic shrink-0 text-slate-500">{timeStr}</span>
+                                </motion.div>
+                            );
+                        })}
+                        {activities.length === 0 && (
+                            <div className="flex flex-col items-center justify-center h-full opacity-40">
+                                <User className="w-12 h-12 mb-2" />
+                                <p className="font-bold">{t('radar.beFirst')}</p>
                             </div>
-                            <span className="text-[10px] font-black opacity-40 italic shrink-0">{act.time}</span>
-                        </motion.div>
-                    ))}
-                </AnimatePresence>
+                        )}
+                    </AnimatePresence>
+                )}
                 <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-background/10 to-transparent pointer-events-none" />
             </div>
         </motion.div>
+
+      {/* Radar Modal */}
+      <AnimatePresence>
+        {showRadar && (
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md"
+                onClick={() => setShowRadar(false)}
+            >
+                <motion.div 
+                    initial={{ scale: 0.9, y: 20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.9, y: 20 }}
+                    className="bg-card w-full max-w-2xl max-h-[80vh] rounded-[3rem] border border-border shadow-3xl overflow-hidden flex flex-col"
+                    onClick={e => e.stopPropagation()}
+                >
+                    <div className="p-8 border-b border-border/50 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/50">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-green-500/20 text-green-500 rounded-2xl flex items-center justify-center">
+                                <Zap className="w-6 h-6 fill-green-500" />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-black">{t('radar.title')}</h3>
+                                <p className="text-sm font-bold opacity-60 text-muted-foreground">{t('radar.online', { count: activities.length })}</p>
+                            </div>
+                        </div>
+                        <button onClick={() => setShowRadar(false)} className="p-3 hover:bg-red-500/10 text-red-500 rounded-2xl transition-colors">
+                            <X className="w-6 h-6" />
+                        </button>
+                    </div>
+                    
+                    <div className="flex-1 overflow-y-auto p-6 space-y-3 custom-scrollbar">
+                         {activities.map((act, i) => {
+                            const timeAgo = act.timestamp 
+                                ? (Math.floor((Date.now() - act.timestamp.toMillis()) / 60000))
+                                : 0;
+                            
+                            const timeStr = language === 'ar' 
+                                ? (timeAgo === 0 ? 'الآن' : `منذ ${timeAgo} د`)
+                                : (timeAgo === 0 ? 'Just now' : `${timeAgo}m ago`);
+
+                            return (
+                                <motion.div 
+                                    key={act.timestamp?.toMillis() || i}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.05 }}
+                                    className="flex items-center justify-between p-5 bg-secondary/30 rounded-3xl border border-transparent hover:border-primary/20 transition-all"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary flex items-center justify-center font-black text-lg shrink-0">
+                                            {act.userName?.[0] || 'S'}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-base text-foreground">
+                                                {act.userName || 'Student'}
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {t(`radar.${act.actionKey}`, { name: '' }).replace('', '').trim()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span className="text-xs font-bold bg-background px-3 py-1 rounded-full border border-border/50 shadow-sm">{timeStr}</span>
+                                </motion.div>
+                            );
+                        })}
+                        {activities.length === 0 && (
+                            <div className="py-20 text-center opacity-50">
+                                <p>{language === 'ar' ? 'لا يوجد نشاط حديث' : 'No recent activity'}</p>
+                            </div>
+                        )}
+                    </div>
+                </motion.div>
+            </motion.div>
+        )}
+      </AnimatePresence>
  
         <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -371,12 +482,24 @@ export default function StudyHub() {
             <div className="w-24 h-24 bg-primary text-primary-foreground rounded-[2rem] flex items-center justify-center shadow-2xl mb-6 transform rotate-12">
                 <BarChart3 className="w-12 h-12" />
             </div>
-            <h3 className="text-xl font-black mb-2">{t('results.legendary')}</h3>
-            <p className="text-sm font-bold opacity-60 mb-6">{t('radar.beFirst')}</p>
-            <Button className="w-full h-14 rounded-2xl font-black group overflow-hidden relative">
-                <span className="relative z-10">{t('common.challenge')}</span>
-                <div className="absolute inset-0 bg-primary/20 translate-y-full group-hover:translate-y-0 transition-transform" />
-            </Button>
+            {!user ? (
+                <>
+                    <h3 className="text-xl font-black mb-2">{language === 'ar' ? 'الأوائل' : 'Top Performers'}</h3>
+                    <p className="text-sm font-bold opacity-60 mb-6">{language === 'ar' ? 'عليك تسجيل الدخول' : 'Please log in'}</p>
+                    <Button className="w-full h-14 rounded-2xl font-black" onClick={() => router.push('/')}>
+                        <span>{language === 'ar' ? 'تسجيل الدخول' : 'Log In'}</span>
+                    </Button>
+                </>
+            ) : (
+                <>
+                    <h3 className="text-xl font-black mb-2">{t('results.legendary')}</h3>
+                    <p className="text-sm font-bold opacity-60 mb-6">{t('radar.beFirst')}</p>
+                    <Button className="w-full h-14 rounded-2xl font-black group overflow-hidden relative">
+                        <span className="relative z-10">{t('common.challenge')}</span>
+                        <div className="absolute inset-0 bg-primary/20 translate-y-full group-hover:translate-y-0 transition-transform" />
+                    </Button>
+                </>
+            )}
         </motion.div>
       </div>
 
@@ -389,3 +512,4 @@ export default function StudyHub() {
     </main>
   )
 }
+

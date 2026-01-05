@@ -1,0 +1,78 @@
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut,
+  onAuthStateChanged,
+  updateProfile,
+  signInWithPopup,
+  GoogleAuthProvider,
+  User
+} from "firebase/auth";
+import { auth } from "../firebase";
+import { createUserProfile } from "./dbService";
+
+const googleProvider = new GoogleAuthProvider();
+
+export const signInWithGoogle = async (): Promise<User> => {
+  try {
+    const userCredential = await signInWithPopup(auth, googleProvider);
+    const user = userCredential.user;
+    
+    // Create/Update Firestore profile
+    await createUserProfile(user.uid, user.email, user.displayName);
+    
+    return user;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const signUp = async (
+  email: string, 
+  password: string, 
+  firstName: string, 
+  lastName: string
+): Promise<User> => {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    // Update Auth Profile
+    await updateProfile(user, {
+      displayName: `${firstName} ${lastName}`
+    });
+    
+    // Create Firestore profile
+    await createUserProfile(user.uid, user.email, `${firstName} ${lastName}`, firstName, lastName);
+    
+    return user;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const login = async (email: string, password: string): Promise<User> => {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    
+    // Update last login in Firestore
+    await createUserProfile(user.uid, user.email, user.displayName);
+    
+    return user;
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const logout = async (): Promise<void> => {
+  try {
+    await signOut(auth);
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const subscribeToAuthChanges = (callback: (user: User | null) => void) => {
+  return onAuthStateChanged(auth, callback);
+};

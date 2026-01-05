@@ -1,172 +1,227 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2, CheckCircle2, Circle, MoreHorizontal, LayoutList, Calendar, GripVertical } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { CheckCircle2, Circle, Plus, Trash2, Calendar, Clock, AlertCircle } from 'lucide-react'
 import { format } from 'date-fns'
-import { ar } from 'date-fns/locale'
+import { arEG } from 'date-fns/locale'
 
-interface Todo {
-  id: string
-  text: string
-  completed: boolean
-  createdAt: number
-}
-
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
+import { DateTimePicker } from "@/components/date-time-picker"
+import { Textarea } from "@/components/ui/textarea"
+import { useAuth } from "@/hooks/useAuth"
+import { addTask, subscribeToTasks, updateTaskStatus, deleteTask, TodoTask } from "@/lib/services/todoService"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 export default function TodoPage() {
-  const [todos, setTodos] = useState<Todo[]>([])
-  const [inputValue, setInputValue] = useState('')
+  const { user } = useAuth()
+  const [tasks, setTasks] = useState<TodoTask[]>([])
+  const [loading, setLoading] = useState(true)
+  const [isAddOpen, setIsAddOpen] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+
+  // Form State
+  const [title, setTitle] = useState("")
+  const [desc, setDesc] = useState("")
+  const [date, setDate] = useState<Date | undefined>(undefined)
+  const [priority, setPriority] = useState<'low'|'medium'|'high'>('medium')
 
   useEffect(() => {
-    const saved = localStorage.getItem('quizzapp-todos')
-    if (saved) {
-      try {
-        setTodos(JSON.parse(saved))
-      } catch (e) {
-        console.error("Failed to parse todos", e)
-      }
+    if (!user) return
+    const unsubscribe = subscribeToTasks(user.uid, (data) => {
+      setTasks(data)
+      setLoading(false)
+    })
+    return () => unsubscribe()
+  }, [user])
+
+  const handleAdd = async () => {
+    if (!title.trim() || !user) return
+    
+    setIsSaving(true)
+    try {
+      await addTask(user.uid, user.email || "", title, date || null, priority, desc)
+      setIsAddOpen(false)
+      // Reset form
+      setTitle("")
+      setDesc("")
+      setDate(undefined)
+      setPriority('medium')
+    } catch (error) {
+      console.error(error)
+      alert('حدث خطأ أثناء حفظ المهمة')
+    } finally {
+      setIsSaving(false)
     }
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem('quizzapp-todos', JSON.stringify(todos))
-  }, [todos])
-
-  const addTodo = (e?: React.FormEvent) => {
-    if (e) e.preventDefault()
-    if (!inputValue.trim()) return
-
-    const newTodo: Todo = {
-      id: Math.random().toString(36).substring(7),
-      text: inputValue.trim(),
-      completed: false,
-      createdAt: Date.now(),
-    }
-
-    setTodos([...todos, newTodo])
-    setInputValue('')
   }
 
-  const toggleTodo = (id: string) => {
-    setTodos(todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t))
+  const toggleTask = async (task: TodoTask) => {
+    if (!task.id) return
+    await updateTaskStatus(task.id, !task.completed)
   }
 
-  const deleteTodo = (id: string) => {
-    setTodos(todos.filter(t => t.id !== id))
+  const handleDelete = async (taskId: string) => {
+    if (confirm("حذف المهمة؟")) {
+      await deleteTask(taskId)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-transparent dark:bg-transparent transition-colors duration-300 pb-20">
-      <div className="max-w-[800px] mx-auto pt-16 px-6 sm:px-12">
+    <div className="min-h-screen pt-24 pb-20 px-4 bg-slate-50 dark:bg-slate-950">
+      <div className="max-w-3xl mx-auto space-y-8">
         
-        {/* Cover/Header Section (Notion Style) */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-12 group"
-        >
-          {/* Notion Emoji Icon */}
-          <div className="text-7xl mb-6 select-none hover:scale-110 transition-transform cursor-default">
-            📝
-          </div>
-          
-          <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-slate-100 mb-2 tracking-tight group-hover:opacity-90 transition-opacity">
-            قائمة المهام اليومية
-          </h1>
-          <div className="flex items-center gap-3 text-slate-400 dark:text-slate-500 text-sm font-medium border-b border-slate-100 dark:border-slate-800 pb-4">
-            <Calendar className="w-4 h-4" />
-            <span>{format(new Date(), 'MMMM d, yyyy', { locale: ar })}</span>
-            <span className="mx-1">•</span>
-            <span>{todos.length} مهام متبقية</span>
-          </div>
-        </motion.div>
+        {/* Header */}
+        <div className="flex justify-between items-end">
+            <div>
+                <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-2">مهامي الذكية 🚀</h1>
+                <p className="text-slate-500 font-medium">رتب وقتك، وخلي الباقي علينا!</p>
+            </div>
+            
+            <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+                <DialogTrigger asChild>
+                    <Button className="rounded-xl h-12 px-6 font-bold shadow-lg shadow-blue-500/20">
+                        <Plus className="w-5 h-5 ml-2" />
+                        مهمة جديدة
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-right text-2xl font-black">إضافة مهمة جديدة</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-slate-500">عنوان المهمة</label>
+                            <Input 
+                                placeholder="مثلاً: مراجعة الفيزياء للوحدة الأولى" 
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                className="text-right"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-slate-500">الوصف (اختياري)</label>
+                            <Textarea 
+                                placeholder="تفاصيل إضافية..." 
+                                value={desc}
+                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDesc(e.target.value)}
+                                className="text-right resize-none"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-slate-500">موعد التذكير (لإرسال الإيميل)</label>
+                            <DateTimePicker date={date} setDate={setDate} />
+                            <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                ستحصل على إيميل تذكير في هذا الموعد بالضبط
+                            </p>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-slate-500">الأهمية</label>
+                            <div className="flex gap-2">
+                                {(['low', 'medium', 'high'] as const).map((p) => (
+                                    <button
+                                        key={p}
+                                        onClick={() => setPriority(p)}
+                                        className={`px-4 py-2 rounded-lg text-sm font-bold border-2 transition-all ${
+                                            priority === p 
+                                            ? 'border-blue-500 bg-blue-50 text-blue-600' 
+                                            : 'border-slate-100 text-slate-400 hover:border-slate-200'
+                                        }`}
+                                    >
+                                        {p === 'high' ? 'عالية 🔥' : p === 'medium' ? 'متوسطة ⚡' : 'عادية ☕'}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <Button 
+                            onClick={handleAdd} 
+                            disabled={!title.trim() || isSaving}
+                            className="w-full h-12 rounded-xl font-bold mt-4"
+                        >
+                            {isSaving ? 'جاري الحفظ...' : 'حفظ المهمة'}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </div>
 
-        {/* Task List (Notion Table/List Style) */}
-        <div className="space-y-[1px] bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-100 dark:border-slate-800 shadow-sm">
-          <AnimatePresence mode="popLayout">
-            {todos.map((todo) => (
-              <motion.div
-                key={todo.id}
-                layout
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="group flex items-center gap-4 py-3 px-4 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-              >
-                {/* Drag Handle (Decoration for Notion look) */}
-                <GripVertical className="w-4 h-4 text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
+        {/* Task List */}
+        <div className="space-y-3">
+            <AnimatePresence>
+                {tasks.map((task) => (
+                    <motion.div
+                        key={task.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, height: 0 }}
+                        layout
+                    >
+                        <Card className={`overflow-hidden border-2 transition-all ${
+                            task.completed ? 'opacity-60 bg-slate-50 border-transparent' : 'bg-white hover:border-blue-200'
+                        }`}>
+                            <CardContent className="p-4 flex items-center gap-4">
+                                <button onClick={() => toggleTask(task)} className="focus:outline-none">
+                                    {task.completed ? (
+                                        <CheckCircle2 className="w-6 h-6 text-green-500" />
+                                    ) : (
+                                        <Circle className="w-6 h-6 text-slate-300 hover:text-blue-500" />
+                                    )}
+                                </button>
+                                
+                                <div className="flex-1">
+                                    <h3 className={`font-bold text-lg ${task.completed ? 'line-through text-slate-400' : 'text-slate-800'}`}>
+                                        {task.title}
+                                    </h3>
+                                    {task.scheduledAt && (
+                                        <div className="flex items-center gap-4 mt-1 text-xs font-medium text-slate-400">
+                                            <span className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-md">
+                                                <Calendar className="w-3 h-3" />
+                                                {format(task.scheduledAt, "PPP", { locale: arEG })}
+                                            </span>
+                                            <span className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-md">
+                                                <Clock className="w-3 h-3" />
+                                                {format(task.scheduledAt, "p", { locale: arEG })}
+                                            </span>
+                                            <span className="flex items-center gap-1 bg-blue-50 text-blue-600 px-2 py-1 rounded-md border border-blue-100">
+                                                <span className="relative flex h-2 w-2">
+                                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                                                </span>
+                                                تذكير تلقائي
+                                            </span>
+                                            {task.reminderSent && (
+                                                <span className="text-green-500 flex items-center gap-1">
+                                                    <CheckCircle2 className="w-3 h-3" />
+                                                    تم الإرسال
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
 
-                {/* Checkbox */}
-                <button
-                  onClick={() => toggleTodo(todo.id)}
-                  className={cn(
-                    "flex-shrink-0 w-5 h-5 rounded flex items-center justify-center transition-all border",
-                    todo.completed 
-                      ? "bg-blue-500 border-blue-500 text-white" 
-                      : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  )}
-                >
-                  {todo.completed && <CheckCircle2 className="w-3.5 h-3.5" />}
-                </button>
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="text-slate-300 hover:text-red-500 hover:bg-red-50"
+                                    onClick={() => task.id && handleDelete(task.id)}
+                                >
+                                    <Trash2 className="w-5 h-5" />
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                ))}
+            </AnimatePresence>
 
-                {/* Text */}
-                <span className={cn(
-                  "flex-1 text-[16px] transition-all decoration-slate-400",
-                  todo.completed 
-                    ? "line-through text-slate-400 font-normal" 
-                    : "text-slate-700 dark:text-slate-200 font-medium"
-                )}>
-                  {todo.text}
-                </span>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={() => deleteTodo(todo.id)}
-                    className="p-1 px-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md text-xs transition-all"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                  <button className="p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-all">
-                    <MoreHorizontal className="w-4 h-4" />
-                  </button>
+            {tasks.length === 0 && !loading && (
+                <div className="text-center py-20 text-slate-400">
+                    <p>ما عندك مهام حالياً.. وقت الراحة! 😴</p>
                 </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-
-          {/* Inline Add Item (Notion Style) */}
-          <form 
-            onSubmit={addTodo}
-            className="flex items-center gap-4 py-3 px-12 bg-white dark:bg-slate-900"
-          >
-            <Plus className="w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="اضغط لإضافة مهمة جديدة..."
-              className="flex-1 bg-transparent border-none outline-none text-slate-400 focus:text-slate-700 dark:focus:text-slate-200 text-[16px] placeholder:text-slate-300 dark:placeholder:text-slate-600"
-            />
-          </form>
+            )}
         </div>
 
-        {/* Empty State */}
-        {todos.length === 0 && (
-          <div className="py-12 text-center text-slate-300 dark:text-slate-700 select-none">
-            <LayoutList className="w-12 h-12 mx-auto mb-4 opacity-20" />
-            <p className="text-sm font-medium">ليس هناك مهام بعد. ابدأ بإضافة شيء جديد.</p>
-          </div>
-        )}
-
-        {/* Footer Info */}
-        <div className="mt-20 border-t border-slate-100 dark:border-slate-800 pt-8 flex flex-col gap-4">
-          <p className="text-xs text-slate-400 leading-relaxed max-w-[500px]">
-            هذا القسم مصمم لمحاكاة تجربة Notion البسيطة والفعالة. 
-            استخدمه لترتيب أفكارك ومهامك الدراسية بجانب الكويزات.
-          </p>
-        </div>
       </div>
     </div>
   )
