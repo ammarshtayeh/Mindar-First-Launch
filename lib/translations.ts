@@ -45,6 +45,7 @@ export const translations = {
       feature2Desc: "Your files are private and protected. Study with peace of mind.",
       feature3Title: "Friendly AI",
       feature3Desc: "A simple, intuitive interface designed to make learning effortless.",
+      discoverStory: "Discover Our Story",
     },
     upload: {
       title: "Upload Your Material",
@@ -160,6 +161,7 @@ export const translations = {
       feature2Desc: "ملفاتك خاصة ومحمية. ادرس وإنت مرتاح البال.",
       feature3Title: "ذكاء ودود",
       feature3Desc: "واجهة بسيطة وسهلة مصممة عشان تخلي الدراسة لعبة.",
+      discoverStory: "اكتشف قصتنا",
     },
     upload: {
       title: "ارفع مادتك",

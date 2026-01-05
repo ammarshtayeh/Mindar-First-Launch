@@ -96,10 +96,18 @@ export default function Home() {
                         };
                         localStorage.setItem("currentQuiz", JSON.stringify(sampleQuiz));
                         window.location.href = "/hub";
-                    }}
-                >
+                    }}>
                     <Play className="mr-3 w-6 h-6 fill-current" /> {t('common.seeSample')}
                 </Button>
+            </motion.div>
+
+            <motion.div variants={item}>
+                <Link href="/about">
+                    <Button variant="ghost" className="text-muted-foreground hover:text-primary transition-colors gap-2">
+                        <Info className="w-4 h-4" />
+                        {t('home.discoverStory')}
+                    </Button>
+                </Link>
             </motion.div>
 
 
