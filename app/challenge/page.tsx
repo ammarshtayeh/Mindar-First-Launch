@@ -47,6 +47,41 @@ export default function ChallengeCreatePage() {
     }
   }
 
+  // --- PDF Parsing Setup ---
+  // We use a CDN for the worker to avoid complex Webpack config
+  // Note: We use dynamic import inside the function to avoid SSR issues
+  
+  const extractTextFromPDF = async (file: File): Promise<string> => {
+    try {
+        // Dynamically import pdfjs-dist
+        const pdfJS = await import('pdfjs-dist');
+        
+        // precise version match is important
+        pdfJS.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfJS.version}/build/pdf.worker.min.mjs`;
+
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfJS.getDocument({ data: arrayBuffer }).promise;
+        
+        let fullText = "";
+        
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items
+                .map((item: any) => item.str)
+                .join(" "); // Simple join
+            
+            // Add basic formatting helper
+            fullText += `\n--- Page ${i} ---\n${pageText}\n`;
+        }
+        
+        return fullText;
+    } catch (e: any) {
+        console.error("PDF Parsing Error:", e);
+        throw new Error("فشل قراءة ملف PDF. قد يكون الملف محمياً أو تالفاً.");
+    }
+  };
+
   const handleGenerate = async () => {
     if (!file) return
     
@@ -58,27 +93,52 @@ export default function ChallengeCreatePage() {
     setIsGenerating(true)
     
     try {
-        const formData = new FormData()
-        formData.append("file", file)
+        let text = "";
         
-        const parseRes = await fetch("/api/parse", { method: "POST", body: formData })
-        if (!parseRes.ok) {
-            const errData = await parseRes.json().catch(() => ({ error: "Parse failed" }));
-            throw new Error(errData.error || "فشل تحليل الملف");
+        // 1. Client-Side Parsing Strategy
+        if (file.name.toLowerCase().endsWith('.pdf')) {
+            console.log("Parsing PDF locally...");
+            text = await extractTextFromPDF(file);
+            
+            if (!text || text.trim().length < 50) {
+                 throw new Error("لم يتم العثور على نصوص واضحة في الملف. تأكد أن الملف ليس صورة ممسوحة ضوئياً.");
+            }
+        } 
+        // 2. Server-Side Parsing Fallback (for DOCX, PPTX)
+        else {
+             const formData = new FormData()
+             formData.append("file", file)
+             
+             const parseRes = await fetch("/api/parse", { method: "POST", body: formData })
+             if (!parseRes.ok) {
+                 const errData = await parseRes.json().catch(() => ({ error: "Parse failed" }));
+                 throw new Error(errData.error || "فشل تحليل الملف");
+             }
+             const data = await parseRes.json()
+             text = data.text;
         }
-        const { text } = await parseRes.json()
+
+        // 3. Generate Quiz
+        // Truncate text to avoid Vercel 4.5MB payload limit and match server limit
+        const MAX_CHARS = 60000;
+        const processedText = text.slice(0, MAX_CHARS);
         
         const genRes = await fetch("/api/generate", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                text, 
+                text: processedText, 
                 numQuestions,
                 types: selectedQuestionTypes,
-                language: 'Arabic'
+                language: 'Arabic' // Or detect
             })
         })
-        if (!genRes.ok) throw new Error("Gen failed")
+        
+        if (!genRes.ok) {
+            const err = await genRes.json().catch(() => ({ error: "Gen failed" }));
+             throw new Error(err.error || "فشل إنشاء التحدي");
+        }
+        
         const quizData = await genRes.json()
 
         const roomName = `تحدي: ${file.name}`
@@ -98,7 +158,7 @@ export default function ChallengeCreatePage() {
         setGeneratedLink(roomLink)
     } catch (e: any) {
         console.error(e)
-        alert(e.message || "فشلت عملية التوليد، تأكد من الملف")
+        alert(e.message || "حدث خطأ غير متوقع")
     } finally {
         setIsGenerating(false)
     }

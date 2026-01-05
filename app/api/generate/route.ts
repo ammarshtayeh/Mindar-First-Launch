@@ -75,6 +75,7 @@ export async function POST(req: Request) {
         const useGeminiFirst = Math.random() > 0.5;
         const groqKey = process.env.GROQ_API_KEY;
         const geminiApiKey = process.env.GEMINI_API_KEY;
+        const aimlApiKey = process.env.AIML_API_KEY;
 
         if (useGeminiFirst) {
             console.log("ROTATION: Trying Gemini 2.0 Flash Lite first...");
@@ -94,12 +95,18 @@ export async function POST(req: Request) {
             if (geminiResult) return geminiResult;
         }
 
+        // --- THIRD LAYER FALLBACK: AIML API ---
+        if (aimlApiKey) {
+             console.log("ALL PRIMARY FAILED. Trying AIML API Fallback...");
+             const aimlResult = await tryAimlApi(aimlApiKey, prompt);
+             if (aimlResult) return aimlResult;
+        }
+
         // --- DEEP FALLBACK CHAIN (If both primary models fail) ---
         const configs = [
             { id: "gemini-1.5-flash", version: "v1beta" },
             { id: "gemini-1.5-flash-8b", version: "v1beta" },
-            { id: "gemini-2.0-flash", version: "v1beta" },
-            { id: "gemini-1.5-pro", version: "v1beta" }
+            { id: "gemini-2.0-flash", version: "v1beta" }
         ];
 
         let lastError: any = null;
@@ -154,6 +161,41 @@ async function tryGroq(apiKey: string | undefined, prompt: string) {
         return NextResponse.json({ ...data, _provider: 'groq' });
     } catch (e) {
         console.warn("Groq attempt failed");
+        return null;
+    }
+}
+
+async function tryAimlApi(apiKey: string, prompt: string) {
+    try {
+        const res = await fetch("https://api.aimlapi.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini", // Or "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo" for cheaper
+                messages: [
+                    { role: "system", content: "You represent a JSON object." },
+                    { role: "user", content: prompt }
+                ],
+                temperature: 0.3,
+                max_tokens: 4000
+            })
+        });
+
+        if (!res.ok) {
+            const err = await res.text();
+            console.warn("AIML API Error:", err);
+            return null;
+        }
+
+        const data = await res.json();
+        const content = data.choices[0].message.content;
+        const quizData = parseAndVerifyQuiz(content);
+        return NextResponse.json({ ...quizData, _provider: 'aiml' });
+    } catch (e) {
+        console.warn("AIML API attempt failed:", e);
         return null;
     }
 }
