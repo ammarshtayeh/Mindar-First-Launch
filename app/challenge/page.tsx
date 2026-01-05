@@ -62,7 +62,10 @@ export default function ChallengeCreatePage() {
         formData.append("file", file)
         
         const parseRes = await fetch("/api/parse", { method: "POST", body: formData })
-        if (!parseRes.ok) throw new Error("Parse failed")
+        if (!parseRes.ok) {
+            const errData = await parseRes.json().catch(() => ({ error: "Parse failed" }));
+            throw new Error(errData.error || "فشل تحليل الملف");
+        }
         const { text } = await parseRes.json()
         
         const genRes = await fetch("/api/generate", {

@@ -59,15 +59,20 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
   };
 
   const handleGoogleSignIn = async () => {
-    setLoading(true);
+    // Note: We don't set loading immediately to avoid interfering with the popup trigger
     setError(null);
     try {
       await signInWithGoogle();
       if (onSuccess) onSuccess();
     } catch (err: any) {
-      setError(err.message || "حدث خطأ أثناء تسجيل الدخول عبر جوجل.");
+      if (err.message && err.message.includes('popup-blocked')) {
+        setError("المتصفح منع النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.");
+      } else {
+        setError(err.message || "حدث خطأ أثناء تسجيل الدخول عبر جوجل.");
+      }
     } finally {
-      setLoading(false);
+      // We can set loading false here, although we never set it true. 
+      // If we want loading state, we should handle it carefully, but priority is popup working.
     }
   };
 
