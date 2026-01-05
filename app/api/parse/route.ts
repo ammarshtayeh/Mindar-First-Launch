@@ -29,6 +29,9 @@ function applyPolyfills() {
 
 applyPolyfills();
 
+export const maxDuration = 60; // Allow 60 seconds for PDF parsing
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
     try {
         const formData = await req.formData();
