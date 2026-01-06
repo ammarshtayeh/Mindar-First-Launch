@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { AppContent } from "@/components/app-content";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { I18nProvider } from "@/lib/i18n";
 import { ReduxProvider } from "@/redux/provider";
 
@@ -43,6 +44,7 @@ export default function RootLayout({
             <I18nProvider>
               <Navbar />
               <AppContent>{children}</AppContent>
+              <Footer />
             </I18nProvider>
           </ReduxProvider>
         </ThemeProvider>

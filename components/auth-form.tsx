@@ -6,7 +6,8 @@ import { Mail, Lock, LogIn, UserPlus, AlertCircle, CheckCircle2, Loader2, X } fr
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { signUp, login, signInWithGoogle } from "@/lib/services/authService";
+import { signUp, login, signInWithGoogle, resetPassword } from "@/lib/services/authService";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 interface AuthFormProps {
@@ -15,7 +16,9 @@ interface AuthFormProps {
 }
 
 export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
+  const { t } = useI18n();
   const [isLogin, setIsLogin] = useState(true);
+  const [isResetting, setIsResetting] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -32,17 +35,24 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
     setSuccess(false);
 
     try {
+      if (isResetting) {
+        await resetPassword(email);
+        setSuccess(true);
+        setError(null);
+        return;
+      }
+
       if (isLogin) {
         await login(email, password);
       } else {
         // Validation for Signup
         if (password !== confirmPassword) {
-          setError("كلمات المرور غير متطابقة!");
+          setError(t('common.passwordMismatch') || "كلمات المرور غير متطابقة!");
           setLoading(false);
           return;
         }
         if (!firstName || !lastName) {
-          setError("يرجى إدخال الاسم الأول واسم العائلة.");
+          setError(t('common.namesRequired') || "يرجى إدخال الاسم الأول واسم العائلة.");
           setLoading(false);
           return;
         }
@@ -50,7 +60,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
         await signUp(email, password, firstName, lastName);
         setSuccess(true);
       }
-      if (onSuccess) onSuccess();
+      if (onSuccess && !isResetting) onSuccess();
     } catch (err: any) {
       setError(err.message || "حدث خطأ ما، يرجى المحاولة لاحقاً.");
     } finally {
@@ -98,10 +108,10 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
             {isLogin ? <LogIn className="w-8 h-8 text-white" /> : <UserPlus className="w-8 h-8 text-white" />}
           </div>
           <CardTitle className="text-3xl font-black text-slate-900 dark:text-white">
-            {isLogin ? "تسجيل الدخول" : "إنشاء حساب جديد"}
+            {isResetting ? t('auth.resetPassword') : (isLogin ? t('Login') : "إنشاء حساب جديد")}
           </CardTitle>
           <CardDescription className="text-slate-500 font-medium">
-            {isLogin ? "مرحباً بعودتك إلى مندار!" : "انضم إلى عائلة مندار اليوم!"}
+            {isResetting ? t('auth.sendLink') : (isLogin ? t('home.subtitle') : "انضم إلى عائلة مندار اليوم!")}
           </CardDescription>
         </CardHeader>
 
@@ -144,19 +154,32 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="relative">
-                <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <Input
-                  type="password"
-                  placeholder="كلمة المرور"
-                  value={password}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                  className="pr-12 h-14 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-red-500 focus:border-red-500 transition-all font-medium"
-                  required
-                />
+            {!isResetting && (
+              <div className="space-y-2">
+                <div className="relative">
+                  <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Input
+                    type="password"
+                    placeholder="كلمة المرور"
+                    value={password}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                    className="pr-12 h-14 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-red-500 focus:border-red-500 transition-all font-medium"
+                    required
+                  />
+                </div>
+                {isLogin && (
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setIsResetting(true)}
+                      className="text-sm font-bold text-slate-500 hover:text-red-500 transition-colors"
+                    >
+                      {t('auth.forgotPassword')}
+                    </button>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
 
             {!isLogin && (
               <div className="space-y-2">
@@ -195,7 +218,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
                   className="p-4 rounded-2xl bg-green-50 border border-green-100 flex items-center gap-3 text-green-600 text-sm font-bold"
                 >
                   <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-                  <p>تم إنشاء الحساب بنجاح!</p>
+                  <p>{isResetting ? t('auth.checkEmail') : (isLogin ? "تم تسجيل الدخول!" : "تم إنشاء الحساب بنجاح!")}</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -207,6 +230,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
             >
               {loading ? (
                 <Loader2 className="w-6 h-6 animate-spin" />
+              ) : isResetting ? (
+                t('auth.sendLink')
               ) : isLogin ? (
                 "دخول"
               ) : (
@@ -240,12 +265,21 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
 
         <CardFooter className="pb-8 flex flex-col gap-4">
           <div className="text-center w-full">
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-slate-600 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 font-bold transition-colors"
-            >
-              {isLogin ? "ليس لديك حساب؟ سجل الآن" : "لديك حساب بالفعل؟ سجل دخولك"}
-            </button>
+            {isResetting ? (
+              <button
+                onClick={() => setIsResetting(false)}
+                className="text-slate-600 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 font-bold transition-colors"
+              >
+                {t('auth.backToLogin')}
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-slate-600 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 font-bold transition-colors"
+              >
+                {isLogin ? "ليس لديك حساب؟ سجل الآن" : "لديك حساب بالفعل؟ سجل دخولك"}
+              </button>
+            )}
           </div>
         </CardFooter>
       </Card>

@@ -6,7 +6,9 @@ import {
   updateProfile,
   signInWithPopup,
   GoogleAuthProvider,
-  User
+  User,
+  sendPasswordResetEmail,
+  updatePassword
 } from "firebase/auth";
 import { auth } from "../firebase";
 import { createUserProfile } from "./dbService";
@@ -75,4 +77,22 @@ export const logout = async (): Promise<void> => {
 
 export const subscribeToAuthChanges = (callback: (user: User | null) => void) => {
   return onAuthStateChanged(auth, callback);
+};
+
+export const resetPassword = async (email: string): Promise<void> => {
+  try {
+    await sendPasswordResetEmail(auth, email);
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const changePassword = async (newPassword: string): Promise<void> => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("No user logged in");
+  try {
+    await updatePassword(user, newPassword);
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
 };

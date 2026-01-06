@@ -113,6 +113,24 @@ export const translations = {
       action_completed_quiz: "{name} completed a quiz",
       action_joined_challenge: "{name} joined a challenge",
       action_is_on_fire: "{name} is on fire 🔥",
+    },
+    auth: {
+      forgotPassword: "Forgot Password?",
+      resetPassword: "Reset Password",
+      sendLink: "Send Reset Link",
+      backToLogin: "Back to Login",
+      checkEmail: "Check your email for the reset link.",
+      passwordChanged: "Password changed successfully!",
+    },
+    profile: {
+      title: "My Profile",
+      personalInfo: "Personal Information",
+      changePassword: "Change Password",
+      newPassword: "New Password",
+      confirmNewPassword: "Confirm New Password",
+      updateBtn: "Update Password",
+      email: "Email",
+      displayName: "Display Name",
     }
   },
   ar: {
@@ -229,6 +247,24 @@ export const translations = {
       action_completed_quiz: "{name} أنهى اختباراً بنجاح",
       action_joined_challenge: "{name} دخل في تحدي جديد",
       action_is_on_fire: "{name} شغال نار 🔥",
+    },
+    auth: {
+      forgotPassword: "نسيت كلمة المرور؟",
+      resetPassword: "إعادة تعيين كلمة المرور",
+      sendLink: "إرسال رابط التعيين",
+      backToLogin: "العودة لتسجيل الدخول",
+      checkEmail: "تفقد بريدك الإلكتروني للحصول على رابط التعيين.",
+      passwordChanged: "تم تغيير كلمة المرور بنجاح!",
+    },
+    profile: {
+      title: "ملفي الشخصي",
+      personalInfo: "المعلومات الشخصية",
+      changePassword: "تغيير كلمة المرور",
+      newPassword: "كلمة المرور الجديدة",
+      confirmNewPassword: "تأكيد كلمة المرور الجديدة",
+      updateBtn: "تحديث كلمة المرور",
+      email: "البريد الإلكتروني",
+      displayName: "الاسم",
     }
   }
 };

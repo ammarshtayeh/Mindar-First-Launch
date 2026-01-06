@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Home, ClipboardList, BookOpen, BrainCircuit, Swords, Star, Zap, Trophy, History } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from "@/components/theme-toggle"
-import { DateTimeDisplay } from "@/components/date-time-display"
 import { GamificationEngine } from '@/lib/gamification'
 import { useI18n } from '@/lib/i18n'
 import { Languages, Volume2, VolumeX } from 'lucide-react'
@@ -74,12 +73,12 @@ export function Navbar() {
     <>
     <LevelUpOverlay />
     <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-primary/10 shadow-sm transition-all duration-500">
-      <div className="max-w-[2000px] mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
+      <div className="max-w-[2000px] mx-auto px-4 sm:px-8 py-2 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
         
         {/* Right Section: Logo & Time & XP */}
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
-            <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg border-2 border-primary/20 overflow-hidden glow-primary relative">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg border-2 border-primary/20 overflow-hidden glow-primary relative">
               <img 
                 src="/logo.png" 
                 alt="Logo" 
@@ -106,7 +105,7 @@ export function Navbar() {
             </div>
           </Link>
           
-          <div className="hidden xl:flex items-center gap-4 bg-primary/5 dark:bg-primary/10 px-4 py-2 rounded-2xl border border-primary/10 backdrop-blur-md">
+          <div className="hidden xl:flex items-center gap-4 bg-primary/5 dark:bg-primary/10 px-4 py-1.5 rounded-2xl border border-primary/10 backdrop-blur-md">
             <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg transform -rotate-3 group-hover:rotate-0 transition-transform">
                 <Star className="text-white w-6 h-6 fill-white" />
                 <span className="absolute -top-2 -right-2 bg-slate-900 text-white text-[10px] font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">
@@ -131,9 +130,6 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="hidden lg:block">
-            <DateTimeDisplay />
-          </div>
         </div>
 
         <ul className="flex items-center gap-1 sm:gap-3">
@@ -146,7 +142,7 @@ export function Navbar() {
                 <Link
                   href={item.href}
                   className={cn(
-                    "relative flex items-center gap-2 px-4 py-2.5 rounded-2xl transition-all duration-300 text-sm sm:text-base font-black",
+                    "relative flex items-center gap-2 px-4 py-2 rounded-2xl transition-all duration-300 text-sm sm:text-base font-black",
                     isActive 
                       ? "text-primary bg-primary/10 shadow-[0_0_20px_rgba(var(--primary),0.1)]" 
                       : (!hasData && (item.key === 'common.quiz' || item.key === 'common.flashcards'))
@@ -182,7 +178,7 @@ export function Navbar() {
             size="icon"
             onClick={toggleVoiceHandler}
             className={cn(
-                "w-12 h-12 rounded-2xl transition-all active:scale-95 group relative",
+                "w-10 h-10 rounded-2xl transition-all active:scale-95 group relative",
                 voiceEnabled ? "hover:bg-primary/10 text-primary" : "hover:bg-red-500/10 text-muted-foreground"
             )}
             title={voiceEnabled ? t('common.voiceEnabled') : t('common.voiceDisabled')}
@@ -198,7 +194,7 @@ export function Navbar() {
             variant="ghost"
             size="icon"
             onClick={() => setLanguageHandler(language === 'ar' ? 'en' : 'ar')}
-            className="w-12 h-12 rounded-2xl hover:bg-primary/10 transition-all active:scale-95"
+            className="w-10 h-10 rounded-2xl hover:bg-primary/10 transition-all active:scale-95"
             title={language === 'ar' ? 'English' : 'العربية'}
           >
             <Languages className="w-6 h-6 text-muted-foreground" />
@@ -212,20 +208,22 @@ export function Navbar() {
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
-                  className="hidden md:flex items-center gap-2 pr-4 pl-2 h-12 rounded-2xl bg-primary/5 hover:bg-primary/10 border border-primary/10"
+                  className="hidden md:flex items-center gap-2 pr-4 pl-2 h-10 rounded-2xl bg-primary/5 hover:bg-primary/10 border border-primary/10"
                 >
-                   <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
-                      <UserIcon className="w-5 h-5" />
-                   </div>
-                   <span className="text-sm font-black truncate max-w-[100px] text-slate-900 dark:text-slate-100">
-                      {user.email?.split('@')[0]}
-                   </span>
+                   <Link href="/profile" className="flex items-center gap-2">
+                     <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+                        <UserIcon className="w-5 h-5" />
+                     </div>
+                     <span className="text-sm font-black truncate max-w-[100px] text-slate-900 dark:text-slate-100">
+                        {user.email?.split('@')[0]}
+                     </span>
+                   </Link>
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => logout()}
-                  className="w-12 h-12 rounded-2xl hover:bg-red-500/10 text-red-500 transition-all active:scale-95"
+                  className="w-10 h-10 rounded-2xl hover:bg-red-500/10 text-red-500 transition-all active:scale-95"
                   title="Logout"
                 >
                   <LogOut className="w-6 h-6" />
@@ -234,7 +232,7 @@ export function Navbar() {
             ) : (
               <Button
                 onClick={() => setShowAuthModal(true)}
-                className="h-12 px-8 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-500 dark:to-indigo-500 text-white font-black shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_25px_rgba(124,58,237,0.5)] hover:scale-[1.05] active:scale-[0.95] transition-all border border-white/20"
+                className="h-10 px-8 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-500 dark:to-indigo-500 text-white font-black shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_25px_rgba(124,58,237,0.5)] hover:scale-[1.05] active:scale-[0.95] transition-all border border-white/20"
               >
                 {t('Login') || 'دخول'}
               </Button>
