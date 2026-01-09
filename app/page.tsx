@@ -12,12 +12,14 @@ import { useI18n } from "@/lib/i18n"
 
 export default function Home() {
   const { t, language } = useI18n()
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [isIOS, setIsIOS] = useState(false)
   const [isStandalone, setIsStandalone] = useState(false)
   const [showIOSHint, setShowIOSHint] = useState(false)
+  const [showGeneralHint, setShowGeneralHint] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true);
     // Platform detection
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     setIsIOS(isIOSDevice);
@@ -28,6 +30,7 @@ export default function Home() {
     const handler = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
+      console.log('beforeinstallprompt fired');
     };
 
     window.addEventListener('beforeinstallprompt', handler);
@@ -151,14 +154,14 @@ export default function Home() {
                 </Link>
 
                 {/* PWA Installation Section - Dynamic per Platform */}
-                {!isStandalone && (
+                {mounted && !isStandalone && (
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="mt-2 flex flex-col items-center"
                     >
                         {/* 1. Android/Chrome/Desktop (Programmatic) */}
-                        {deferredPrompt && (
+                        {deferredPrompt ? (
                             <Button 
                                 onClick={handleInstallClick}
                                 variant="outline"
@@ -167,10 +170,45 @@ export default function Home() {
                                 <Smartphone className="w-5 h-5" />
                                 {t('common.installApp')}
                             </Button>
-                        )}
+                        ) : !isIOS ? (
+                            // Fallback for non-iOS where prompt hasn't fired yet
+                            <div className="relative">
+                                <Button 
+                                    onClick={() => setShowGeneralHint(!showGeneralHint)}
+                                    variant="outline"
+                                    className="h-12 px-8 rounded-xl border-2 border-primary/20 bg-primary/20 text-primary hover:bg-primary/30 font-black gap-2 shadow-sm"
+                                >
+                                    <Smartphone className="w-5 h-5" />
+                                    {t('common.installApp')}
+                                </Button>
+                                <AnimatePresence>
+                                    {showGeneralHint && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                                            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                                            className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-64 p-6 bg-card border border-primary/30 rounded-3xl shadow-2xl z-50 text-center backdrop-blur-xl"
+                                        >
+                                            <p className="text-sm font-bold leading-relaxed">
+                                                {language === 'ar' 
+                                                  ? 'ثبّت التطبيق من إعدادات المتصفح (القائمة النقاط الثلاث الجانبية)' 
+                                                  : 'Install from browser settings (three dots menu)'}
+                                            </p>
+                                            <Button 
+                                                size="sm" 
+                                                className="mt-3 w-full rounded-xl"
+                                                onClick={() => setShowGeneralHint(false)}
+                                            >
+                                                {t('common.pwa_ios_got_it')}
+                                            </Button>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        ) : null}
 
                         {/* 2. iOS (Instructional) */}
-                        {isIOS && !deferredPrompt && (
+                        {isIOS && (
                             <div className="relative">
                                 <Button 
                                     onClick={() => setShowIOSHint(!showIOSHint)}
@@ -211,7 +249,7 @@ export default function Home() {
                                                 </Button>
                                             </div>
                                             {/* Arrow */}
-                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-top-card" />
+                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-card" />
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
