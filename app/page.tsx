@@ -1,15 +1,37 @@
 "use client"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { motion, Variants } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { FileText, Brain, Sparkles, Upload, Play, Zap, ShieldCheck, Globe, PenTool, Info } from "lucide-react"
+import { FileText, Brain, Sparkles, Upload, Play, Zap, ShieldCheck, Globe, PenTool, Info, Smartphone } from "lucide-react"
 import { MotivationalBanner } from "@/components/motivational-banner"
 import { AdPlaceholder } from "@/components/ads/AdPlaceholder"
 import { useI18n } from "@/lib/i18n"
 
 export default function Home() {
   const { t, language } = useI18n()
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, [])
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  }
   const container: Variants = {
     hidden: { opacity: 0 },
     show: {
@@ -107,13 +129,32 @@ export default function Home() {
                 <AdPlaceholder variant="banner" label={language === 'ar' ? 'محتوى برعاية' : 'Sponsored Content'} />
             </motion.div>
 
-            <motion.div variants={item}>
+            <motion.div variants={item} className="flex flex-col items-center gap-4">
                 <Link href="/about">
                     <Button variant="ghost" className="text-muted-foreground hover:text-primary transition-colors gap-2">
-                        <Info className="w-4 h-4" />
-                        {t('home.discoverStory')}
+                        <span className="flex items-center gap-2">
+                            <Info className="w-4 h-4" />
+                            {t('home.discoverStory')}
+                        </span>
                     </Button>
                 </Link>
+
+                {deferredPrompt && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="mt-2"
+                    >
+                        <Button 
+                            onClick={handleInstallClick}
+                            variant="outline"
+                            className="h-12 px-8 rounded-xl border-2 border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 font-black gap-2 animate-pulse shadow-lg"
+                        >
+                            <Smartphone className="w-5 h-5" />
+                            {t('common.installApp')}
+                        </Button>
+                    </motion.div>
+                )}
             </motion.div>
 
             <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20 w-full">

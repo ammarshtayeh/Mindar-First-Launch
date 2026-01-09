@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from "@/components/ui/button"
-import { Home, ClipboardList, BookOpen, BrainCircuit, Swords, Star, Zap, Trophy, History, Smartphone } from 'lucide-react'
+import { Home, ClipboardList, BookOpen, BrainCircuit, Swords, Star, Zap, Trophy, History } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from "@/components/theme-toggle"
 import { GamificationEngine } from '@/lib/gamification'
@@ -43,19 +43,9 @@ export function Navbar() {
   const { user, loading: authLoading } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
 
   useEffect(() => {
     setIsMounted(true)
-    
-    const handler = (e: any) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-
-    window.addEventListener('beforeinstallprompt', handler);
-
-    return () => window.removeEventListener('beforeinstallprompt', handler);
   }, [])
 
   useEffect(() => {
@@ -75,15 +65,6 @@ export function Navbar() {
   const setLanguageHandler = (lang: 'ar' | 'en') => {
     dispatch(setLanguage(lang))
     setI18nLanguage(lang)
-  }
-
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setDeferredPrompt(null);
-    }
   }
 
   if (!isMounted || pathname?.startsWith('/admin')) return null
@@ -183,19 +164,6 @@ export function Navbar() {
               </li>
             )
           })}
-
-          {/* Conditional PWA Install Button */}
-          {deferredPrompt && (
-            <li>
-              <button
-                onClick={handleInstallClick}
-                className="relative flex items-center gap-2 px-4 py-2 rounded-2xl transition-all duration-300 text-sm sm:text-base font-black text-primary bg-primary/10 hover:bg-primary/20 shadow-[0_0_20px_rgba(var(--primary),0.1)] border border-primary/20 animate-pulse"
-              >
-                <Smartphone className="w-5 h-5 sm:w-6 sm:h-6" />
-                <span className="hidden xl:block">{t('common.installApp')}</span>
-              </button>
-            </li>
-          )}
         </ul>
 
         {/* Left Section: Theme Toggle */}
