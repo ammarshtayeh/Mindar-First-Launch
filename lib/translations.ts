@@ -43,6 +43,10 @@ export const translations = {
       pwa_ios_step1: "Tap the share button below",
       pwa_ios_step2: "Select 'Add to Home Screen'",
       pwa_ios_got_it: "Got it!",
+      pwa_safari_instruction: "Tap 'Share' then 'Add to Home Screen'",
+      pwa_chrome_instruction: "Tap 'Share' then 'Add to Home Screen'",
+      pwa_android_instruction: "Tap the menu icon (⋮) then 'Install App'",
+      pwa_in_app_warning: "App cannot be installed from inside this browser. Please open in Safari or Chrome.",
     },
     home: {
       badge: "Expertly crafted quizzes, lightning fast 🚀",
@@ -202,6 +206,10 @@ export const translations = {
       pwa_ios_step1: "اضغط على زر 'مشاركة' بالأسفل",
       pwa_ios_step2: "اختار 'إضافة إلى الشاشة الرئيسية'",
       pwa_ios_got_it: "فهمت!",
+      pwa_safari_instruction: "اضغط زر 'مشاركة' ثم 'إضافة للشاشة الرئيسية'",
+      pwa_chrome_instruction: "اضغط زر 'مشاركة' ثم 'إضافة للشاشة الرئيسية'",
+      pwa_android_instruction: "اضغط على القائمة (⋮) واختار 'تثبيت التطبيق'",
+      pwa_in_app_warning: "لا يمكن التثبيت من داخل هذا المتصفح. يرجى الفتح عبر سفاري أو كروم.",
     },
     home: {
       badge: "كويزات أسطورية، بلمح البصر 🚀",

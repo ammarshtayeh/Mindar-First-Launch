@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mindar Stories Vol. 2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --secondary: #d946ef;
+            --bg: #0f172a;
+            --text: #f8fafc;
+            --success: #10b981;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #000;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .story-container {
+            width: 360px;
+            height: 640px;
+            position: relative;
+            background: var(--bg);
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+            border: 2px solid #333;
+        }
+
+        .content {
+            z-index: 10;
+            padding: 30px;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        h1 {
+            color: white;
+            margin: 0;
+            font-size: 2rem;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .grid-bg {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(#ffffff 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.1;
+        }
+
+        /* Poll Sticker */
+        .poll-sticker {
+            background: white;
+            color: black;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 40px 0;
+            width: 80%;
+            align-self: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .poll-question {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .poll-options {
+            display: flex;
+            overflow: hidden;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .poll-opt {
+            flex: 1;
+            padding: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .poll-opt:first-child {
+            border-left: 1px solid #ddd;
+            background: #f8fafc;
+        }
+
+        .poll-opt:last-child {
+            background: #f1f5f9;
+        }
+
+        /* Quiz Sticker */
+        .quiz-sticker {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 85%;
+            align-self: center;
+        }
+
+        .quiz-title {
+            background: #000;
+            color: white;
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 15px;
+        }
+
+        .quiz-q {
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .quiz-a {
+            background: white;
+            color: black;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .quiz-a.correct {
+            background: var(--success);
+            color: white;
+        }
+
+        /* Testimonial */
+        .quote-card {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 20px;
+            position: relative;
+            margin: auto 0;
+        }
+
+        .quote-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+            font-style: italic;
+        }
+
+        .quote-author {
+            margin-top: 20px;
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: #ddd;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Story 1: Poll (Engagement) -->
+    <div class="story-container">
+        <div class="grid-bg"></div>
+        <div class="content" style="justify-content: center;">
+            <h1 style="font-size: 2.5rem;">شو وضع دراستك؟ 🤔</h1>
+            <div class="poll-sticker">
+                <div class="poll-question">بدي أدرس بس...</div>
+                <div class="poll-options">
+                    <div class="poll-opt" style="color:var(--primary)">مش عارف ألخّص 🤯</div>
+                    <div class="poll-opt">الوضع لوز 😎</div>
+                </div>
+            </div>
+            <p style="color: #94a3b8; margin-top: 20px;">Mindar بحللك المشكلة الأولى 😉</p>
+        </div>
+    </div>
+
+    <!-- Story 2: Quiz (Interactive) -->
+    <div class="story-container">
+        <div class="grid-bg"></div>
+        <div
+            style="position: absolute; top:0; left:0; right:0; height: 200px; background: linear-gradient(var(--primary), transparent); opacity: 0.5;">
+        </div>
+        <div class="content">
+            <h1 style="margin-top: 40px;">اختبر معلوماتك! 🧠</h1>
+            <div class="quiz-sticker">
+                <div class="quiz-title">Biology 101</div>
+                <div class="quiz-q">ما هو الجزء المسؤول عن انتاج الطاقة في الخلية؟</div>
+                <div class="quiz-a">النواة</div>
+                <div class="quiz-a correct">الميتوكندريا ✅</div>
+                <div class="quiz-a">السيتوبلازم</div>
+            </div>
+            <div
+                style="background: rgba(0,0,0,0.6); padding: 10px 20px; border-radius: 50px; color: white; margin-top: auto; margin-bottom: 40px;">
+                👆 صنع بواسطة Mindar
+            </div>
+        </div>
+    </div>
+
+    <!-- Story 3: Social Proof -->
+    <div class="story-container">
+        <div class="grid-bg"></div>
+        <div class="content">
+            <div style="font-size: 4rem; margin-top: 40px;">💬</div>
+            <div class="quote-card">
+                <div class="quote-text">
+                    "بصراحة الموقع رهيب! وفّر عليّ وقت التلخيص وصرت أدرس المادة كأنها لعبة. بنصح فيه كل الطلاب."
+                </div>
+                <div class="quote-author">
+                    <div class="avatar" style="background: var(--secondary);"></div>
+                    أحمد س. - طالب طب
+                </div>
+            </div>
+            <div
+                style="background: var(--primary); padding: 15px 40px; border-radius: 50px; color: white; font-weight: bold; margin-top: auto; margin-bottom: 40px;">
+                جرب بنفسك الآن 🚀
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

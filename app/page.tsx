@@ -19,11 +19,24 @@ export default function Home() {
   const [mounted, setMounted] = useState(false)
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
 
+  const [browserType, setBrowserType] = useState<'safari' | 'chrome' | 'in-app' | 'other'>('other')
+
   useEffect(() => {
     setMounted(true);
     // Platform detection
-    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    const ua = navigator.userAgent;
+    const isIOSDevice = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
     setIsIOS(isIOSDevice);
+
+    // Browser Detection
+    const inApp = /Instagram|FBAN|FBAV|LinkedIn/i.test(ua);
+    const isChrome = /CriOS|Chrome/.test(ua);
+    const isSafari = /Safari/.test(ua) && !isChrome && !inApp;
+    
+    if (inApp) setBrowserType('in-app');
+    else if (isChrome) setBrowserType('chrome');
+    else if (isSafari) setBrowserType('safari');
+    else setBrowserType('other');
 
     const isAppStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone;
     setIsStandalone(isAppStandalone);
@@ -154,110 +167,116 @@ export default function Home() {
                     </Button>
                 </Link>
 
-                {/* PWA Installation Section - Dynamic per Platform */}
-                {mounted && !isStandalone && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-2 flex flex-col items-center"
-                    >
-                        {/* 1. Android/Chrome/Desktop (Programmatic) */}
-                        {deferredPrompt ? (
-                            <Button 
-                                onClick={handleInstallClick}
+            {/* PWA Installation Section - Dynamic per Platform */}
+            {mounted && !isStandalone && (
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-2 flex flex-col items-center"
+                >
+                    {/* 1. Android/Chrome/Desktop (Programmatic) */}
+                    {deferredPrompt ? (
+                        <Button 
+                            onClick={handleInstallClick}
+                            variant="outline"
+                            className="h-12 px-8 rounded-xl border-2 border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 font-black gap-2 animate-pulse shadow-lg"
+                        >
+                            <Smartphone className="w-5 h-5" />
+                            {t('common.installApp')}
+                        </Button>
+                    ) : (
+                        // Fallback logic for iOS or when prompt is not available
+                        <div className="relative">
+                           <Button 
+                                onClick={isIOS ? () => setShowIOSHint(!showIOSHint) : () => setShowGeneralHint(!showGeneralHint)}
                                 variant="outline"
-                                className="h-12 px-8 rounded-xl border-2 border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 font-black gap-2 animate-pulse shadow-lg"
+                                className="h-12 px-8 rounded-xl border-2 border-primary/20 bg-primary/20 text-primary hover:bg-primary/30 font-black gap-2 shadow-sm"
                             >
                                 <Smartphone className="w-5 h-5" />
-                                {t('common.installApp')}
+                                {browserType === 'in-app' ? (language === 'ar' ? 'افتح في المتصفح' : 'Open in Browser') : t('common.installApp')}
                             </Button>
-                        ) : !isIOS ? (
-                            // Fallback for non-iOS where prompt hasn't fired yet
-                            <div className="relative">
-                                <Button 
-                                    onClick={() => setShowGeneralHint(!showGeneralHint)}
-                                    variant="outline"
-                                    className="h-12 px-8 rounded-xl border-2 border-primary/20 bg-primary/20 text-primary hover:bg-primary/30 font-black gap-2 shadow-sm"
-                                >
-                                    <Smartphone className="w-5 h-5" />
-                                    {t('common.installApp')}
-                                </Button>
-                                <AnimatePresence>
-                                    {showGeneralHint && (
-                                        <motion.div 
-                                            initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                                            exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                                            className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-64 p-6 bg-card border border-primary/30 rounded-3xl shadow-2xl z-50 text-center backdrop-blur-xl"
-                                        >
-                                            <p className="text-sm font-bold leading-relaxed">
-                                                {language === 'ar' 
-                                                  ? 'ثبّت التطبيق من إعدادات المتصفح (القائمة النقاط الثلاث الجانبية)' 
-                                                  : 'Install from browser settings (three dots menu)'}
+
+                            <AnimatePresence>
+                                {/* iOS Hint */}
+                                {(showIOSHint && isIOS) && (
+                                    <motion.div 
+                                        initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                                        className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-72 p-6 bg-card border border-primary/30 rounded-3xl shadow-2xl z-50 text-right backdrop-blur-xl"
+                                    >
+                                        <div className="flex flex-col gap-4 text-sm font-bold leading-relaxed">
+                                            <div className="flex items-center gap-3 text-primary border-b border-primary/10 pb-2 mb-2">
+                                                <Smartphone className="w-5 h-5" />
+                                                <span className="text-base">{t('common.pwa_ios_title')}</span>
+                                            </div>
+                                            
+                                            {/* Dynamic Instruction Text based on Browser */}
+                                            <p className="text-xs text-muted-foreground mb-2">
+                                                {browserType === 'safari' ? 'Safari Browser' : browserType === 'chrome' ? 'Chrome Browser' : browserType === 'in-app' ? 'In-App Browser' : 'Browser'}
                                             </p>
+
+                                            {browserType === 'in-app' ? (
+                                                 <p className="text-destructive font-bold">
+                                                    {t('common.pwa_in_app_warning')}
+                                                 </p>
+                                            ) : (
+                                                <>
+                                                    <p className="flex items-center gap-3">
+                                                        <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">١</span>
+                                                        {browserType === 'chrome' ? t('common.pwa_chrome_instruction') : t('common.pwa_safari_instruction')} 
+                                                        <Share className="w-4 h-4 text-primary" />
+                                                    </p>
+                                                    <p className="flex items-center gap-3">
+                                                        <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">٢</span>
+                                                        {t('common.pwa_ios_step2')} <PlusSquare className="w-4 h-4 text-primary" />
+                                                    </p>
+                                                </>
+                                            )}
+
                                             <Button 
                                                 size="sm" 
-                                                className="mt-3 w-full rounded-xl"
-                                                onClick={() => setShowGeneralHint(false)}
+                                                className="mt-2 rounded-xl"
+                                                onClick={() => setShowIOSHint(false)}
                                             >
                                                 {t('common.pwa_ios_got_it')}
                                             </Button>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-                        ) : null}
+                                        </div>
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-card" />
+                                    </motion.div>
+                                )}
 
-                        {/* 2. iOS (Instructional) */}
-                        {isIOS && (
-                            <div className="relative">
-                                <Button 
-                                    onClick={() => setShowIOSHint(!showIOSHint)}
-                                    variant="outline"
-                                    className="h-12 px-8 rounded-xl border-2 border-primary/20 bg-primary/20 text-primary hover:bg-primary/30 font-black gap-2 shadow-sm"
-                                >
-                                    <PlusSquare className="w-5 h-5" />
-                                    {t('common.pwa_ios_title')}
-                                </Button>
-
-                                <AnimatePresence>
-                                    {showIOSHint && (
-                                        <motion.div 
-                                            initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                                            exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                                            className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-64 p-6 bg-card border border-primary/30 rounded-3xl shadow-2xl z-50 text-right backdrop-blur-xl"
+                                {/* General Hint (Android/Desktop fallback) */}
+                                {(showGeneralHint && !isIOS) && (
+                                    <motion.div 
+                                        initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                                        className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-64 p-6 bg-card border border-primary/30 rounded-3xl shadow-2xl z-50 text-center backdrop-blur-xl"
+                                    >
+                                        {browserType === 'in-app' ? (
+                                            <p className="text-destructive font-bold leading-relaxed">
+                                                {t('common.pwa_in_app_warning')}
+                                            </p>
+                                        ) : (
+                                            <p className="text-sm font-bold leading-relaxed">
+                                                {t('common.pwa_android_instruction')}
+                                            </p>
+                                        )}
+                                        <Button 
+                                            size="sm" 
+                                            className="mt-3 w-full rounded-xl"
+                                            onClick={() => setShowGeneralHint(false)}
                                         >
-                                            <div className="flex flex-col gap-4 text-sm font-bold leading-relaxed">
-                                                <div className="flex items-center gap-3 text-primary border-b border-primary/10 pb-2 mb-2">
-                                                    <Smartphone className="w-5 h-5" />
-                                                    <span className="text-base">{t('common.pwa_ios_title')}</span>
-                                                </div>
-                                                <p className="flex items-center gap-3">
-                                                    <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">١</span>
-                                                    {t('common.pwa_ios_step1')} <Share className="w-4 h-4 text-primary" />
-                                                </p>
-                                                <p className="flex items-center gap-3">
-                                                    <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">٢</span>
-                                                    {t('common.pwa_ios_step2')} <PlusSquare className="w-4 h-4 text-primary" />
-                                                </p>
-                                                <Button 
-                                                    size="sm" 
-                                                    className="mt-2 rounded-xl"
-                                                    onClick={() => setShowIOSHint(false)}
-                                                >
-                                                    {t('common.pwa_ios_got_it')}
-                                                </Button>
-                                            </div>
-                                            {/* Arrow */}
-                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-card" />
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-                        )}
-                    </motion.div>
-                )}
+                                            {t('common.pwa_ios_got_it')}
+                                        </Button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    )}
+                </motion.div>
+            )}
             </motion.div>
 
             <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20 w-full">

@@ -101,24 +101,24 @@
     --popover: 240 25% 10%;
     --popover-foreground: 210 40% 98%;
  
-    --primary: 180 100% 50%; /* Pure Neon Cyan */
-    --primary-foreground: 240 30% 6%;
- 
-    --secondary: 280 100% 70%; /* Neon Purple */
-    --secondary-foreground: 210 40% 98%;
- 
+    --primary: 270 80% 65%; /* Neon Purple (Primary) */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 180 100% 50%; /* Pure Neon Cyan (Secondary) */
+    --secondary-foreground: 240 30% 6%;
+
     --muted: 240 20% 15%;
     --muted-foreground: 215 20% 65%;
- 
-    --accent: 280 100% 70%;
-    --accent-foreground: 210 40% 98%;
+
+    --accent: 180 100% 50%; /* Cyan Accent */
+    --accent-foreground: 240 30% 6%;
  
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
  
     --border: 240 20% 15%;
     --input: 240 20% 15%;
-    --ring: 180 100% 50%;
+    --ring: 270 80% 65%;
     --radius: 1rem;
   }
 

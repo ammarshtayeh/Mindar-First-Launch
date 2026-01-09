@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mindar Carousel Vol. 2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --secondary: #d946ef;
+            --dark: #0f172a;
+            --light: #f8fafc;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #111;
+            display: flex;
+            gap: 20px;
+            padding: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* 4:5 Ratio */
+        .slide {
+            width: 400px;
+            height: 500px;
+            background: var(--dark);
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 30px;
+            z-index: 10;
+        }
+
+        h2 {
+            color: white;
+            margin: 0;
+            font-size: 2rem;
+            line-height: 1.2;
+            font-weight: 900;
+        }
+
+        .num {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.3);
+            font-weight: bold;
+        }
+
+        .visual-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Abstract Shapes */
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.5;
+        }
+
+        .s1 {
+            width: 200px;
+            height: 200px;
+            background: var(--primary);
+            top: 20%;
+            right: -50px;
+        }
+
+        .s2 {
+            width: 150px;
+            height: 150px;
+            background: var(--secondary);
+            bottom: 10%;
+            left: -30px;
+        }
+
+        /* Step Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 16px;
+            width: 70%;
+            text-align: center;
+            color: white;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            transform: rotate(-3deg);
+        }
+
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .highlight {
+            color: var(--secondary);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Slide 1: Hook -->
+    <div class="slide">
+        <div class="shape s1"></div>
+        <div class="num">1/4</div>
+        <div class="header">
+            <h2>كيف تدرس مادة كاملة في <span class="highlight">ساعة وحدة؟</span> ⏱️</h2>
+        </div>
+        <div class="visual-area">
+            <div style="font-size: 6rem;">🤯</div>
+        </div>
+        <div style="padding: 20px; text-align: center; color: #94a3b8;">(بدون ما تحفظ وتنسى)</div>
+    </div>
+
+    <!-- Slide 2: Step 1 -->
+    <div class="slide">
+        <div class="shape s2"></div>
+        <div class="num">2/4</div>
+        <div class="header">
+            <h2>1. ارفع ملفاتك</h2>
+            <p style="color: #cbd5e1;">PDF, PowerPoint, أو حتى صور.</p>
+        </div>
+        <div class="visual-area">
+            <div class="card">
+                <span class="icon">📂</span>
+                <div>Mindar AI</div>
+                <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 5px;">Analyzing...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: Step 2 -->
+    <div class="slide">
+        <div class="shape s1" style="top:auto; bottom: -50px;"></div>
+        <div class="num">3/4</div>
+        <div class="header">
+            <h2>2. العب كويزات</h2>
+        </div>
+        <div class="visual-area">
+            <div class="card" style="transform: rotate(3deg);">
+                <span class="icon">🎮</span>
+                <div
+                    style="background: #10b981; padding: 5px 15px; border-radius: 20px; display: inline-block; font-size: 0.9rem;">
+                    إجابة صحيحة!</div>
+                <div style="margin-top: 10px; font-size: 0.9rem;">+50 XP</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 4: Outcome -->
+    <div class="slide">
+        <div class="shape s1"></div>
+        <div class="shape s2"></div>
+        <div class="num">4/4</div>
+        <div class="header" style="text-align: center; margin-top: 40px;">
+            <h2>النتيجة؟</h2>
+            <p style="font-size: 1.2rem; color: #fff; margin: 20px 0;">
+                علامات كاملة + وقت فراغ أكثر
+            </p>
+            <div
+                style="background: white; color: black; padding: 15px 30px; border-radius: 50px; font-weight: bold; display: inline-block; box-shadow: 0 0 20px rgba(255,255,255,0.5);">
+                MINDAR.APP 🚀
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Mindar Story Designs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8b5cf6; /* Violet */
+            --secondary: #d946ef; /* Fuchsia */
+            --bg: #0f172a; /* Slate 900 */
+            --text: #f8fafc;
+        }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #000;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        /* Instagram Story Aspect Ratio 9:16 approx */
+        .story-container {
+            width: 360px; 
+            height: 640px;
+            overflow: hidden;
+            position: relative;
+            background: var(--bg);
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border: 2px solid #333;
+        }
+        
+        .blob {
+            position: absolute;
+            background: var(--primary);
+            filter: blur(80px);
+            opacity: 0.4;
+            border-radius: 50%;
+            z-index: 0;
+        }
+        .blob-1 { top: -20%; right: -20%; width: 300px; height: 300px; background: var(--secondary); }
+        .blob-2 { bottom: -10%; left: -10%; width: 250px; height: 250px; background: var(--primary); }
+
+        .content {
+            z-index: 10;
+            padding: 30px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff 0%, #e2e8f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        p {
+            font-size: 1.2rem;
+            color: #cbd5e1;
+            margin-bottom: 2rem;
+            font-weight: 700;
+        }
+
+        .btn {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 12px 32px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.5);
+            margin-top: auto;
+            margin-bottom: 40px;
+            cursor: pointer;
+        }
+
+        .mockup-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            width: 80%;
+            margin: 20px 0;
+            transform: rotate(-2deg);
+        }
+
+        .badge {
+            background: rgba(139, 92, 246, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            color: #d8b4fe;
+            font-size: 0.8rem;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Story 1: Problem -->
+    <div class="story-container" id="story1">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="content">
+            <div class="badge">مشكلة طلابية 🤯</div>
+            <h1>ليش تغلب حالك بالدراسة؟</h1>
+            <div class="mockup-card">
+                <div style="font-size: 3rem; margin-bottom: 10px;">📚 ➡️ 🚀</div>
+                <div style="font-size: 0.8rem; opacity: 0.7;">ملفات PDF و PPTX</div>
+            </div>
+            <p>ارفع ملفاتك والموقع بحولها لكويزات بثواني!</p>
+            <div class="btn">جرب Mindar مجاناً</div>
+        </div>
+    </div>
+
+    <!-- Story 2: Features -->
+    <div class="story-container" id="story2">
+        <div class="blob blob-1" style="background: var(--primary); top: 50%;"></div>
+        <div class="content">
+            <h1>اختبر حالك وتحدى أصحابك! 🏆</h1>
+            <div class="mockup-card" style="transform: rotate(2deg);">
+                <div style="text-align: right; font-size: 0.9rem; margin-bottom: 15px;">السؤال 4/10</div>
+                <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; margin-bottom: 5px; text-align: right;">الخيار الأول</div>
+                <div style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; padding: 10px; border-radius: 8px; text-align: right;">الخيار الصحيح ✅</div>
+            </div>
+            <p>ذكاء اصطناعي رهيب يفهم عليك.</p>
+        </div>
+    </div>
+
+    <!-- Story 3: CTA -->
+    <div class="story-container" id="story3">
+        <div class="blob blob-2" style="width: 500px; height: 500px; opacity: 0.2;"></div>
+        <div class="content">
+            <h1 style="font-size: 3.5rem;">MINDAR</h1>
+            <p style="font-size: 1.4rem;">كل اللي بتحتاجه عشان تنجح موجود هون.</p>
+            <div class="btn" style="transform: scale(1.2);">ابدأ الآن ⚡️</div>
+        </div>
+    </div>
+
+</body>
+</html>
