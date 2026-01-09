@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { FileText, Brain, Sparkles, Upload, Play, Zap, ShieldCheck, Globe, PenTool, Info } from "lucide-react"
 import { MotivationalBanner } from "@/components/motivational-banner"
+import { AdPlaceholder } from "@/components/ads/AdPlaceholder"
 import { useI18n } from "@/lib/i18n"
 
 export default function Home() {
@@ -26,9 +27,9 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center justify-center p-6 pt-32 relative overflow-hidden">
 
         
-        {/* Animated Background Elements - theme aware */}
-        <div className="absolute top-10 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[150px] pointer-events-none calm-pulse" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+        {/* Optimized Background Elements */}
+        <div className="absolute top-10 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[300px] h-[300px] bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
 
         <motion.div 
             variants={container}
@@ -101,6 +102,11 @@ export default function Home() {
                 </Button>
             </motion.div>
 
+            {/* Ad Banner on Home Page - Moved Higher */}
+            <motion.div variants={item} className="w-full mt-8 max-w-4xl">
+                <AdPlaceholder variant="banner" label={language === 'ar' ? 'محتوى برعاية' : 'Sponsored Content'} />
+            </motion.div>
+
             <motion.div variants={item}>
                 <Link href="/about">
                     <Button variant="ghost" className="text-muted-foreground hover:text-primary transition-colors gap-2">
@@ -109,7 +115,6 @@ export default function Home() {
                     </Button>
                 </Link>
             </motion.div>
-
 
             <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20 w-full">
                 <FeatureCard 
@@ -136,6 +141,14 @@ export default function Home() {
         </div>
         <div className="absolute bottom-[20%] right-[5%] opacity-20 pointer-events-none animate-bounce duration-[4s]">
             <Sparkles className="w-16 h-16 text-primary" />
+        </div>
+
+        {/* Floating Sidebar Ads for Large Screens */}
+        <div className="hidden xl:block absolute left-[2%] top-[30%] w-48">
+            <AdPlaceholder variant="sidebar" label={language === 'ar' ? 'إعلان' : 'Ad'} />
+        </div>
+        <div className="hidden xl:block absolute right-[2%] top-[30%] w-48">
+            <AdPlaceholder variant="sidebar" label={language === 'ar' ? 'إعلان' : 'Ad'} />
         </div>
     </main>
   )

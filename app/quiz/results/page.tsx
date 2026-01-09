@@ -17,8 +17,12 @@ import {
   BookOpen,
   Zap,
   Target,
+  CheckCircle2,
   CheckCircle,
-  XCircle
+  XCircle,
+  MessageCircle,
+  Twitter,
+  Copy
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -27,6 +31,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button"
 import { AnalyticsDashboard } from '@/components/analytics-dashboard'
 import { Flashcards } from '@/components/flashcards'
+import { AdPlaceholder } from '@/components/ads/AdPlaceholder'
 import { GamificationEngine } from '@/lib/gamification'
 
 export default function ResultsPage() {
@@ -119,6 +124,25 @@ export default function ResultsPage() {
     return []
   }, [data])
 
+  const shareOnWhatsApp = () => {
+    const text = language === 'ar' 
+        ? `جبت ${data.score}/${data.total} في كويز ${data.title} على Mindar! 🚀\nتقدر تتفوق علي؟ جرب حظك هون: https://mindar.tech`
+        : `I scored ${data.score}/${data.total} on "${data.title}" quiz using Mindar! 🚀\nCan you beat me? Try it here: https://mindar.tech`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const shareOnTwitter = () => {
+    const text = language === 'ar'
+        ? `جبت ${data.score}/${data.total} في كويز ${data.title} على Mindar! 🚀 #Mindar #AI #Study`
+        : `I scored ${data.score}/${data.total} on "${data.title}" quiz using Mindar! 🚀 #Mindar #AI #Study`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://mindar.tech')}`, '_blank');
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText('https://mindar.tech');
+    alert(t('common.linkCopied'));
+  };
+
   if (!data) return null
 
   const percentage = Math.round((data.score / data.total) * 100)
@@ -133,7 +157,7 @@ export default function ResultsPage() {
     }
 
     const revengeQuiz = {
-      title: `Revenge Round: ${data.title}`,
+      title: t('results.revengeRound', { title: data.title }),
       questions: wrongQuestions,
       vocabulary: data.vocabulary || []
     }
@@ -206,11 +230,52 @@ export default function ResultsPage() {
                   className="h-14 px-8 rounded-2xl bg-red-500 text-white hover:bg-red-600 gap-2 font-black transition-all hover:scale-105 shadow-lg relative overflow-hidden group"
                 >
                   <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                  <Target className="w-5 h-5 animate-pulse" />
-                  {language === 'ar' ? 'حدد لي مكان الأخطاء' : 'Locate my mistakes'}
+                   <Target className="w-5 h-5" />
+                  {t('results.smartDetails')}
                 </Button>
               )}
             </div>
+
+            {/* Social Sharing Section */}
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+                className="flex flex-col items-center gap-4 pt-10"
+            >
+                <p className="text-xs font-black uppercase text-muted-foreground tracking-widest">
+                    {t('common.share')}
+                </p>
+                <div className="flex gap-4">
+                    <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={shareOnWhatsApp}
+                        className="w-14 h-14 rounded-2xl border-2 border-green-500/20 text-green-500 hover:bg-green-500 hover:text-white transition-all shadow-lg"
+                        title={t('common.shareWhatsApp')}
+                    >
+                        <MessageCircle className="w-6 h-6 fill-current" />
+                    </Button>
+                    <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={shareOnTwitter}
+                        className="w-14 h-14 rounded-2xl border-2 border-primary/20 text-primary hover:bg-primary hover:text-white transition-all shadow-lg"
+                        title={t('common.shareTwitter')}
+                    >
+                        <Twitter className="w-6 h-6 fill-current" />
+                    </Button>
+                    <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={copyToClipboard}
+                        className="w-14 h-14 rounded-2xl border-2 border-border text-muted-foreground hover:bg-slate-100 hover:text-foreground transition-all shadow-lg"
+                        title={t('common.copyLink')}
+                    >
+                        <Copy className="w-6 h-6" />
+                    </Button>
+                </div>
+            </motion.div>
           </div>
         </div>
 
@@ -223,7 +288,7 @@ export default function ResultsPage() {
                className="flex flex-wrap justify-center gap-4 bg-primary/5 p-6 rounded-[2.5rem] border-2 border-dashed border-primary/20"
             >
               <div className="w-full text-center mb-2">
-                 <span className="text-xs font-black uppercase text-primary tracking-widest">أوسمة جديدة! 🎖️</span>
+                 <span className="text-xs font-black uppercase text-primary tracking-widest">{t('results.newBadges')}</span>
               </div>
               {unlockedBadges.map(badge => (
                 <motion.div 
@@ -271,6 +336,11 @@ export default function ResultsPage() {
             </motion.div>
         </div>
 
+        {/* Ad Banner on Results Page */}
+        <div className="my-8">
+            <AdPlaceholder variant="banner" label={language === 'ar' ? 'ببرعاية Mindar AI' : 'Powered by Mindar AI Ads'} />
+        </div>
+
         {/* Core Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <motion.div whileHover={{ y: -5 }} className="bg-card/50 backdrop-blur-xl border border-border/50 p-8 rounded-[2.5rem] text-center shadow-lg">
@@ -311,14 +381,14 @@ export default function ResultsPage() {
                 className="bg-red-500/5 border-2 border-red-500/20 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden"
             >
                 {/* Glow Effect */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent animate-pulse" />
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent" />
                 <div className="flex items-center gap-4 mb-8">
                     <div className="w-12 h-12 bg-red-500 text-white rounded-2xl flex items-center justify-center">
                         <Target className="w-6 h-6" />
                     </div>
                     <div>
-                        <h3 className="text-3xl font-black">{language === 'ar' ? 'حددنا وين الخلل بالضبط 🎯' : 'Found exactly where to improve 🎯'}</h3>
-                        <p className="text-muted-foreground font-bold">{language === 'ar' ? 'هذه الأجزاء من المادة محتاجة منك مراجعة عشان تسيطر عليها.' : 'These parts of the material need review to master them.'}</p>
+                        <h3 className="text-3xl font-black">{t('results.foundMistakesTitle')}</h3>
+                        <p className="text-muted-foreground font-bold">{t('results.foundMistakesDesc')}</p>
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -329,7 +399,7 @@ export default function ResultsPage() {
                                 {topic.missedPages && topic.missedPages.length > 0 && (
                                     <div className="flex flex-wrap gap-1 mb-4">
                                         <span className="text-[10px] font-black uppercase text-muted-foreground w-full mb-1">
-                                            {language === 'ar' ? 'صفحات الأخطاء:' : 'Mistake Pages:'}
+                                            {t('results.mistakePages')}
                                         </span>
                                         {topic.missedPages.map((page: number) => (
                                             <span key={page} className="px-2 py-0.5 bg-red-500/10 text-red-500 rounded-md text-[10px] font-black">
@@ -340,11 +410,11 @@ export default function ResultsPage() {
                                 )}
                             </div>
                             <div className="flex items-center justify-between border-t border-border/50 pt-4 mt-2">
-                                <span className="text-sm font-bold text-red-500">
-                                    {language === 'ar' ? `غلطت في ${topic.total - topic.score} أسئلة` : `${topic.total - topic.score} mistakes`}
+                                 <span className="text-sm font-bold text-red-500">
+                                    {t('results.errorCount', { count: topic.total - topic.score })}
                                 </span>
                                 <div className="text-[10px] font-black uppercase bg-red-500/10 px-2 py-0.5 rounded text-red-500">
-                                    {topic.percentage}% Accuracy
+                                    {t('results.accuracy', { percentage: topic.percentage })}
                                 </div>
                             </div>
                         </div>
@@ -362,7 +432,7 @@ export default function ResultsPage() {
         >
             <div className="flex items-center gap-4">
                 <History className="w-10 h-10 text-primary" />
-                <h2 className="text-4xl font-black">{language === 'ar' ? 'مراجعة الأسئلة' : 'Question Review'}</h2>
+                <h2 className="text-4xl font-black">{t('results.questionReview')}</h2>
             </div>
             
             <div className="grid grid-cols-1 gap-6">
@@ -396,23 +466,23 @@ export default function ResultsPage() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                <div className="p-4 rounded-2xl bg-background/50 border border-border/50">
-                                    <p className="text-[10px] font-black uppercase opacity-60 mb-1">{language === 'ar' ? 'إجابتك:' : 'Your Answer:'}</p>
+                                 <div className="p-4 rounded-2xl bg-background/50 border border-border/50">
+                                    <p className="text-[10px] font-black uppercase opacity-60 mb-1">{t('results.yourAnswer')}</p>
                                     <p className={`font-bold break-words ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-                                        {answer?.selectedOption || answer?.textAnswer || (language === 'ar' ? 'لم تتم الإجابة' : 'Not answered')}
+                                        {answer?.selectedOption || answer?.textAnswer || t('results.notAnswered')}
                                     </p>
                                 </div>
-                                {!isCorrect && (
+                                 {!isCorrect && (
                                     <div className="p-4 rounded-2xl bg-green-500/5 border border-green-500/20">
-                                        <p className="text-[10px] font-black uppercase text-green-600/60 mb-1">{language === 'ar' ? 'الإجابة الصحيحة:' : 'Correct Answer:'}</p>
+                                        <p className="text-[10px] font-black uppercase text-green-600/60 mb-1">{t('results.correctAnswer')}</p>
                                         <p className="font-bold text-green-600 break-words">{q.answer}</p>
                                     </div>
                                 )}
                             </div>
 
-                            {q.explanation && (
+                             {q.explanation && (
                                 <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10">
-                                    <p className="text-xs font-black uppercase text-primary/60 mb-2">{language === 'ar' ? 'الشرح:' : 'Explanation:'}</p>
+                                    <p className="text-xs font-black uppercase text-primary/60 mb-2">{t('results.explanation')}</p>
                                     <p className="text-sm font-medium opacity-80 italic break-words" dir="auto">{q.explanation}</p>
                                 </div>
                             )}

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cairo, Inter, Orbitron } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme-provider";
@@ -24,8 +24,45 @@ const orbitron = Orbitron({
 });
 
 export const metadata: Metadata = {
-  title:"MINDAR",
-  description: "حول ملفاتك إلى اختبارات تفاعلية في ثوانٍ",
+  metadataBase: new URL("https://mindar.tech"),
+  title: "Mindar | رفيقك الذكي للدراسة",
+  description: "حول مادتك الدراسية (PDF/PPTX) إلى كويزات، بطاقات تعليمية، ومهام ذكية في ثوانٍ باستخدام الذكاء الاصطناعي.",
+  keywords: ["دراسة", "ذكاء اصطناعي", "كويزات", "بطاقات تعليمية", "مهام", "Mindar", "AI Study", "Quiz Generator"],
+  authors: [{ name: "Mindar Team" }],
+  openGraph: {
+    title: "Mindar | رفيقك الذكي للدراسة",
+    description: "توقف عن الدراسة التقليدية! ارفع ملفاتك ودع الذكاء الاصطناعي يقوم بالباقي.",
+    url: "https://mindar.tech",
+    siteName: "Mindar AI",
+    images: [
+      {
+        url: "/logo.png",
+        width: 800,
+        height: 600,
+        alt: "Mindar AI Logo",
+      },
+    ],
+    locale: "ar_EG",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Mindar | AI Study Companion",
+    description: "Generate quizzes and flashcards from your study materials in seconds.",
+    images: ["/logo.png"],
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/logo.png",
+  },
+  manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: "#4f46e5",
 };
 
 export default function RootLayout({

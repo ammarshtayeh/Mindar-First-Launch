@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, Circle, Plus, Trash2, Calendar, Clock, AlertCircle } from 'lucide-react'
+import { CheckCircle2, Circle, Plus, Trash2, Calendar, Clock, AlertCircle, Zap } from 'lucide-react'
 import { format } from 'date-fns'
 import { arEG } from 'date-fns/locale'
 
@@ -191,7 +191,7 @@ export default function TodoPage() {
                                                 </span>
                                                 تذكير تلقائي
                                             </span>
-                                            {task.reminderSent && (
+                                    {task.reminderSent && (
                                                 <span className="text-green-500 flex items-center gap-1">
                                                     <CheckCircle2 className="w-3 h-3" />
                                                     تم الإرسال
@@ -201,14 +201,31 @@ export default function TodoPage() {
                                     )}
                                 </div>
 
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="text-slate-300 hover:text-red-500 hover:bg-red-50"
-                                    onClick={() => task.id && handleDelete(task.id)}
-                                >
-                                    <Trash2 className="w-5 h-5" />
-                                </Button>
+                                <div className="flex items-center gap-1">
+                                    {!task.completed && (
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+                                            onClick={() => {
+                                                window.dispatchEvent(new CustomEvent('start-pomodoro-focus', { 
+                                                    detail: { taskName: task.title } 
+                                                }))
+                                            }}
+                                            title="ابدأ التركيز (Pomodoro)"
+                                        >
+                                            <Zap className="w-5 h-5 fill-current" />
+                                        </Button>
+                                    )}
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="text-slate-300 hover:text-red-500 hover:bg-red-50"
+                                        onClick={() => task.id && handleDelete(task.id)}
+                                    >
+                                        <Trash2 className="w-5 h-5" />
+                                    </Button>
+                                </div>
                             </CardContent>
                         </Card>
                     </motion.div>

@@ -67,7 +67,7 @@ export function Navbar() {
     setI18nLanguage(lang)
   }
 
-  if (!isMounted) return null
+  if (!isMounted || pathname?.startsWith('/admin')) return null
 
   return (
     <>
@@ -184,7 +184,7 @@ export function Navbar() {
             title={voiceEnabled ? t('common.voiceEnabled') : t('common.voiceDisabled')}
           >
             {voiceEnabled ? (
-                <Volume2 className="w-6 h-6 animate-pulse" />
+                <Volume2 className="w-6 h-6" />
             ) : (
                 <VolumeX className="w-6 h-6" />
             )}

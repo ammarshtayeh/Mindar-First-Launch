@@ -23,6 +23,7 @@ import { useRouter } from 'next/navigation'
 import { useI18n } from '@/lib/i18n'
 import { voiceManager } from '@/lib/voice-manager'
 import { UploadSection } from '@/components/upload-section'
+import { AdPlaceholder } from '@/components/ads/AdPlaceholder'
 import { ActivitySettingsModal } from '@/components/activity-settings-modal'
 import { useDispatch, useSelector } from 'react-redux'
 import { setQuiz, clearQuiz } from '@/redux/slices/quizSlice'
@@ -44,6 +45,31 @@ export default function StudyHub() {
   })
   const [showRadar, setShowRadar] = useState(false)
   const [resetKey, setResetKey] = useState(0)
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
+
+  const loadingMessages = language === 'ar' ? [
+    "جاري استخراج العبقرية من أوراقك...",
+    "الذكاء الاصطناعي عم بطبخلنا كويز مرتب...",
+    "ثواني بس، عم بنظم الأفكار عشانك...",
+    "جاري تحويل السلايدات لبطاقات أسطورية...",
+    "دماغنا الإلكتروني شغال بأعلى طاقة..."
+  ] : [
+    "Extracting genius from your documents...",
+    "AI is cooking up a great quiz...",
+    "Just a second, organizing ideas for you...",
+    "Converting slides into legendary cards...",
+    "Our electronic brain is working at full capacity..."
+  ]
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    if (isGenerating) {
+        interval = setInterval(() => {
+            setLoadingMessageIndex(prev => (prev + 1) % loadingMessages.length)
+        }, 2500)
+    }
+    return () => clearInterval(interval)
+  }, [isGenerating, loadingMessages.length])
 
   // Load persisted text on mount
   useEffect(() => {
@@ -227,6 +253,11 @@ export default function StudyHub() {
             isProcessing={isGenerating} 
         />
 
+        {/* Ad Banner on Hub Page */}
+        <div className="my-10">
+            <AdPlaceholder variant="banner" label={language === 'ar' ? 'مساحة إعلانية لـ AI' : 'AI Sponsored Slot'} />
+        </div>
+
         <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 transition-all duration-500 ${!extractedText && !quizData ? 'opacity-30 grayscale pointer-events-none' : ''}`}>
             {hubItems.map((item, idx) => (
                 <motion.div
@@ -322,7 +353,7 @@ export default function StudyHub() {
                     className="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => setShowRadar(true)}
                 >
-                    <div className="w-12 h-12 bg-green-500/20 text-green-500 rounded-2xl flex items-center justify-center animate-pulse">
+                    <div className="w-12 h-12 bg-green-500/20 text-green-500 rounded-2xl flex items-center justify-center">
                         <Zap className="w-6 h-6 fill-green-500" />
                     </div>
                     <div>
@@ -509,6 +540,38 @@ export default function StudyHub() {
         onClose={() => setSettingsModal({ ...settingsModal, open: false })}
         onStart={generateWithSettings}
       />
+
+      <AnimatePresence>
+        {isGenerating && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/80 backdrop-blur-xl"
+          >
+            <div className="relative">
+                <div className="w-32 h-32 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <Sparkles className="w-12 h-12 text-primary animate-pulse" />
+                </div>
+            </div>
+            <motion.div 
+                key={loadingMessageIndex}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mt-10 text-center px-6"
+            >
+                <h3 className="text-3xl font-black mb-2 text-primary">
+                    {language === 'ar' ? 'جاري التحضير...' : 'Preparing...'}
+                </h3>
+                <p className="text-xl font-bold opacity-60 max-w-md mx-auto">
+                    {loadingMessages[loadingMessageIndex]}
+                </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   )
 }

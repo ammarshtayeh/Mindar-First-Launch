@@ -12,6 +12,7 @@ export function PomodoroTimer() {
   const [isActive, setIsActive] = useState(false)
   const [mode, setMode] = useState<'study' | 'break'>('study')
   const [isMinimized, setIsMinimized] = useState(true)
+  const [focusTask, setFocusTask] = useState<string | null>(null)
 
   const toggleTimer = () => setIsActive(!isActive)
 
@@ -24,6 +25,21 @@ export function PomodoroTimer() {
     }
     setSeconds(0)
   }, [mode])
+
+  useEffect(() => {
+    const handleStartFocus = (e: any) => {
+      const taskName = e.detail?.taskName || 'مهمة جديدة'
+      setFocusTask(taskName)
+      setIsMinimized(false)
+      setMode('study')
+      setMinutes(25)
+      setSeconds(0)
+      setIsActive(true)
+    }
+
+    window.addEventListener('start-pomodoro-focus', handleStartFocus as EventListener)
+    return () => window.removeEventListener('start-pomodoro-focus', handleStartFocus as EventListener)
+  }, [])
 
   const switchMode = () => {
     const newMode = mode === 'study' ? 'break' : 'study'
@@ -47,14 +63,15 @@ export function PomodoroTimer() {
           // Timer finished
           setIsActive(false)
           new Audio('/notification.mp3').play().catch(() => {}) // Fallback if no file
-          alert(mode === 'study' ? 'وقت الاستراحة يا بطل! ☕' : 'يلا نرجع للدراسة! 📚')
+          alert(mode === 'study' ? `عاشت ايدك! خلصنا تركيز على: ${focusTask || 'المهمة'}` : 'يلا نرجع للدراسة! 📚')
+          if (mode === 'study') setFocusTask(null)
           switchMode()
         }
       }, 1000)
     }
 
     return () => clearInterval(interval)
-  }, [isActive, minutes, seconds, mode])
+  }, [isActive, minutes, seconds, mode, focusTask])
 
   if (theme === 'focus' && isMinimized) return null
 
@@ -69,14 +86,14 @@ export function PomodoroTimer() {
             className="bg-card/90 backdrop-blur-xl border-2 border-primary/30 rounded-[2rem] p-6 shadow-2xl w-64"
           >
             <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 max-w-[80%]">
                 {mode === 'study' ? (
                   <BookOpen className="w-5 h-5 text-primary" />
                 ) : (
                   <Coffee className="w-5 h-5 text-green-500" />
                 )}
-                <span className="font-black text-sm uppercase tracking-tighter">
-                  {mode === 'study' ? 'وقت التركيز' : 'وقت الراحة'}
+                <span className="font-black text-sm uppercase tracking-tighter truncate">
+                  {focusTask || (mode === 'study' ? 'وقت التركيز' : 'وقت الراحة')}
                 </span>
               </div>
               <button 
@@ -124,7 +141,7 @@ export function PomodoroTimer() {
         className={`
           w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl transition-all border-2
           ${mode === 'study' ? 'bg-primary text-primary-foreground border-primary/20' : 'bg-green-500 text-white border-green-400/20'}
-          ${isActive && 'animate-pulse'}
+          ${isActive ? '' : ''}
         `}
       >
         <Timer className="w-8 h-8" />

@@ -120,8 +120,8 @@ export default function QuizPage() {
 
     if (!quiz) return (
         <div className="min-h-screen flex flex-col items-center justify-center text-foreground bg-background font-cairo">
-            <Loader2 className="animate-spin w-20 h-20 text-primary mb-8 calm-pulse" /> 
-            <p className="text-4xl font-black animate-pulse text-primary text-glow">{t('quiz.processing')}</p>
+            <Loader2 className="animate-spin w-20 h-20 text-primary mb-8" /> 
+            <p className="text-4xl font-black text-primary text-glow">{t('quiz.processing')}</p>
         </div>
     )
 
@@ -279,7 +279,7 @@ export default function QuizPage() {
     return (
         <main className="min-h-screen pt-40 px-6 pb-20 relative overflow-hidden bg-background font-cairo transition-colors duration-500">
             {/* Background elements */}
-            <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full pointer-events-none calm-pulse" />
+            <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
             <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
 
             {/* Vocabulary Trigger */}
@@ -310,7 +310,7 @@ export default function QuizPage() {
                             className="rounded-2xl font-black gap-2 hover:bg-primary/10 text-primary"
                         >
                             <ArrowLeft className={`w-5 h-5 ${language === 'en' ? 'rotate-180' : ''}`} />
-                            {language === 'ar' ? 'العودة للمركز' : 'Return to Hub'}
+                            {t('quiz.returnToHub')}
                         </Button>
                     </Link>
                 </div>
@@ -347,7 +347,7 @@ export default function QuizPage() {
                                 {/* Auto-read Toggle */}
                                 <div className="flex flex-col items-center gap-1">
                                     <span className="text-[10px] font-black uppercase opacity-60 text-center leading-none">
-                                        {language === 'ar' ? 'القراءة التلقائية' : 'Auto Read'}
+                                        {t('quiz.autoRead')}
                                     </span>
                                     <motion.button
                                         whileHover={{ scale: 1.1 }}
@@ -371,7 +371,7 @@ export default function QuizPage() {
                                 {!isAnswered && (
                                     <div className="flex flex-col items-center gap-1">
                                         <span className="text-[10px] font-black uppercase opacity-60 text-center leading-none">
-                                            {language === 'ar' ? 'إجابة صوتية' : 'Voice Input'}
+                                            {t('quiz.voiceInput')}
                                         </span>
                                         <motion.button
                                             whileHover={{ scale: 1.1 }}
@@ -379,7 +379,7 @@ export default function QuizPage() {
                                             onClick={handleVoiceAnswer}
                                             className={cn(
                                                 "w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-all border-4",
-                                                isListening ? "bg-red-500 text-white animate-pulse border-red-200" : "bg-primary text-primary-foreground border-primary/10"
+                                                isListening ? "bg-red-500 text-white border-red-200" : "bg-primary text-primary-foreground border-primary/10"
                                             )}
                                             title={t('quiz.speakAnswer')}
                                         >

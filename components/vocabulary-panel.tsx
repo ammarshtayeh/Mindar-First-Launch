@@ -3,6 +3,7 @@
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Book, MessageSquare } from 'lucide-react'
+import { useI18n } from '@/lib/i18n'
 
 interface Vocabulary {
   word: string;
@@ -17,6 +18,8 @@ interface VocabularyPanelProps {
 }
 
 export function VocabularyPanel({ vocabulary, isOpen, onClose }: VocabularyPanelProps) {
+  const { t } = useI18n()
+  
   return (
     <AnimatePresence>
       {isOpen && (
@@ -42,7 +45,7 @@ export function VocabularyPanel({ vocabulary, isOpen, onClose }: VocabularyPanel
               <div className="flex justify-between items-center mb-10">
                 <div className="flex items-center gap-3">
                   <Book className="w-8 h-8 text-primary" />
-                  <h2 className="text-3xl font-black">قاموس الكلمات</h2>
+                  <h2 className="text-3xl font-black">{t('quiz.vocabTitle')}</h2>
                 </div>
                 <button 
                   onClick={onClose}
@@ -54,8 +57,8 @@ export function VocabularyPanel({ vocabulary, isOpen, onClose }: VocabularyPanel
 
               <div className="space-y-6">
                 {vocabulary.length === 0 ? (
-                  <div className="text-center p-12 text-muted-foreground italic">
-                    مساكين، ما لقيت كلمات صعبة هون!
+                  <div className="text-center p-12 text-muted-foreground italic font-bold">
+                    {t('quiz.vocabEmpty')}
                   </div>
                 ) : (
                   vocabulary.map((v, idx) => (

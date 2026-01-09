@@ -241,3 +241,16 @@ export const onRecentActivities = (callback: (activities: UserActivity[]) => voi
     callback(activities);
   });
 };
+
+export const getAllUsers = async (): Promise<UserProfile[]> => {
+  try {
+    const usersRef = collection(db, "users");
+    // Sort by createdAt desc if possible, or just fetch all
+    const q = query(usersRef, orderBy("createdAt", "desc"), limit(100));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => doc.data() as UserProfile);
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    return [];
+  }
+};

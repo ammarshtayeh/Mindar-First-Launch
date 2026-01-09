@@ -176,7 +176,7 @@ export function UploadSection({ onTextReady, onClear, isProcessing: externalProc
                                     {processedMaterials.map((name, idx) => (
                                         <div key={idx} className="flex items-center justify-between p-4 bg-green-500/5 rounded-2xl border border-green-500/20">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                                <div className="w-2 h-2 rounded-full bg-green-500" />
                                                 <span className="font-bold text-sm truncate max-w-[150px]">{name}</span>
                                             </div>
                                             <button 
