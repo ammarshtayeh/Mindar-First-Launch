@@ -7,6 +7,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { I18nProvider } from "@/lib/i18n";
 import { ReduxProvider } from "@/redux/provider";
+import { PWARegistration } from "@/components/pwa-registration";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -79,6 +80,7 @@ export default function RootLayout({
         <ThemeProvider>
           <ReduxProvider>
             <I18nProvider>
+              <PWARegistration />
               <Navbar />
               <AppContent>{children}</AppContent>
               <Footer />
