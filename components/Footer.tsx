@@ -57,7 +57,7 @@ export const Footer = () => {
               <span>Linkedin</span>
             </a>
             <a
-              href="https://www.instagram.com/ammar._.space?igsh=MWh1dzg3cXBrcDR2cw=="
+              href="https://www.instagram.com/mindar._tech/"
               target="_blank"
               rel="noopener noreferrer"
               className="group flex items-center gap-3 text-zinc-600 dark:text-zinc-400 hover:text-pink-500 transition-colors"
