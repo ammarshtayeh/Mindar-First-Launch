@@ -38,6 +38,7 @@ export const translations = {
       voiceDisabled: "Voice Feedback: OFF",
       leaderboard: "Leaderboard",
       history: "History",
+      installApp: "Install Mindar App",
     },
     home: {
       badge: "Expertly crafted quizzes, lightning fast 🚀",
@@ -191,7 +192,8 @@ export const translations = {
       voiceEnabled: "المساعد الصوتي: مفعل",
       voiceDisabled: "المساعد الصوتي: معطل",
       leaderboard: "الأوائل",
-      history: "سجلي",
+      history: "سجلات الكويزات",
+      installApp: "تثبيت التطبيق",
     },
     home: {
       badge: "كويزات أسطورية، بلمح البصر 🚀",
