@@ -4,7 +4,8 @@ import Link from "next/link"
 import { motion, Variants } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { FileText, Brain, Sparkles, Upload, Play, Zap, ShieldCheck, Globe, PenTool, Info, Smartphone } from "lucide-react"
+import { FileText, Brain, Sparkles, Upload, Play, Zap, ShieldCheck, Globe, PenTool, Info, Smartphone, Share, PlusSquare } from "lucide-react"
+import { AnimatePresence } from "framer-motion"
 import { MotivationalBanner } from "@/components/motivational-banner"
 import { AdPlaceholder } from "@/components/ads/AdPlaceholder"
 import { useI18n } from "@/lib/i18n"
@@ -12,8 +13,18 @@ import { useI18n } from "@/lib/i18n"
 export default function Home() {
   const { t, language } = useI18n()
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [isIOS, setIsIOS] = useState(false)
+  const [isStandalone, setIsStandalone] = useState(false)
+  const [showIOSHint, setShowIOSHint] = useState(false)
 
   useEffect(() => {
+    // Platform detection
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIOS(isIOSDevice);
+
+    const isAppStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone;
+    setIsStandalone(isAppStandalone);
+
     const handler = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -139,20 +150,73 @@ export default function Home() {
                     </Button>
                 </Link>
 
-                {deferredPrompt && (
+                {/* PWA Installation Section - Dynamic per Platform */}
+                {!isStandalone && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="mt-2"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-2 flex flex-col items-center"
                     >
-                        <Button 
-                            onClick={handleInstallClick}
-                            variant="outline"
-                            className="h-12 px-8 rounded-xl border-2 border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 font-black gap-2 animate-pulse shadow-lg"
-                        >
-                            <Smartphone className="w-5 h-5" />
-                            {t('common.installApp')}
-                        </Button>
+                        {/* 1. Android/Chrome/Desktop (Programmatic) */}
+                        {deferredPrompt && (
+                            <Button 
+                                onClick={handleInstallClick}
+                                variant="outline"
+                                className="h-12 px-8 rounded-xl border-2 border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 font-black gap-2 animate-pulse shadow-lg"
+                            >
+                                <Smartphone className="w-5 h-5" />
+                                {t('common.installApp')}
+                            </Button>
+                        )}
+
+                        {/* 2. iOS (Instructional) */}
+                        {isIOS && !deferredPrompt && (
+                            <div className="relative">
+                                <Button 
+                                    onClick={() => setShowIOSHint(!showIOSHint)}
+                                    variant="outline"
+                                    className="h-12 px-8 rounded-xl border-2 border-primary/20 bg-primary/20 text-primary hover:bg-primary/30 font-black gap-2 shadow-sm"
+                                >
+                                    <PlusSquare className="w-5 h-5" />
+                                    {t('common.pwa_ios_title')}
+                                </Button>
+
+                                <AnimatePresence>
+                                    {showIOSHint && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                                            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                                            className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-64 p-6 bg-card border border-primary/30 rounded-3xl shadow-2xl z-50 text-right backdrop-blur-xl"
+                                        >
+                                            <div className="flex flex-col gap-4 text-sm font-bold leading-relaxed">
+                                                <div className="flex items-center gap-3 text-primary border-b border-primary/10 pb-2 mb-2">
+                                                    <Smartphone className="w-5 h-5" />
+                                                    <span className="text-base">{t('common.pwa_ios_title')}</span>
+                                                </div>
+                                                <p className="flex items-center gap-3">
+                                                    <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">١</span>
+                                                    {t('common.pwa_ios_step1')} <Share className="w-4 h-4 text-primary" />
+                                                </p>
+                                                <p className="flex items-center gap-3">
+                                                    <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">٢</span>
+                                                    {t('common.pwa_ios_step2')} <PlusSquare className="w-4 h-4 text-primary" />
+                                                </p>
+                                                <Button 
+                                                    size="sm" 
+                                                    className="mt-2 rounded-xl"
+                                                    onClick={() => setShowIOSHint(false)}
+                                                >
+                                                    {t('common.pwa_ios_got_it')}
+                                                </Button>
+                                            </div>
+                                            {/* Arrow */}
+                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-top-card" />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        )}
                     </motion.div>
                 )}
             </motion.div>

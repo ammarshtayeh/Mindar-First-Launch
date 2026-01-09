@@ -39,6 +39,10 @@ export const translations = {
       leaderboard: "Leaderboard",
       history: "History",
       installApp: "Install Mindar App",
+      pwa_ios_title: "Install on iPhone 📱",
+      pwa_ios_step1: "Tap the share button below",
+      pwa_ios_step2: "Select 'Add to Home Screen'",
+      pwa_ios_got_it: "Got it!",
     },
     home: {
       badge: "Expertly crafted quizzes, lightning fast 🚀",
@@ -194,6 +198,10 @@ export const translations = {
       leaderboard: "الأوائل",
       history: "سجلات الكويزات",
       installApp: "تثبيت التطبيق",
+      pwa_ios_title: "تثبيت على آيفون 📱",
+      pwa_ios_step1: "اضغط على زر 'مشاركة' بالأسفل",
+      pwa_ios_step2: "اختار 'إضافة إلى الشاشة الرئيسية'",
+      pwa_ios_got_it: "فهمت!",
     },
     home: {
       badge: "كويزات أسطورية، بلمح البصر 🚀",
