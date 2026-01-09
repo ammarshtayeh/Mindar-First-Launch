@@ -17,6 +17,7 @@ export default function Home() {
   const [showIOSHint, setShowIOSHint] = useState(false)
   const [showGeneralHint, setShowGeneralHint] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
 
   useEffect(() => {
     setMounted(true);
