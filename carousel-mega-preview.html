@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mindar Mega Carousel V6 (Screenshot Ready)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Outfit:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #000;
+            color: white;
+            margin: 0;
+            padding: 50px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 100px;
+            /* Big gap for clear separation */
+        }
+
+        /* 
+           SCREENSHOT READY SIZE 
+           Target: ~800px width for crisp 2x screenshots on standard monitors
+           Ratio: 4:5 
+        */
+        .slide-container {
+            width: 800px;
+            height: 1000px;
+            position: relative;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            overflow: hidden;
+            /* No border for screenshots, just shadow for preview separation */
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 50px 100px rgba(0, 0, 0, 0.8);
+            flex-shrink: 0;
+        }
+
+        /* LOGO DESIGN V6: "Cyber-Professional" - Clean, Sleek, Integrated */
+        .pro-logo {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 50;
+        }
+
+        .pro-logo-icon-bg {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .pro-logo img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.5));
+        }
+
+        .pro-logo-text {
+            font-family: 'Outfit', sans-serif;
+            /* Clean English Font */
+            font-weight: 800;
+            font-size: 24px;
+            letter-spacing: 2px;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            margin-top: 4px;
+            /* Optical alignment */
+        }
+
+        .pro-logo-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #22d3ee;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #22d3ee;
+        }
+
+        /* High Impact Typography */
+        h1 {
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 20px rgba(168, 85, 247, 0.6);
+        }
+
+        .text-glow-blue {
+            text-shadow: 0 0 20px rgba(34, 211, 238, 0.6);
+        }
+
+        .text-glow-red {
+            text-shadow: 0 0 20px rgba(248, 113, 113, 0.6);
+        }
+
+        /* Glassmorphism V2 */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            /* Slightly more transparent for pro look */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 32px;
+            box-shadow: 0 15px 40px 0 rgba(0, 0, 0, 0.4);
+        }
+
+        /* Abstract Shapes */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            /* Softer blur */
+            z-index: 0;
+            opacity: 0.5;
+        }
+
+        .orb-purple {
+            background: #8b5cf6;
+            width: 400px;
+            height: 400px;
+            top: -100px;
+            left: -100px;
+        }
+
+        .orb-cyan {
+            background: #06b6d4;
+            width: 350px;
+            height: 350px;
+            bottom: -50px;
+            right: -50px;
+        }
+
+        .orb-pink {
+            background: #ec4899;
+            width: 300px;
+            height: 300px;
+            bottom: 20%;
+            left: -20%;
+        }
+
+        .orb-red {
+            background: #ef4444;
+            width: 350px;
+            height: 350px;
+            top: 20%;
+            right: -20%;
+        }
+
+        /* Grid Pattern Overlay */
+        .grid-pattern {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 1;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 1. Hook -->
+    <div class="slide-wrapper">
+        <h3 class="text-center mb-4 text-gray-500 font-mono text-xl">1. Hook</h3>
+        <div class="slide-container flex flex-col items-center justify-center p-12 relative">
+            <div class="pro-logo">
+                <div class="pro-logo-icon-bg"><img src="public/logo.png" alt="Logo"></div>
+                <span class="pro-logo-text">MINDAR</span>
+                <div class="pro-logo-dot"></div>
+            </div>
+
+            <div class="grid-pattern"></div>
+            <div class="orb orb-purple animate-pulse"></div>
+
+            <div class="z-10 text-center w-full flex flex-col items-center gap-10 mt-10">
+                <div
+                    class="bg-red-500 text-white px-8 py-3 rounded-full text-2xl font-black shadow-[0_0_30px_rgba(239,68,68,0.6)] transform -rotate-2">
+                    🛑 لسه بتلخّص يدوي؟
+                </div>
+
+                <div class="relative">
+                    <h1 class="text-7xl font-black leading-tight text-white mb-4">
+                        بتضيّع <span
+                            class="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400">نص
+                            عمرك</span>
+                        <br>بالدراسة الغلط!
+                    </h1>
+                    <i data-lucide="alert-triangle"
+                        class="w-20 h-20 text-yellow-400 absolute -top-12 -right-12 animate-bounce"></i>
+                </div>
+
+                <div class="glass-panel p-10 w-full mt-6 transform rotate-1 scale-95 border-red-500/30">
+                    <p class="text-4xl text-gray-200 font-bold leading-relaxed">
+                        الامتحان قرّب.. ⏳ <br>
+                        والسلايدات لسه "كومة" فوق راسك؟
+                    </p>
+                </div>
+            </div>
+            <div class="absolute bottom-10 w-full text-center text-lg text-gray-500 font-mono tracking-widest">
+                WWW.MINDAR.TECH</div>
+        </div>
+    </div>
+
+    <!-- 2. Solution -->
+    <div class="slide-wrapper">
+        <h3 class="text-center mb-4 text-gray-500 font-mono text-xl">2. Solution</h3>
+        <div class="slide-container flex flex-col items-center p-12 relative">
+            <div class="pro-logo">
+                <div class="pro-logo-icon-bg"><img src="public/logo.png" alt="Logo"></div>
+                <span class="pro-logo-text">MINDAR</span>
+                <div class="pro-logo-dot"></div>
+            </div>
+            <div class="grid-pattern"></div>
+            <div class="orb orb-cyan" style="top:0; right:0;"></div>
+
+            <div class="z-10 text-center w-full mt-24">
+                <h1 class="text-7xl font-black mb-4">
+                    الحل بضغطة زر 🚀
+                </h1>
+                <p class="text-3xl text-cyan-300 font-bold mb-16 text-glow-blue">حول ملفاتك، ولا تغلب حالك</p>
+
+                <div
+                    class="glass-panel p-12 flex flex-col items-center gap-10 relative overflow-hidden border-cyan-400/30">
+                    <div class="absolute inset-0 bg-gradient-to-b from-cyan-500/10 to-transparent"></div>
+
+                    <div class="flex items-center gap-6 text-5xl font-black text-white z-10">
+                        <span>PDF</span>
+                        <i data-lucide="arrow-right" class="w-12 h-12 text-gray-400"></i>
+                        <span
+                            class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-glow">QUIZ</span>
+                    </div>
+                </div>
+
+                <div class="mt-16 flex justify-center gap-6">
+                    <span class="bg-white/5 border border-white/10 px-6 py-3 rounded-xl text-xl font-bold">تحليل ذكي
+                        🧠</span>
+                    <span class="bg-white/5 border border-white/10 px-6 py-3 rounded-xl text-xl font-bold">أسرع من البرق
+                        ⚡</span>
+                </div>
+            </div>
+            <div class="absolute bottom-10 w-full text-center text-lg text-gray-500 font-mono tracking-widest">
+                WWW.MINDAR.TECH</div>
+        </div>
+    </div>
+
+    <!-- 3. Study Tools -->
+    <div class="slide-wrapper">
+        <h3 class="text-center mb-4 text-gray-500 font-mono text-xl">3. Study Tools</h3>
+        <div class="slide-container flex flex-col items-center p-12 relative">
+            <div class="pro-logo">
+                <div class="pro-logo-icon-bg"><img src="public/logo.png" alt="Logo"></div>
+                <span class="pro-logo-text">MINDAR</span>
+                <div class="pro-logo-dot"></div>
+            </div>
+            <div class="grid-pattern"></div>
+            <div class="orb orb-pink" style="opacity:0.4;"></div>
+
+            <div class="z-10 w-full mt-16">
+                <h1 class="text-6xl font-black text-center mb-16">
+                    أدوات لدراسة <br> <span class="text-pink-400 text-glow">ذكية مش تقليدية</span>
+                </h1>
+
+                <div class="grid grid-cols-2 gap-6 h-[500px]">
+                    <div
+                        class="glass-panel p-8 col-span-2 flex items-center justify-between hover:bg-white/5 transition">
+                        <div>
+                            <h3 class="font-bold text-3xl text-purple-300">كويزات</h3>
+                            <p class="text-lg text-gray-400 mt-1">متعدد، صح/خطأ</p>
+                        </div>
+                        <i data-lucide="help-circle" class="w-16 h-16 text-purple-400"></i>
+                    </div>
+                    <div
+                        class="glass-panel p-6 flex flex-col justify-center items-center text-center gap-4 hover:bg-white/5 transition">
+                        <i data-lucide="layers" class="w-16 h-16 text-cyan-400"></i>
+                        <h3 class="font-bold text-2xl">Flashcards</h3>
+                    </div>
+                    <div
+                        class="glass-panel p-6 flex flex-col justify-center items-center text-center gap-4 hover:bg-white/5 transition">
+                        <i data-lucide="book" class="w-16 h-16 text-yellow-400"></i>
+                        <h3 class="font-bold text-2xl">قاموس</h3>
+                    </div>
+                    <div class="glass-panel p-6 col-span-2 flex items-center gap-6 hover:bg-white/5 transition">
+                        <div class="bg-green-500/20 p-3 rounded-xl"><i data-lucide="file-text"
+                                class="w-10 h-10 text-green-400"></i></div>
+                        <span class="font-bold text-2xl">شروح توضيحية فورية</span>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-10 w-full text-center text-lg text-gray-500 font-mono tracking-widest">
+                WWW.MINDAR.TECH</div>
+        </div>
+    </div>
+
+    <!-- 4. Voice Mode -->
+    <div class="slide-wrapper">
+        <h3 class="text-center mb-4 text-gray-500 font-mono text-xl">4. Voice Mode</h3>
+        <div class="slide-container flex flex-col items-center p-12 relative">
+            <div class="pro-logo">
+                <div class="pro-logo-icon-bg"><img src="public/logo.png" alt="Logo"></div>
+                <span class="pro-logo-text">MINDAR</span>
+                <div class="pro-logo-dot"></div>
+            </div>
+            <div class="grid-pattern"></div>
+            <div class="orb orb-cyan" style="left: -50px; top: 30%;"></div>
+
+            <div class="z-10 text-center w-full mt-20">
+                <div class="bg-cyan-500/20 inline-flex p-5 rounded-full mb-8 ring-4 ring-cyan-500/50">
+                    <i data-lucide="mic" class="w-16 h-16 text-cyan-400 animate-pulse"></i>
+                </div>
+                <h1 class="text-6xl font-black mb-6">
+                    مش جاي عبالك تقرأ؟ <br>
+                    <span class="text-cyan-400 text-glow-blue">احكي معه صوت! 🎙️</span>
+                </h1>
+                <p class="text-2xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
+                    أول تطبيق دراسي بيفهم عليك. جاوب الأسئلة بصوتك، وهو بصلحلك.
+                </p>
+
+                <div class="glass-panel p-10 flex flex-col items-center gap-8 w-full max-w-2xl mx-auto">
+                    <div class="flex items-center gap-3 w-full justify-center h-16">
+                        <div class="h-8 w-3 bg-cyan-500 rounded-full animate-bounce"></div>
+                        <div class="h-14 w-3 bg-cyan-500 rounded-full animate-bounce" style="animation-delay: 0.1s">
+                        </div>
+                        <div class="h-6 w-3 bg-cyan-500 rounded-full animate-bounce" style="animation-delay: 0.2s">
+                        </div>
+                        <div class="h-12 w-3 bg-cyan-500 rounded-full animate-bounce" style="animation-delay: 0.15s">
+                        </div>
+                        <div class="h-7 w-3 bg-cyan-500 rounded-full animate-bounce"></div>
+                    </div>
+                    <div
+                        class="bg-black/40 px-6 py-4 rounded-2xl text-cyan-300 font-mono text-xl border border-cyan-500/30 w-full text-center">
+                        "الجواب هو الميتوكندريا..." 🗣️
+                    </div>
+                    <div class="flex items-center gap-3 text-green-400 font-bold text-2xl">
+                        <i data-lucide="check" class="w-8 h-8"></i>
+                        <span>إجابة صحيحة!</span>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-10 w-full text-center text-lg text-gray-500 font-mono tracking-widest">
+                WWW.MINDAR.TECH</div>
+        </div>
+    </div>
+
+    <!-- 5. Medic -->
+    <div class="slide-wrapper">
+        <h3 class="text-center mb-4 text-gray-500 font-mono text-xl">5. Medic</h3>
+        <div class="slide-container flex flex-col items-center p-12 relative overflow-hidden">
+            <div class="pro-logo">
+                <div class="pro-logo-icon-bg"><img src="public/logo.png" alt="Logo"></div>
+                <span class="pro-logo-text">MINDAR</span>
+                <div class="pro-logo-dot"></div>
+            </div>
+            <div class="absolute inset-0 bg-red-900/10"></div>
+            <div class="grid-pattern"></div>
+
+            <div class="z-10 text-center w-full mt-20">
+                <div
+                    class="inline-flex items-center gap-3 bg-red-600 px-6 py-2 rounded-full text-lg font-bold shadow-[0_0_20px_rgba(220,38,38,0.5)] mb-10">
+                    <i data-lucide="stethoscope" class="w-6 h-6"></i>
+                    ميزة حصرية
+                </div>
+
+                <h1 class="text-7xl font-black mb-4">المسعف الذكي</h1>
+                <p class="text-3xl text-gray-300 mb-16">حاسس حالك ضايع؟ 🤕</p>
+
+                <div class="glass-panel p-10 w-full border-red-500/30 shadow-[0_0_50px_rgba(220,38,38,0.2)]">
+                    <div class="flex items-center gap-6 mb-10">
+                        <div
+                            class="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center border border-red-500">
+                            <i data-lucide="activity" class="w-12 h-12 text-red-500"></i>
+                        </div>
+                        <div class="text-right flex-1">
+                            <h3 class="font-bold text-3xl">تشخيص فوري</h3>
+                            <p class="text-lg text-gray-400 mt-1">تحليل لنقاط ضعفك</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-black/40 p-6 rounded-2xl text-right border-r-8 border-red-500">
+                        <p class="text-xl font-bold text-gray-200 leading-relaxed">
+                            "يا دكتور، عندك ضعف في الشابتر الخامس. راجع صفحة ٤٢ ضروري!"
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-10 w-full text-center text-lg text-gray-500 font-mono tracking-widest">
+                WWW.MINDAR.TECH</div>
+        </div>
+    </div>
+
+    <!-- 6. Smart Planner -->
+    <div class="slide-wrapper">
+        <h3 class="text-center mb-4 text-gray-500 font-mono text-xl">6. Smart Planner</h3>
+        <div class="slide-container flex flex-col items-center p-12 relative">
+            <div class="pro-logo">
+                <div class="pro-logo-icon-bg"><img src="public/logo.png" alt="Logo"></div>
+                <span class="pro-logo-text">MINDAR</span>
+                <div class="pro-logo-dot"></div>
+            </div>
+            <div class="grid-pattern"></div>
+            <div class="orb orb-purple opacity-50"></div>
+
+            <div class="z-10 text-center w-full mt-20">
+                <h1 class="text-6xl font-black mb-8">
+                    جدولك مكركب؟ <br>
+                    <span class="text-yellow-400">Smart Planner 📅</span>
+                </h1>
+                <p class="text-2xl text-gray-300 mb-16 max-w-3xl">
+                    مش بس كويزات! Mindar بنظملك يومك وبذكرك بمواعيد الدراسة.
+                </p>
+
+                <div class="space-y-6 w-full px-4">
+                    <div
+                        class="glass-panel p-6 flex items-center gap-6 border-l-8 border-l-purple-500 transform scale-105 shadow-xl">
+                        <div class="w-8 h-8 border-2 border-gray-500 rounded-xl"></div>
+                        <div class="text-right flex-1">
+                            <h4 class="font-bold text-2xl">مراجعة التشريح</h4>
+                            <span class="text-lg text-yellow-400 font-mono mt-1 block">🔥 High Priority</span>
+                        </div>
+                        <span class="text-lg font-mono text-gray-400">10:00 AM</span>
+                    </div>
+
+                    <div class="glass-panel p-6 flex items-center gap-6 border-l-8 border-l-green-500 opacity-60">
+                        <div class="w-8 h-8 bg-green-500 rounded-xl flex items-center justify-center">
+                            <i data-lucide="check" class="w-5 h-5 text-black"></i>
+                        </div>
+                        <div class="text-right flex-1">
+                            <h4 class="font-bold text-2xl line-through text-gray-400">حل كويز الفيزياء</h4>
+                        </div>
+                        <span class="text-lg font-mono text-gray-500">Done</span>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-10 w-full text-center text-lg text-gray-500 font-mono tracking-widest">
+                WWW.MINDAR.TECH</div>
+        </div>
+    </div>
+
+    <!-- 7. Gamification -->
+    <div class="slide-wrapper">
+        <h3 class="text-center mb-4 text-gray-500 font-mono text-xl">7. Gamification</h3>
+        <div class="slide-container flex flex-col items-center p-12 relative">
+            <div class="pro-logo">
+                <div class="pro-logo-icon-bg"><img src="public/logo.png" alt="Logo"></div>
+                <span class="pro-logo-text">MINDAR</span>
+                <div class="pro-logo-dot"></div>
+            </div>
+            <div class="grid-pattern"></div>
+            <div class="orb orb-pink" style="top:10%; left:10%; width:150px;"></div>
+
+            <div class="z-10 text-center w-full mt-24">
+                <h1 class="text-6xl font-black mb-12">
+                    حوّلنا الدراسة <br>
+                    <span class="text-yellow-400">للعبة حماسية 🏆</span>
+                </h1>
+
+                <div class="grid grid-cols-2 gap-6 w-full max-w-3xl">
+                    <div class="glass-panel p-8 flex flex-col items-center hover:scale-105 transition">
+                        <i data-lucide="medal" class="w-20 h-20 text-yellow-400 mb-4 drop-shadow-md"></i>
+                        <span class="font-bold text-2xl">أوسمة</span>
+                    </div>
+                    <div class="glass-panel p-8 flex flex-col items-center hover:scale-105 transition">
+                        <i data-lucide="zap" class="w-20 h-20 text-accent mb-4 drop-shadow-md"></i>
+                        <span class="font-bold text-2xl">نقاط XP</span>
+                    </div>
+                    <div class="glass-panel p-8 flex flex-col items-center hover:scale-105 transition">
+                        <i data-lucide="flame" class="w-20 h-20 text-orange-500 mb-4 drop-shadow-md"></i>
+                        <span class="font-bold text-2xl">Strikes</span>
+                    </div>
+                    <div class="glass-panel p-8 flex flex-col items-center hover:scale-105 transition">
+                        <i data-lucide="swords" class="w-20 h-20 text-red-400 mb-4 drop-shadow-md"></i>
+                        <span class="font-bold text-2xl">انتقام</span>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-10 w-full text-center text-lg text-gray-500 font-mono tracking-widest">
+                WWW.MINDAR.TECH</div>
+        </div>
+    </div>
+
+    <!-- 8. Radar -->
+    <div class="slide-wrapper">
+        <h3 class="text-center mb-4 text-gray-500 font-mono text-xl">8. Radar</h3>
+        <div class="slide-container flex flex-col items-center p-12 relative">
+            <div class="pro-logo">
+                <div class="pro-logo-icon-bg"><img src="public/logo.png" alt="Logo"></div>
+                <span class="pro-logo-text">MINDAR</span>
+                <div class="pro-logo-dot"></div>
+            </div>
+            <div class="grid-pattern"></div>
+            <div
+                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-t from-green-500/5 to-transparent rounded-full animate-spin-slow pointer-events-none opacity-30">
+            </div>
+
+            <div class="z-10 text-center w-full mt-32">
+                <i data-lucide="radar"
+                    class="w-32 h-32 text-green-400 mx-auto mb-10 drop-shadow-[0_0_25px_rgba(74,222,128,0.5)]"></i>
+
+                <h1 class="text-6xl font-black mb-6">
+                    لا تدرس لحالك! <br>
+                </h1>
+                <p class="text-3xl text-green-300 font-bold mb-16">شغّل الرادار وشوف المنافسين 📡</p>
+
+                <div class="space-y-6 max-w-3xl mx-auto">
+                    <div class="glass-panel p-6 flex items-center gap-6 animate-pulse border-green-500/30">
+                        <div class="w-4 h-4 bg-green-500 rounded-full shadow-[0_0_15px_#22c55e]"></div>
+                        <span class="font-bold text-2xl">عمار يدرس "Anatomy" الآن...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-10 w-full text-center text-lg text-gray-500 font-mono tracking-widest">
+                WWW.MINDAR.TECH</div>
+        </div>
+    </div>
+
+    <!-- 9. Export & History -->
+    <div class="slide-wrapper">
+        <h3 class="text-center mb-4 text-gray-500 font-mono text-xl">9. Export & History</h3>
+        <div class="slide-container flex flex-col items-center p-12 relative">
+            <div class="pro-logo">
+                <div class="pro-logo-icon-bg"><img src="public/logo.png" alt="Logo"></div>
+                <span class="pro-logo-text">MINDAR</span>
+                <div class="pro-logo-dot"></div>
+            </div>
+            <div class="grid-pattern"></div>
+
+            <div class="z-10 text-center w-full mt-24">
+                <h1 class="text-6xl font-black mb-16">
+                    احتفظ بكل شي 📂
+                </h1>
+
+                <div class="grid grid-cols-1 gap-8 w-full px-4 max-w-3xl mx-auto">
+                    <div
+                        class="glass-panel p-10 flex items-center gap-8 hover:bg-white/5 transition cursor-pointer group">
+                        <div class="bg-red-500/20 p-6 rounded-2xl group-hover:scale-110 transition"><i
+                                data-lucide="file-down" class="w-12 h-12 text-red-400"></i></div>
+                        <div class="text-right">
+                            <h3 class="font-bold text-3xl">تصدير PDF</h3>
+                            <p class="text-lg text-gray-400 mt-2">اطبع الكويز وحله ورقي</p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="glass-panel p-10 flex items-center gap-8 hover:bg-white/5 transition cursor-pointer group">
+                        <div class="bg-blue-500/20 p-6 rounded-2xl group-hover:scale-110 transition"><i
+                                data-lucide="history" class="w-12 h-12 text-blue-400"></i></div>
+                        <div class="text-right">
+                            <h3 class="font-bold text-3xl">أرشيف كامل</h3>
+                            <p class="text-lg text-gray-400 mt-2">سجل بكل امتحاناتك</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-10 w-full text-center text-lg text-gray-500 font-mono tracking-widest">
+                WWW.MINDAR.TECH</div>
+        </div>
+    </div>
+
+    <!-- 10. Mobile/PWA -->
+    <div class="slide-wrapper">
+        <h3 class="text-center mb-4 text-gray-500 font-mono text-xl">10. Mobile</h3>
+        <div class="slide-container flex flex-col items-center p-12 relative">
+            <div class="pro-logo">
+                <div class="pro-logo-icon-bg"><img src="public/logo.png" alt="Logo"></div>
+                <span class="pro-logo-text">MINDAR</span>
+                <div class="pro-logo-dot"></div>
+            </div>
+            <div class="grid-pattern"></div>
+            <div class="orb orb-purple" style="bottom:-50px;"></div>
+
+            <div class="z-10 text-center w-full mt-16">
+                <h1 class="text-6xl font-black mb-12 leading-tight">
+                    معك وين ما تروح <br>
+                    <span class="text-purple-400">Dark Mode 🌙</span>
+                </h1>
+
+                <div
+                    class="relative w-64 h-[450px] mx-auto bg-gray-900 border-8 border-gray-700 rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden">
+                    <div class="bg-gray-800 h-10 w-full flex items-center justify-center gap-2">
+                        <div class="w-16 h-2 bg-gray-600 rounded-full"></div>
+                    </div>
+                    <div class="flex-1 p-6 space-y-4">
+                        <div class="h-28 w-full bg-purple-600/20 rounded-2xl border border-purple-500/30"></div>
+                        <div class="h-16 w-full bg-gray-800 rounded-2xl"></div>
+                        <div class="h-16 w-full bg-gray-800 rounded-2xl"></div>
+                        <div class="h-16 w-full bg-gray-800 rounded-2xl"></div>
+                    </div>
+                    <div
+                        class="absolute bottom-8 -right-16 bg-white text-black font-black px-8 py-3 rotate-[-15deg] shadow-lg text-xl border-4 border-yellow-400">
+                        App-Like!
+                    </div>
+                </div>
+
+                <p class="mt-12 text-gray-300 font-bold text-2xl">
+                    ثبّته على شاشة تليفونك بضغطة زر.
+                </p>
+            </div>
+            <div class="absolute bottom-10 w-full text-center text-lg text-gray-500 font-mono tracking-widest">
+                WWW.MINDAR.TECH</div>
+        </div>
+    </div>
+
+    <!-- 11. Languages -->
+    <div class="slide-wrapper">
+        <h3 class="text-center mb-4 text-gray-500 font-mono text-xl">11. Languages</h3>
+        <div class="slide-container flex flex-col items-center justify-center p-12 relative">
+            <div class="pro-logo">
+                <div class="pro-logo-icon-bg"><img src="public/logo.png" alt="Logo"></div>
+                <span class="pro-logo-text">MINDAR</span>
+                <div class="pro-logo-dot"></div>
+            </div>
+            <div class="grid-pattern"></div>
+
+            <div class="z-10 text-center w-full">
+                <h1 class="text-7xl font-black mb-16">
+                    بتحب تدرس <br> باي لغة؟ 🌍
+                </h1>
+
+                <div class="relative flex justify-center items-center h-64">
+                    <div
+                        class="absolute left-8 w-56 h-56 bg-gradient-to-br from-green-600 to-green-900 rounded-full flex items-center justify-center border-8 border-black shadow-2xl z-10 transition hover:scale-110">
+                        <span class="text-6xl font-black">عربي</span>
+                    </div>
+
+                    <div
+                        class="absolute right-8 w-56 h-56 bg-gradient-to-br from-blue-600 to-blue-900 rounded-full flex items-center justify-center border-8 border-black shadow-2xl z-0 filter brightness-75 hover:brightness-100 hover:z-20 transition hover:scale-110">
+                        <span class="text-6xl font-black">EN</span>
+                    </div>
+
+                    <div class="absolute bg-white text-black font-bold px-5 py-2 rounded-full z-30 shadow-lg text-3xl">
+                        Vs
+                    </div>
+                </div>
+
+                <p class="text-3xl text-gray-300 mt-12 font-bold leading-relaxed">
+                    Mindar جاهز باللغتين! <br>
+                    <span class="text-xl font-normal text-gray-400">الواجهة، الأسئلة، والتحليل.</span>
+                </p>
+            </div>
+            <div class="absolute bottom-10 w-full text-center text-lg text-gray-500 font-mono tracking-widest">
+                WWW.MINDAR.TECH</div>
+        </div>
+    </div>
+
+    <!-- 12. Target Audience -->
+    <div class="slide-wrapper">
+        <h3 class="text-center mb-4 text-gray-500 font-mono text-xl">12. Target</h3>
+        <div class="slide-container flex flex-col items-center justify-center p-12 relative">
+            <div class="pro-logo">
+                <div class="pro-logo-icon-bg"><img src="public/logo.png" alt="Logo"></div>
+                <span class="pro-logo-text">MINDAR</span>
+                <div class="pro-logo-dot"></div>
+            </div>
+            <div class="grid-pattern"></div>
+
+            <div class="z-10 text-center w-full">
+                <h1 class="text-6xl font-black mb-12">
+                    مين بيستخدم <br> Mindar؟ 🎓
+                </h1>
+
+                <div class="grid grid-cols-1 gap-6 w-full px-4 max-w-3xl mx-auto">
+                    <div class="glass-panel p-6 flex items-center gap-6">
+                        <i data-lucide="check-circle-2" class="text-green-400 w-10 h-10"></i>
+                        <span class="font-bold text-3xl">طلاب الطب</span>
+                    </div>
+                    <div class="glass-panel p-6 flex items-center gap-6">
+                        <i data-lucide="check-circle-2" class="text-green-400 w-10 h-10"></i>
+                        <span class="font-bold text-3xl">طلاب الهندسة</span>
+                    </div>
+                    <div class="glass-panel p-6 flex items-center gap-6">
+                        <i data-lucide="check-circle-2" class="text-green-400 w-10 h-10"></i>
+                        <span class="font-bold text-3xl">أي حدا مزنوق بالفاينل! 😂</span>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-10 w-full text-center text-lg text-gray-500 font-mono tracking-widest">
+                WWW.MINDAR.TECH</div>
+        </div>
+    </div>
+
+    <!-- 13. CTA -->
+    <div class="slide-wrapper">
+        <h3 class="text-center mb-4 text-gray-500 font-mono text-xl">13. CTA</h3>
+        <div class="slide-container flex flex-col items-center justify-center p-12 relative">
+            <!-- Centered Large Logo for CTA -->
+            <div class="pro-logo" style="left:50%; top: 15%; transform: translateX(-50%) scale(1.8);">
+                <div class="pro-logo-icon-bg"><img src="public/logo.png" alt="Logo"></div>
+                <span class="pro-logo-text">MINDAR</span>
+                <div class="pro-logo-dot"></div>
+            </div>
+
+            <div class="grid-pattern"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-purple-900 via-transparent to-black opacity-80"></div>
+            <div class="orb orb-purple opacity-100 mix-blend-screen"
+                style="width:600px; height:600px; inset:0; margin:auto;"></div>
+
+            <div class="z-10 text-center space-y-12 relative mt-40">
+                <div class="glass-panel p-10 border-purple-400/50 shadow-[0_0_60px_rgba(168,85,247,0.4)]">
+                    <h1 class="text-7xl font-black mb-4 text-white">
+                        جربه الآن
+                    </h1>
+                    <h2
+                        class="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300 animate-pulse">
+                        مجــــانـاً!
+                    </h2>
+                </div>
+
+                <div class="space-y-6">
+                    <p class="text-3xl text-gray-200">
+                        الرابط في البايو 🔗
+                    </p>
+
+                    <div
+                        class="bg-white text-black font-black text-3xl py-4 px-12 rounded-2xl shadow-lg inline-block transform hover:scale-105 transition cursor-pointer">
+                        Link In Bio
+                    </div>
+                </div>
+
+                <p class="text-xl font-mono text-purple-400 mt-12 tracking-widest uppercase">
+                    www.Mindar.tech
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

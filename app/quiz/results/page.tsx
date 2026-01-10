@@ -33,9 +33,15 @@ import { AnalyticsDashboard } from '@/components/analytics-dashboard'
 import { Flashcards } from '@/components/flashcards'
 import { AdPlaceholder } from '@/components/ads/AdPlaceholder'
 import { GamificationEngine } from '@/lib/gamification'
+import { triggerConfetti, triggerSuccessConfetti } from '@/lib/effects'
+import { useToast } from '@/components/ui/toast-provider'
+import { useAuth } from '@/hooks/useAuth'
+import { AccessControl } from '@/lib/services/accessControl'
 
 export default function ResultsPage() {
   const { t, language } = useI18n()
+  const { toast } = useToast()
+  const { user, loading: authLoading } = useAuth()
   const [data, setData] = useState<any>(null)
   const [topics, setTopics] = useState<any[]>([])
   const [isFlashcardsOpen, setIsFlashcardsOpen] = useState(false)
@@ -90,14 +96,22 @@ export default function ResultsPage() {
       setUnlockedBadges(updatedData.badges.filter((b: any) => (Date.now() - b.unlockedAt) < 10000)); // Show recently unlocked
 
       // Check for badges
-      if (results.score === results.total) {
-        GamificationEngine.unlockBadge('perfect_score');
-      }
       if (results.score > 0) {
         GamificationEngine.unlockBadge('first_win');
+        triggerSuccessConfetti();
+      }
+
+      // Celebrate high scores
+      if ((results.score / results.total) >= 0.9) {
+          setTimeout(() => triggerConfetti(), 1000);
+      }
+
+      // Guest Access Control: Increment usage only if not logged in and auth resolved
+      if (!authLoading && !user) {
+        AccessControl.consumeGuestUsage();
       }
     }
-  }, [])
+  }, [user, authLoading]) // Add authLoading to dependencies
 
   // Prepare flashcards data: prioritize generated ones or fallback to questions
   const flashcardsData = React.useMemo(() => {
@@ -140,7 +154,11 @@ export default function ResultsPage() {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText('https://mindar.tech');
-    alert(t('common.linkCopied'));
+    toast({
+        type: 'success',
+        message: t('common.linkCopied'),
+        description: language === 'ar' ? 'يمكنك الآن مشاركة الرابط مع أصدقائك!' : 'You can now share the link with your friends!'
+    });
   };
 
   if (!data) return null

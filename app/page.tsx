@@ -9,6 +9,7 @@ import { AnimatePresence } from "framer-motion"
 import { MotivationalBanner } from "@/components/motivational-banner"
 import { AdPlaceholder } from "@/components/ads/AdPlaceholder"
 import { useI18n } from "@/lib/i18n"
+import { Magnetic } from "@/components/ui/magnetic"
 
 export default function Home() {
   const { t, language } = useI18n()
@@ -77,9 +78,25 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center justify-center p-6 pt-32 relative overflow-hidden">
 
         
-        {/* Optimized Background Elements */}
-        <div className="absolute top-10 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[300px] h-[300px] bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
+        {/* Simplified Background Glows */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            <motion.div 
+                animate={{ 
+                    scale: [1, 1.1, 1],
+                    opacity: [0.3, 0.5, 0.3]
+                }}
+                transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] mix-blend-screen dark:mix-blend-overlay"
+            />
+            <motion.div 
+                animate={{ 
+                    scale: [1.1, 1, 1.1],
+                    opacity: [0.4, 0.2, 0.4]
+                }}
+                transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] mix-blend-screen dark:mix-blend-overlay"
+            />
+        </div>
 
         <motion.div 
             variants={container}
@@ -108,48 +125,52 @@ export default function Home() {
             </motion.p>
 
             <motion.div variants={item} className="flex flex-col sm:flex-row gap-6 mt-4">
-                <Link href="/hub">
-                    <Button size="lg" className="h-20 px-12 text-2xl font-black rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.05] transition-all shadow-[0_20px_50px_hsl(var(--primary)/0.25)] ring-4 ring-primary/20">
-                        {t('common.getStarted')} <Upload className="ml-3 w-6 h-6" />
+                <Magnetic strength={20}>
+                    <Link href="/hub">
+                        <Button size="lg" className="h-20 px-12 text-2xl font-black rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-[0_20px_50px_hsl(var(--primary)/0.25)] ring-4 ring-primary/20">
+                            {t('common.getStarted')} <Upload className="ml-3 w-6 h-6" />
+                        </Button>
+                    </Link>
+                </Magnetic>
+                <Magnetic strength={15}>
+                    <Button 
+                        variant="outline" 
+                        size="lg" 
+                        className="h-20 px-12 text-2xl font-black rounded-2xl border-2 border-primary bg-background/80 text-primary hover:bg-primary hover:text-primary-foreground backdrop-blur-md shadow-lg transition-all"
+                        onClick={() => {
+                            const sampleQuiz = {
+                                title: "Human Anatomy 101 (Sample)",
+                                questions: [
+                                    {
+                                        question: "What is the largest organ in the human body?",
+                                        options: ["Heart", "Liver", "Skin", "Lungs"],
+                                        answer: "Skin",
+                                        explanation: "The skin is the largest organ of the body, with a total area of about 20 square feet.",
+                                        topic: "Anatomy"
+                                    },
+                                    {
+                                        question: "How many bones are in the adult human body?",
+                                        options: ["206", "305", "150", "210"],
+                                        answer: "206",
+                                        explanation: "Adults have 206 bones, while infants are born with around 300.",
+                                        topic: "Skeletal System"
+                                    }
+                                ],
+                                flashcards: [
+                                    { front: "Mitochondria", back: "The powerhouse of the cell." },
+                                    { front: "DNA", back: "Deoxyribonucleic acid, the hereditary material in humans." }
+                                ],
+                                vocabulary: [
+                                    { word: "Homeostasis", definition: "A state of steady internal, physical, and chemical conditions maintained by living systems." }
+                                ],
+                                timestamp: Date.now()
+                            };
+                            localStorage.setItem("currentQuiz", JSON.stringify(sampleQuiz));
+                            window.location.href = "/hub";
+                        }}>
+                        <Play className="mr-3 w-6 h-6 fill-current" /> {t('common.seeSample')}
                     </Button>
-                </Link>
-                <Button 
-                    variant="outline" 
-                    size="lg" 
-                    className="h-20 px-12 text-2xl font-black rounded-2xl border-2 border-primary bg-background/80 text-primary hover:bg-primary hover:text-primary-foreground backdrop-blur-md shadow-lg transition-all"
-                    onClick={() => {
-                        const sampleQuiz = {
-                            title: "Human Anatomy 101 (Sample)",
-                            questions: [
-                                {
-                                    question: "What is the largest organ in the human body?",
-                                    options: ["Heart", "Liver", "Skin", "Lungs"],
-                                    answer: "Skin",
-                                    explanation: "The skin is the largest organ of the body, with a total area of about 20 square feet.",
-                                    topic: "Anatomy"
-                                },
-                                {
-                                    question: "How many bones are in the adult human body?",
-                                    options: ["206", "305", "150", "210"],
-                                    answer: "206",
-                                    explanation: "Adults have 206 bones, while infants are born with around 300.",
-                                    topic: "Skeletal System"
-                                }
-                            ],
-                            flashcards: [
-                                { front: "Mitochondria", back: "The powerhouse of the cell." },
-                                { front: "DNA", back: "Deoxyribonucleic acid, the hereditary material in humans." }
-                            ],
-                            vocabulary: [
-                                { word: "Homeostasis", definition: "A state of steady internal, physical, and chemical conditions maintained by living systems." }
-                            ],
-                            timestamp: Date.now()
-                        };
-                        localStorage.setItem("currentQuiz", JSON.stringify(sampleQuiz));
-                        window.location.href = "/hub";
-                    }}>
-                    <Play className="mr-3 w-6 h-6 fill-current" /> {t('common.seeSample')}
-                </Button>
+                </Magnetic>
             </motion.div>
 
             {/* Ad Banner on Home Page - Moved Higher */}
@@ -298,12 +319,12 @@ export default function Home() {
             </motion.div>
         </motion.div>
 
-        {/* Floating Decoration */}
-        <div className="absolute top-[20%] left-[5%] opacity-20 pointer-events-none animate-bounce duration-[3s]">
-            <PenTool className="w-20 h-20 text-primary" />
+        {/* Floating Decoration - Simplified */}
+        <div className="absolute top-[20%] left-[5%] opacity-10 pointer-events-none">
+            <PenTool className="w-20 h-20 text-primary animate-pulse" />
         </div>
-        <div className="absolute bottom-[20%] right-[5%] opacity-20 pointer-events-none animate-bounce duration-[4s]">
-            <Sparkles className="w-16 h-16 text-primary" />
+        <div className="absolute bottom-[20%] right-[5%] opacity-10 pointer-events-none">
+            <Sparkles className="w-16 h-16 text-primary animate-pulse" />
         </div>
 
         {/* Floating Sidebar Ads for Large Screens */}
@@ -319,16 +340,30 @@ export default function Home() {
 
 function FeatureCard({ icon: Icon, title, desc }: { icon: any, title: string, desc: string }) {
     return (
-        <Card className="bg-card/50 border-border hover:border-primary/30 transition-all duration-500 hover:scale-[1.02] group rounded-[2rem] overflow-hidden backdrop-blur-sm">
-            <CardContent className="p-10 flex flex-col items-center gap-6 text-center">
-                <div className="w-20 h-20 rounded-[1.5rem] bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary/10 transition-colors shadow-inner">
-                    <Icon className="w-10 h-10" />
-                </div>
-                <div>
-                    <h3 className="font-black text-2xl text-foreground mb-3 tracking-tight">{title}</h3>
-                    <p className="text-lg text-muted-foreground leading-relaxed font-bold">{desc}</p>
-                </div>
-            </CardContent>
-        </Card>
+        <motion.div
+            whileHover={{ y: -5, scale: 1.01 }}
+            className="h-full"
+        >
+            <Card className="h-full bg-card/40 border-border/50 hover:border-primary/40 transition-all duration-300 rounded-[3rem] overflow-hidden backdrop-blur-md shadow-2xl relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                
+                <CardContent className="p-12 flex flex-col items-center gap-8 text-center relative z-10">
+                    <motion.div 
+                        whileHover={{ scale: 1.1 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-primary shadow-inner group-hover:shadow-[0_0_20px_rgba(79,70,229,0.1)]"
+                    >
+                        <Icon className="w-12 h-12" />
+                    </motion.div>
+                    
+                    <div className="space-y-4">
+                        <h3 className="font-black text-3xl text-foreground tracking-tight group-hover:text-primary transition-colors">{title}</h3>
+                        <p className="text-xl text-muted-foreground leading-relaxed font-bold">{desc}</p>
+                    </div>
+
+                    <div className="w-12 h-1 bg-primary/20 rounded-full group-hover:w-24 group-hover:bg-primary/40 transition-all duration-500" />
+                </CardContent>
+            </Card>
+        </motion.div>
     )
 }

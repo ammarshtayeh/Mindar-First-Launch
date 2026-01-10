@@ -5,6 +5,7 @@ import { Upload, File, X, Loader2, XCircle, FileText, Zap, FileCheck } from "luc
 import { useI18n } from "@/lib/i18n"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { trackFileUpload } from "@/lib/analytics"
 
 interface UploadSectionProps {
     onTextReady: (text: string, title?: string) => void;
@@ -89,6 +90,7 @@ export function UploadSection({ onTextReady, onClear, isProcessing: externalProc
             }
 
             const title = files[0].name.replace(/\.[^/.]+$/, "")
+            trackFileUpload(files[0].type || files[0].name.split('.').pop() || "unknown")
             onTextReady(combinedText, title)
             setProcessedMaterials(prev => [...prev, ...files.map(f => f.name)])
             setFiles([])

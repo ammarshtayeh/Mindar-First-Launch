@@ -33,12 +33,20 @@ export const buttonVariants = ({ variant = "default", size = "default", classNam
   )
 }
 
+import { soundManager } from "@/lib/sound-manager"
+
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "default", size = "default", ...props }, ref) => {
+  ({ className, variant = "default", size = "default", onClick, ...props }, ref) => {
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      soundManager.play('click')
+      if (onClick) onClick(e)
+    }
+
     return (
       <button
         ref={ref}
         className={buttonVariants({ variant, size, className })}
+        onClick={handleClick}
         {...props}
       />
     )

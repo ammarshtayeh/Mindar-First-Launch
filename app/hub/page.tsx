@@ -14,7 +14,8 @@ import {
   Trash2,
   Info,
   User,
-  X
+  X,
+  Lock
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -28,13 +29,18 @@ import { ActivitySettingsModal } from '@/components/activity-settings-modal'
 import { useDispatch, useSelector } from 'react-redux'
 import { setQuiz, clearQuiz } from '@/redux/slices/quizSlice'
 import { RootState } from '@/redux/store'
+import { CreativeEmptyState } from '@/components/ui/empty-state'
 import { onRecentActivities, logActivity, UserActivity } from '@/lib/services/dbService'
 import { useAuth } from '@/hooks/useAuth'
+import { trackQuizStart, trackFileUpload, trackFlashcardView, trackChallengeStart } from '@/lib/analytics'
+import { AccessControl, MAX_GUEST_QUIZZES } from '@/lib/services/accessControl'
+import { AuthLimitModal } from '@/components/auth/AuthLimitModal'
 
 export default function StudyHub() {
   const { t, language } = useI18n()
   const dispatch = useDispatch()
   const router = useRouter()
+  const { user, loading: authLoading } = useAuth()
   const quizData = useSelector((state: RootState) => state.quiz.currentQuiz)
   
   const [extractedText, setExtractedText] = useState<string>("")
@@ -46,6 +52,7 @@ export default function StudyHub() {
   const [showRadar, setShowRadar] = useState(false)
   const [resetKey, setResetKey] = useState(0)
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
+  const [showLimitModal, setShowLimitModal] = useState(false)
 
   const loadingMessages = language === 'ar' ? [
     "جاري استخراج العبقرية من أوراقك...",
@@ -84,7 +91,6 @@ export default function StudyHub() {
   }
 
   const [activities, setActivities] = useState<UserActivity[]>([])
-  const { user } = useAuth()
   const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
@@ -120,6 +126,14 @@ export default function StudyHub() {
   }, [extractedText, user])
 
   const handleStartActivity = (type: 'quiz' | 'flashcards' | 'challenge') => {
+      // Access Control
+      if (authLoading) return // Prevent starting until auth is ready
+
+      if (!AccessControl.hasAccess(user)) {
+          setShowLimitModal(true)
+          return
+      }
+
       voiceManager.stopSpeak()
       setSettingsModal({ open: true, type })
   }
@@ -166,8 +180,12 @@ export default function StudyHub() {
                 q.type === 'multiple-choice' || q.type === 'true-false'
              )
              localStorage.setItem("challengeQuiz", JSON.stringify({ ...data, questions: filtered }))
+             trackChallengeStart()
              router.push("/challenge")
           }
+          
+          if (settingsModal.type === 'quiz') trackQuizStart(data.title || "New Quiz")
+          if (settingsModal.type === 'flashcards') trackFlashcardView()
       } catch (err) {
           console.error(err)
       } finally {
@@ -212,10 +230,19 @@ export default function StudyHub() {
                 <motion.div 
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="flex items-center gap-3 text-primary font-black mb-4 bg-primary/10 px-4 py-1.5 rounded-full w-fit"
+                    className="flex flex-wrap items-center gap-3 mb-4"
                 >
-                    <FileCheck className="w-5 h-5" />
-                    <span>{t('hub.success')}</span>
+                    <div className="flex items-center gap-3 text-primary font-black bg-primary/10 px-4 py-1.5 rounded-full">
+                        <FileCheck className="w-5 h-5" />
+                        <span>{t('hub.success')}</span>
+                    </div>
+
+                    {!authLoading && !user && (
+                        <div className="flex items-center gap-2 bg-yellow-500/10 text-yellow-600 px-4 py-1.5 rounded-full font-black text-sm border border-yellow-500/20">
+                            <Lock className="w-4 h-4" />
+                            <span>{Math.max(0, MAX_GUEST_QUIZZES - AccessControl.getGuestUsage())}/{MAX_GUEST_QUIZZES} {language === 'ar' ? 'اختبار متبقي' : 'Quizzes remaining'}</span>
+                        </div>
+                    )}
                 </motion.div>
                 <motion.h1 
                     initial={{ opacity: 0, y: 20 }}
@@ -415,9 +442,12 @@ export default function StudyHub() {
                             );
                         })}
                         {activities.length === 0 && (
-                            <div className="flex flex-col items-center justify-center h-full opacity-40">
-                                <User className="w-12 h-12 mb-2" />
-                                <p className="font-bold">{t('radar.beFirst')}</p>
+                            <div className="flex flex-col items-center justify-center h-full">
+                                <CreativeEmptyState 
+                                    icon={User}
+                                    title={t('radar.beFirst')}
+                                    description={language === 'ar' ? 'كن أول من ينجز نشاطاً اليوم ويظهر هنا!' : 'Be the first to complete an activity today and show up here!'}
+                                />
                             </div>
                         )}
                     </AnimatePresence>
@@ -572,6 +602,10 @@ export default function StudyHub() {
           </motion.div>
         )}
       </AnimatePresence>
+      <AuthLimitModal 
+          isOpen={showLimitModal} 
+          onClose={() => setShowLimitModal(false)} 
+      />
     </main>
   )
 }

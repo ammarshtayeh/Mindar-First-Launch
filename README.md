@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎯 MINDAR - AI-Powered Study Companion
 
-## Getting Started
+MINDAR is a modern, intelligence-driven educational platform designed to transform traditional study materials into interactive learning experiences. Using advanced AI, it parses PDF and PPTX files to generate quizzes, flashcards, and personalized study paths.
 
-First, run the development server:
+![MINDAR Hero Image](https://mindar.app/og-image.png)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Core Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **🚀 Smart Parsing**: Instantly extract key concepts from PDF and PPTX documents.
+- **📝 AI Quiz Generation**: Automatically generates multiple-choice and open-ended questions based on your material.
+- **🎴 Dynamic Flashcards**: Build a vocabulary and concept bank for fast revision.
+- **🏆 Gamification**: Earn XP, level up, and unlock badges as you study.
+- **📊 Performance Analytics**: Deep insights into your strengths and weaknesses.
+- **📅 Study Smart**: Integrated To-Do list and study planner.
+- **🌐 Bilingual Support**: Seamless switching between Arabic and English.
+- **📱 PWA Ready**: Install Mindar on your device for a native-like experience.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Technology Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework**: [Next.js 15+](https://nextjs.org/) (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS & Framer Motion for animations
+- **Backend**: Firebase (Auth, Firestore, Storage, Cloud Functions)
+- **State Management**: Redux Toolkit
+- **UI Components**: Shadcn UI (Radix Primitives)
+- **Icons**: Lucide React
+- **Analytics**: Google Analytics 4
 
-## Learn More
+## 🚀 Getting Started
 
-To learn more about Next.js, take a look at the following resources:
+### Prerequisites
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Node.js 18.x or later
+- Firebase project setup
+- Google AI (Gemini) API Key
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Installation
 
-## Deploy on Vercel
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/ammarshtayeh/Mindar-First-Launch.git
+   cd Mindar-First-Launch
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. Set up environment variables:
+   Create a `.env.local` file and add your credentials:
+   ```env
+   NEXT_PUBLIC_FIREBASE_API_KEY=your_key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_domain
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_id
+   NEXT_PUBLIC_GA_MEASUREMENT_ID=your_ga_id
+   # Add other required variables
+   ```
+
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 📱 PWA Support
+
+Mindar is a Progressive Web App. You can install it on iOS (via Safari Share -> Add to Home Screen) or Android (via Chrome Prompt).
+
+## ⚖️ Legal
+
+This project includes a [Privacy Policy](https://mindar.app/privacy) and [Terms of Service](https://mindar.app/terms) to ensure user data protection and compliance.
+
+## 👤 Author
+
+Developed by **Ammar Shtayeh**.
+- LinkedIn: [Ammar Shtayeh](https://www.linkedin.com/in/ammar-shtayeh-174259221/)
+- Instagram: [@ammar._.space](https://www.instagram.com/ammar._.space)
+
+---
+Developed with ❤️ for students worldwide.

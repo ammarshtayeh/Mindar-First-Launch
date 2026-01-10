@@ -84,8 +84,8 @@ export const Footer = () => {
       <div className="max-w-7xl mx-auto pt-8 border-t border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row justify-between items-center gap-4 text-zinc-500 dark:text-zinc-500 text-sm font-cairo">
         <p>© {currentYear} MINDAR. جميع الحقوق محفوظة لـ عمار اشتية.</p>
         <div className="flex items-center gap-6">
-          <a href="#" className="hover:text-indigo-500 transition-colors">سياسة الخصوصية</a>
-          <a href="#" className="hover:text-indigo-500 transition-colors">شروط الاستخدام</a>
+          <a href="/privacy" className="hover:text-indigo-500 transition-colors">سياسة الخصوصية</a>
+          <a href="/terms" className="hover:text-indigo-500 transition-colors">شروط الاستخدام</a>
         </div>
       </div>
     </footer>

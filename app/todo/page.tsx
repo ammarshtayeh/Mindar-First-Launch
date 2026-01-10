@@ -15,6 +15,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/hooks/useAuth"
 import { addTask, subscribeToTasks, updateTaskStatus, deleteTask, TodoTask } from "@/lib/services/todoService"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { CreativeEmptyState } from "@/components/ui/empty-state"
+import { Sparkles } from 'lucide-react'
 export default function TodoPage() {
   const { user } = useAuth()
   const [tasks, setTasks] = useState<TodoTask[]>([])
@@ -233,8 +235,18 @@ export default function TodoPage() {
             </AnimatePresence>
 
             {tasks.length === 0 && !loading && (
-                <div className="text-center py-20 text-slate-400">
-                    <p>ما عندك مهام حالياً.. وقت الراحة! 😴</p>
+                <div className="py-12">
+                     <CreativeEmptyState 
+                        icon={Sparkles}
+                        title="وقت الراحة! 😴"
+                        description="ما عندك مهام حالياً.. استمتع بوقتك أو أضف مهمة جديدة لتبدأ الإنجاز."
+                        action={
+                            <Button onClick={() => setIsAddOpen(true)} variant="outline" className="rounded-xl border-primary text-primary hover:bg-primary hover:text-white">
+                                <Plus className="w-4 h-4 ml-2" />
+                                أضف مهمة الآن
+                            </Button>
+                        }
+                    />
                 </div>
             )}
         </div>
