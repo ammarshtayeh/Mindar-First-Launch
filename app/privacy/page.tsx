@@ -219,7 +219,7 @@ export default function PrivacyPage() {
                 <>
                   <p>إذا كان لديك أي أسئلة حول سياسة الخصوصية، يرجى التواصل معنا:</p>
                   <div className="bg-primary/5 p-6 rounded-2xl mt-4 space-y-2">
-                    <p><strong>البريد الإلكتروني:</strong> privacy@mindar.app</p>
+                    <p><strong>البريد الإلكتروني:</strong> ammar.shtayeh@gmail.com</p>
                     <p><strong>الهاتف:</strong> <span dir="ltr">+972 595 537 190</span></p>
                     <p><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/ammar-shtayeh-174259221/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Ammar Shtayeh</a></p>
                   </div>
@@ -228,7 +228,7 @@ export default function PrivacyPage() {
                 <>
                   <p>If you have any questions about this Privacy Policy, please contact us:</p>
                   <div className="bg-primary/5 p-6 rounded-2xl mt-4 space-y-2">
-                    <p><strong>Email:</strong> privacy@mindar.app</p>
+                    <p><strong>Email:</strong> ammar.shtayeh@gmail.com</p>
                     <p><strong>Phone:</strong> +972 595 537 190</p>
                     <p><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/ammar-shtayeh-174259221/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Ammar Shtayeh</a></p>
                   </div>
