@@ -29,7 +29,7 @@ const orbitron = Orbitron({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://mindar.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://mindar.tech"),
   title: {
     default: "MINDAR - حوّل ملفاتك إلى كويزات ذكية | AI-Powered Quiz Generator",
     template: "%s | MINDAR"
