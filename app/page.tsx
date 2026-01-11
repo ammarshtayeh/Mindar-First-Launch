@@ -9,7 +9,6 @@ import { AnimatePresence } from "framer-motion"
 import { MotivationalBanner } from "@/components/motivational-banner"
 import { AdPlaceholder } from "@/components/ads/AdPlaceholder"
 import { useI18n } from "@/lib/i18n"
-import { Magnetic } from "@/components/ui/magnetic"
 
 export default function Home() {
   const { t, language } = useI18n()
@@ -78,24 +77,10 @@ export default function Home() {
     <main className="min-h-screen flex flex-col items-center justify-center p-6 pt-32 relative overflow-hidden">
 
         
-        {/* Simplified Background Glows */}
+        {/* Radical Static Background for Speed */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-            <motion.div 
-                animate={{ 
-                    scale: [1, 1.1, 1],
-                    opacity: [0.3, 0.5, 0.3]
-                }}
-                transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] mix-blend-screen dark:mix-blend-overlay"
-            />
-            <motion.div 
-                animate={{ 
-                    scale: [1.1, 1, 1.1],
-                    opacity: [0.4, 0.2, 0.4]
-                }}
-                transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] mix-blend-screen dark:mix-blend-overlay"
-            />
+            <div className="absolute top-[-10%] left-[-5%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] mix-blend-screen dark:mix-blend-overlay" />
+            <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] mix-blend-screen dark:mix-blend-overlay" />
         </div>
 
         <motion.div 
@@ -125,52 +110,48 @@ export default function Home() {
             </motion.p>
 
             <motion.div variants={item} className="flex flex-col sm:flex-row gap-6 mt-4">
-                <Magnetic strength={20}>
-                    <Link href="/hub">
-                        <Button size="lg" className="h-20 px-12 text-2xl font-black rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-[0_20px_50px_hsl(var(--primary)/0.25)] ring-4 ring-primary/20">
-                            {t('common.getStarted')} <Upload className="ml-3 w-6 h-6" />
-                        </Button>
-                    </Link>
-                </Magnetic>
-                <Magnetic strength={15}>
-                    <Button 
-                        variant="outline" 
-                        size="lg" 
-                        className="h-20 px-12 text-2xl font-black rounded-2xl border-2 border-primary bg-background/80 text-primary hover:bg-primary hover:text-primary-foreground backdrop-blur-md shadow-lg transition-all"
-                        onClick={() => {
-                            const sampleQuiz = {
-                                title: "Human Anatomy 101 (Sample)",
-                                questions: [
-                                    {
-                                        question: "What is the largest organ in the human body?",
-                                        options: ["Heart", "Liver", "Skin", "Lungs"],
-                                        answer: "Skin",
-                                        explanation: "The skin is the largest organ of the body, with a total area of about 20 square feet.",
-                                        topic: "Anatomy"
-                                    },
-                                    {
-                                        question: "How many bones are in the adult human body?",
-                                        options: ["206", "305", "150", "210"],
-                                        answer: "206",
-                                        explanation: "Adults have 206 bones, while infants are born with around 300.",
-                                        topic: "Skeletal System"
-                                    }
-                                ],
-                                flashcards: [
-                                    { front: "Mitochondria", back: "The powerhouse of the cell." },
-                                    { front: "DNA", back: "Deoxyribonucleic acid, the hereditary material in humans." }
-                                ],
-                                vocabulary: [
-                                    { word: "Homeostasis", definition: "A state of steady internal, physical, and chemical conditions maintained by living systems." }
-                                ],
-                                timestamp: Date.now()
-                            };
-                            localStorage.setItem("currentQuiz", JSON.stringify(sampleQuiz));
-                            window.location.href = "/hub";
-                        }}>
-                        <Play className="mr-3 w-6 h-6 fill-current" /> {t('common.seeSample')}
+                <Link href="/hub">
+                    <Button size="lg" className="h-20 px-12 text-2xl font-black rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-xl">
+                        {t('common.getStarted')} <Upload className="ml-3 w-6 h-6" />
                     </Button>
-                </Magnetic>
+                </Link>
+                <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="h-20 px-12 text-2xl font-black rounded-2xl border-2 border-primary bg-background/80 text-primary hover:bg-primary hover:text-primary-foreground backdrop-blur-md shadow-lg transition-all"
+                    onClick={() => {
+                        const sampleQuiz = {
+                            title: "Human Anatomy 101 (Sample)",
+                            questions: [
+                                {
+                                    question: "What is the largest organ in the human body?",
+                                    options: ["Heart", "Liver", "Skin", "Lungs"],
+                                    answer: "Skin",
+                                    explanation: "The skin is the largest organ of the body, with a total area of about 20 square feet.",
+                                    topic: "Anatomy"
+                                },
+                                {
+                                    question: "How many bones are in the adult human body?",
+                                    options: ["206", "305", "150", "210"],
+                                    answer: "206",
+                                    explanation: "Adults have 206 bones, while infants are born with around 300.",
+                                    topic: "Skeletal System"
+                                }
+                            ],
+                            flashcards: [
+                                { front: "Mitochondria", back: "The powerhouse of the cell." },
+                                { front: "DNA", back: "Deoxyribonucleic acid, the hereditary material in humans." }
+                            ],
+                            vocabulary: [
+                                { word: "Homeostasis", definition: "A state of steady internal, physical, and chemical conditions maintained by living systems." }
+                            ],
+                            timestamp: Date.now()
+                        };
+                        localStorage.setItem("currentQuiz", JSON.stringify(sampleQuiz));
+                        window.location.href = "/hub";
+                    }}>
+                    <Play className="mr-3 w-6 h-6 fill-current" /> {t('common.seeSample')}
+                </Button>
             </motion.div>
 
             {/* Ad Banner on Home Page - Moved Higher */}
