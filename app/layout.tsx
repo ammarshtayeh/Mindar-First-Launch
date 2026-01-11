@@ -102,11 +102,14 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon.png", type: "image/png", sizes: "512x512" }
+      { url: "/icon.png", type: "image/png", sizes: "512x512" },
+      { url: "/logo.png", type: "image/png", sizes: "48x48" },
+      { url: "/logo.png", type: "image/png", sizes: "96x96" }
     ],
     apple: [
       { url: "/apple-icon.png", sizes: "180x180", type: "image/png" }
     ],
+    shortcut: ["/logo.png"],
     other: [
       {
         rel: "mask-icon",
