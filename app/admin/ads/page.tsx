@@ -2,10 +2,16 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Megaphone, Plus, Trash2, ExternalLink, Power, PowerOff, BarChart3, Image as ImageIcon, Loader2, Upload } from "lucide-react"
+import { Megaphone, Plus, Trash2, ExternalLink, Power, PowerOff, BarChart3, Image as ImageIcon, Loader2, Upload, Check } from "lucide-react"
 import { getAllAds, createAd, updateAd, deleteAd, uploadAdImage, Ad } from "@/lib/services/adsService"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+
+const AD_VARIANTS = [
+  { id: "banner", label: "بانر علوي (Banner)" },
+  { id: "box", label: "مربع (Box)" },
+  { id: "sidebar", label: "جانبي (Sidebar)" }
+] as const;
 
 export default function AdminAdsPage() {
   const [ads, setAds] = useState<Ad[]>([])
@@ -18,7 +24,7 @@ export default function AdminAdsPage() {
     title: "",
     imageUrl: "",
     link: "",
-    variant: "banner",
+    variants: ["banner"],
     active: true
   })
 
@@ -48,14 +54,26 @@ export default function AdminAdsPage() {
     }
   }
 
+  const toggleVariant = (variantId: typeof AD_VARIANTS[number]["id"]) => {
+    setNewAd(prev => {
+      const exists = prev.variants.includes(variantId);
+      if (exists) {
+        return { ...prev, variants: prev.variants.filter(v => v !== variantId) };
+      } else {
+        return { ...prev, variants: [...prev.variants, variantId] };
+      }
+    });
+  }
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
     if (isUploading) return alert("يرجى الانتظار حتى اكتمال رفع الصورة")
     if (!newAd.imageUrl) return alert("يرجى رفع صورة للإعلان")
+    if (newAd.variants.length === 0) return alert("يرجى اختيار مكان واحد على الأقل لظهور الإعلان")
     
     try {
       await createAd(newAd)
-      setNewAd({ title: "", imageUrl: "", link: "", variant: "banner", active: true })
+      setNewAd({ title: "", imageUrl: "", link: "", variants: ["banner"], active: true })
       setIsAdding(false)
       fetchAds()
     } catch (error) {
@@ -157,18 +175,6 @@ export default function AdminAdsPage() {
               </div>
 
               <div>
-                <label className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2 block">أو رابط صورة خارجي (URL)</label>
-                <Input 
-                  value={newAd.imageUrl}
-                  onChange={e => setNewAd({...newAd, imageUrl: e.target.value})}
-                  placeholder="https://example.com/banner.png" 
-                  className="bg-slate-950/50 border-slate-800 focus:ring-indigo-500/50 text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div>
                 <label className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2 block">رابط التوجيه (Link)</label>
                 <Input 
                   value={newAd.link}
@@ -178,18 +184,25 @@ export default function AdminAdsPage() {
                   required
                 />
               </div>
-              
+            </div>
+
+            <div className="space-y-6">
               <div>
-                <label className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2 block">مكان الظهور (Variant)</label>
-                <select 
-                  className="w-full bg-slate-950/50 border border-slate-800 rounded-lg p-3 text-slate-300 outline-none focus:border-indigo-500/50"
-                  value={newAd.variant}
-                  onChange={e => setNewAd({...newAd, variant: e.target.value as any})}
-                >
-                  <option value="banner">بانر علوي (Banner)</option>
-                  <option value="box">مربع (Box)</option>
-                  <option value="sidebar">جانبي (Sidebar)</option>
-                </select>
+                <label className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-3 block">أماكن الظهور (Multiple selection)</label>
+                <div className="grid grid-cols-1 gap-2">
+                  {AD_VARIANTS.map((v) => (
+                    <div 
+                      key={v.id}
+                      onClick={() => toggleVariant(v.id)}
+                      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${newAd.variants.includes(v.id) ? 'bg-indigo-500/10 border-indigo-500/50 text-indigo-400' : 'bg-slate-950/50 border-slate-800 text-slate-500 hover:border-slate-700'}`}
+                    >
+                      <span className="text-sm font-medium">{v.label}</span>
+                      <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${newAd.variants.includes(v.id) ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-slate-700'}`}>
+                        {newAd.variants.includes(v.id) && <Check className="w-3 h-3" />}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="pt-4">
@@ -241,7 +254,11 @@ export default function AdminAdsPage() {
                   {ad.active ? 'Active' : 'Draft'}
                 </span>
                 <span className="text-slate-800">/</span>
-                <span className="text-slate-500">{ad.variant}</span>
+                <div className="flex items-center gap-1">
+                  {ad.variants.map((v) => (
+                    <span key={v} className="bg-slate-800/50 px-1.5 py-0.5 rounded text-slate-400">{v}</span>
+                  ))}
+                </div>
               </div>
               <h4 className="text-lg font-bold text-slate-100">{ad.title}</h4>
               <p className="text-xs text-slate-500 flex items-center gap-2 truncate max-w-md">

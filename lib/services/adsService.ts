@@ -19,7 +19,7 @@ export interface Ad {
   title: string;
   imageUrl: string;
   link: string;
-  variant: "banner" | "box" | "sidebar";
+  variants: ("banner" | "box" | "sidebar")[];
   active: boolean;
   createdAt?: any;
   clicks?: number;
@@ -45,12 +45,12 @@ export const getAllAds = async (): Promise<Ad[]> => {
 /**
  * جلب الإعلانات النشطة حسب النوع (للعرض في الموقع)
  */
-export const getActiveAdsByVariant = async (variant: Ad["variant"]): Promise<Ad[]> => {
+export const getActiveAdsByVariant = async (variant: "banner" | "box" | "sidebar"): Promise<Ad[]> => {
   try {
     const adsRef = collection(db, ADS_COLLECTION);
     const q = query(
       adsRef, 
-      where("variant", "==", variant), 
+      where("variants", "array-contains", variant), 
       where("active", "==", true)
     );
     const snapshot = await getDocs(q);
