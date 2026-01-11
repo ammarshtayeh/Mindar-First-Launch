@@ -1,9 +1,10 @@
 "use client"
 
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { Sparkles, Zap, Info } from "lucide-react"
+import { Sparkles, Zap, Info, ExternalLink } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { getActiveAdsByVariant, trackAdClick, Ad } from "@/lib/services/adsService"
 
 interface AdPlaceholderProps {
   variant?: "banner" | "box" | "sidebar"
@@ -12,10 +13,70 @@ interface AdPlaceholderProps {
 }
 
 export function AdPlaceholder({ variant = "banner", className, label }: AdPlaceholderProps) {
+  const [activeAd, setActiveAd] = useState<Ad | null>(null)
   const isBanner = variant === "banner"
   const isBox = variant === "box"
   const isSidebar = variant === "sidebar"
 
+  useEffect(() => {
+    const fetchAd = async () => {
+      const ads = await getActiveAdsByVariant(variant)
+      if (ads.length > 0) {
+        // Pick a random ad from active ones for this variant
+        const randomAd = ads[Math.floor(Math.random() * ads.length)]
+        setActiveAd(randomAd)
+      }
+    }
+    fetchAd()
+  }, [variant])
+
+  const handleClick = () => {
+    if (activeAd?.id) {
+      trackAdClick(activeAd.id)
+      window.open(activeAd.link, "_blank")
+    }
+  }
+
+  // If we have an active ad, show it
+  if (activeAd) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        whileHover={{ scale: 1.01 }}
+        onClick={handleClick}
+        className={cn(
+          "relative overflow-hidden rounded-[2rem] border border-primary/20 bg-slate-950 cursor-pointer group shadow-xl",
+          isBanner && "w-full h-32 md:h-40",
+          isBox && "w-full aspect-square",
+          isSidebar && "w-full h-[400px]",
+          className
+        )}
+      >
+        <img 
+          src={activeAd.imageUrl} 
+          alt={activeAd.title} 
+          className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+        
+        <div className="relative z-10 h-full flex flex-col justify-end p-6">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="px-2 py-0.5 rounded bg-primary text-[8px] font-black uppercase text-white tracking-widest">
+              AD
+            </div>
+            <h4 className="text-sm md:text-lg font-bold text-white leading-tight">{activeAd.title}</h4>
+          </div>
+          <div className="flex items-center gap-2 text-primary/80 group-hover:text-primary transition-colors">
+            <span className="text-[10px] font-bold uppercase tracking-widest">Learn More</span>
+            <ExternalLink className="w-3 h-3" />
+          </div>
+        </div>
+      </motion.div>
+    )
+  }
+
+  // Fallback to placeholder if no ad
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}

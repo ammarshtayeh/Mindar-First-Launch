@@ -12,6 +12,8 @@ import { StructuredData } from "@/components/seo/StructuredData";
 import { Analytics } from "@/components/analytics";
 import { ToastProvider } from "@/components/ui/toast-provider";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -174,6 +176,8 @@ export default function RootLayout({
                   <AppContent>{children}</AppContent>
                 </ToastProvider>
                 <Footer />
+                <VercelAnalytics />
+                <SpeedInsights />
               </I18nProvider>
             </ReduxProvider>
           </ThemeProvider>

@@ -3,13 +3,14 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Users, FileText, Settings, LogOut, ShieldCheck } from "lucide-react"
+import { LayoutDashboard, Users, FileText, Settings, LogOut, ShieldCheck, Megaphone } from "lucide-react"
 import { motion } from "framer-motion"
 
 const sidebarItems = [
     { icon: LayoutDashboard, label: "Overview", href: "/admin" },
     { icon: Users, label: "Users", href: "/admin/users" },
     { icon: FileText, label: "Quizzes", href: "/admin/quizzes" },
+    { icon: Megaphone, label: "Ads", href: "/admin/ads" },
     { icon: Settings, label: "Settings", href: "/admin/settings" },
 ]
 
