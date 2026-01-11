@@ -8,9 +8,11 @@ import {
   doc, 
   deleteDoc, 
   serverTimestamp,
-  orderBy
+  orderBy,
+  increment
 } from "firebase/firestore";
-import { db } from "../firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, storage } from "../firebase";
 
 export interface Ad {
   id?: string;
@@ -104,14 +106,26 @@ export const deleteAd = async (adId: string) => {
 };
 
 /**
+ * رفع صورة الإعلان إلى Firebase Storage
+ */
+export const uploadAdImage = async (file: File): Promise<string> => {
+  try {
+    const storageRef = ref(storage, `ads/${Date.now()}_${file.name}`);
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    return downloadURL;
+  } catch (error) {
+    console.error("Error uploading ad image:", error);
+    throw error;
+  }
+};
+
+/**
  * تسجيل نقرة على الإعلان
  */
 export const trackAdClick = async (adId: string) => {
   try {
     const adRef = doc(db, ADS_COLLECTION, adId);
-    // Note: In a real production app, you might want to use increment()
-    // but for simplicity we can just update it or use increment if available in firestore
-    const { increment } = await import("firebase/firestore");
     await updateDoc(adRef, {
       clicks: increment(1)
     });

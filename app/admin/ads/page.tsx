@@ -2,16 +2,16 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Megaphone, Plus, Trash2, ExternalLink, Power, PowerOff, BarChart3, Image as ImageIcon } from "lucide-react"
-import { getAllAds, createAd, updateAd, deleteAd, Ad } from "@/lib/services/adsService"
+import { Megaphone, Plus, Trash2, ExternalLink, Power, PowerOff, BarChart3, Image as ImageIcon, Loader2, Upload } from "lucide-react"
+import { getAllAds, createAd, updateAd, deleteAd, uploadAdImage, Ad } from "@/lib/services/adsService"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
 
 export default function AdminAdsPage() {
   const [ads, setAds] = useState<Ad[]>([])
   const [loading, setLoading] = useState(true)
   const [isAdding, setIsAdding] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   
   // Form state
   const [newAd, setNewAd] = useState<Omit<Ad, "id" | "createdAt" | "clicks">>({
@@ -33,8 +33,26 @@ export default function AdminAdsPage() {
     setLoading(false)
   }
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    try {
+      const url = await uploadAdImage(file)
+      setNewAd(prev => ({ ...prev, imageUrl: url }))
+    } catch (error) {
+      alert("فشل في رفع الصورة")
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isUploading) return alert("يرجى الانتظار حتى اكتمال رفع الصورة")
+    if (!newAd.imageUrl) return alert("يرجى رفع صورة للإعلان")
+    
     try {
       await createAd(newAd)
       setNewAd({ title: "", imageUrl: "", link: "", variant: "banner", active: true })
@@ -75,13 +93,13 @@ export default function AdminAdsPage() {
         </div>
         <Button 
           onClick={() => setIsAdding(!isAdding)}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-6 py-6 h-auto"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-6 py-6 h-auto transition-all"
         >
           {isAdding ? "إلغاء الإضافة" : (
-            <>
-              <Plus className="w-5 h-5 mr-2" />
+            <div className="flex items-center gap-2">
+              <Plus className="w-5 h-5" />
               إضافة إعلان جديد
-            </>
+            </div>
           )}
         </Button>
       </div>
@@ -90,42 +108,77 @@ export default function AdminAdsPage() {
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 overflow-hidden"
+          className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 overflow-hidden shadow-2xl"
         >
-          <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
+          <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-6">
               <div>
                 <label className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2 block">عنوان الإعلان</label>
                 <Input 
                   value={newAd.title}
                   onChange={e => setNewAd({...newAd, title: e.target.value})}
                   placeholder="مثال: خصم 50% على اشتراكات الطلاب" 
-                  className="bg-slate-950/50 border-slate-800"
+                  className="bg-slate-950/50 border-slate-800 focus:ring-indigo-500/50"
                   required
                 />
               </div>
+
               <div>
-                <label className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2 block">رابط الصورة (URL)</label>
+                <label className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2 block">صورة الإعلان</label>
+                <div className="flex items-center gap-4">
+                  <div className="relative flex-1">
+                    <Input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="ad-image-upload"
+                    />
+                    <label 
+                      htmlFor="ad-image-upload"
+                      className="flex items-center justify-center gap-2 w-full p-4 border-2 border-dashed border-slate-800 rounded-xl hover:border-indigo-500/50 hover:bg-indigo-500/5 cursor-pointer transition-all text-slate-400 hover:text-indigo-400"
+                    >
+                      {isUploading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Upload className="w-5 h-5" />
+                      )}
+                      <span className="text-sm font-medium">
+                        {newAd.imageUrl ? "تم اختيار صورة" : "ارفع صورة من الجهاز"}
+                      </span>
+                    </label>
+                  </div>
+                  {newAd.imageUrl && (
+                    <div className="w-16 h-16 rounded-lg overflow-hidden border border-slate-700">
+                      <img src={newAd.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2 block">أو رابط صورة خارجي (URL)</label>
                 <Input 
                   value={newAd.imageUrl}
                   onChange={e => setNewAd({...newAd, imageUrl: e.target.value})}
                   placeholder="https://example.com/banner.png" 
-                  className="bg-slate-950/50 border-slate-800"
-                  required
+                  className="bg-slate-950/50 border-slate-800 focus:ring-indigo-500/50 text-xs"
                 />
               </div>
+            </div>
+
+            <div className="space-y-6">
               <div>
                 <label className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2 block">رابط التوجيه (Link)</label>
                 <Input 
                   value={newAd.link}
                   onChange={e => setNewAd({...newAd, link: e.target.value})}
                   placeholder="https://example.com/promo" 
-                  className="bg-slate-950/50 border-slate-800"
+                  className="bg-slate-950/50 border-slate-800 focus:ring-indigo-500/50"
                   required
                 />
               </div>
-            </div>
-            <div className="space-y-4">
+              
               <div>
                 <label className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2 block">مكان الظهور (Variant)</label>
                 <select 
@@ -138,9 +191,14 @@ export default function AdminAdsPage() {
                   <option value="sidebar">جانبي (Sidebar)</option>
                 </select>
               </div>
-              <div className="pt-8">
-                <Button type="submit" className="w-full bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-700 hover:to-cyan-700 text-white font-bold py-4 h-auto rounded-xl">
-                  تأكيد الإضافة ونشر الإعلان
+
+              <div className="pt-4">
+                <Button 
+                  type="submit" 
+                  disabled={isUploading}
+                  className="w-full bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-700 hover:to-cyan-700 text-white font-bold py-6 h-auto rounded-xl shadow-lg shadow-indigo-500/20"
+                >
+                  {isUploading ? "جاري رفع الصورة..." : "تأكيد الإضافة ونشر الإعلان"}
                 </Button>
               </div>
             </div>
@@ -151,7 +209,10 @@ export default function AdminAdsPage() {
       {/* Ads List */}
       <div className="grid grid-cols-1 gap-4">
         {loading ? (
-          <div className="text-center py-20 text-slate-500">جاري تحميل البيانات...</div>
+          <div className="flex flex-col items-center justify-center py-20 text-slate-500">
+            <Loader2 className="w-12 h-12 animate-spin mb-4" />
+            <p className="font-mono text-xs uppercase tracking-widest">Fetching Encrypted Ad Streams...</p>
+          </div>
         ) : ads.length === 0 ? (
           <div className="text-center py-20 bg-slate-900/20 border border-dashed border-slate-800 rounded-2xl text-slate-500">
             <Megaphone className="w-12 h-12 mx-auto mb-4 opacity-20" />
@@ -160,14 +221,14 @@ export default function AdminAdsPage() {
         ) : ads.map((ad) => (
           <motion.div
             key={ad.id}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className={`flex flex-col md:flex-row items-center gap-6 p-6 rounded-2xl border ${ad.active ? 'border-indigo-500/30 bg-indigo-500/5' : 'border-slate-800 bg-slate-900/20'} backdrop-blur-sm group`}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className={`flex flex-col md:flex-row items-center gap-6 p-6 rounded-2xl border ${ad.active ? 'border-indigo-500/30 bg-indigo-500/5' : 'border-slate-800 bg-slate-900/20'} backdrop-blur-sm group transition-all hover:bg-slate-900/30`}
           >
             {/* Preview Image */}
-            <div className="w-full md:w-48 h-24 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center relative">
+            <div className="w-full md:w-48 h-24 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center relative shadow-inner">
                {ad.imageUrl ? (
-                 <img src={ad.imageUrl} alt={ad.title} className="w-full h-full object-cover" />
+                 <img src={ad.imageUrl} alt={ad.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                ) : (
                  <ImageIcon className="w-8 h-8 text-slate-800" />
                )}
@@ -175,27 +236,27 @@ export default function AdminAdsPage() {
 
             {/* Info */}
             <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-2">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${ad.active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-500'}`}>
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em]">
+                <span className={ad.active ? 'text-emerald-400' : 'text-slate-500'}>
                   {ad.active ? 'Active' : 'Draft'}
                 </span>
-                <span className="text-slate-600">•</span>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{ad.variant}</span>
+                <span className="text-slate-800">/</span>
+                <span className="text-slate-500">{ad.variant}</span>
               </div>
               <h4 className="text-lg font-bold text-slate-100">{ad.title}</h4>
-              <p className="text-xs text-slate-500 flex items-center gap-2">
-                <ExternalLink className="w-3 h-3 text-indigo-400" />
+              <p className="text-xs text-slate-500 flex items-center gap-2 truncate max-w-md">
+                <ExternalLink className="w-3 h-3 text-indigo-400 shrink-0" />
                 {ad.link}
               </p>
             </div>
 
             {/* Metrics */}
-            <div className="px-6 border-x border-slate-800/50 hidden lg:block">
+            <div className="px-8 border-x border-slate-800/50 hidden lg:block">
               <div className="flex items-center gap-2 mb-1">
                 <BarChart3 className="w-4 h-4 text-cyan-400" />
-                <span className="text-xs text-slate-500">إجمالي النقرات</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Clicks</span>
               </div>
-              <p className="text-2xl font-black text-slate-100">{ad.clicks || 0}</p>
+              <p className="text-2xl font-black text-slate-100 tracking-tighter">{ad.clicks || 0}</p>
             </div>
 
             {/* Actions */}
