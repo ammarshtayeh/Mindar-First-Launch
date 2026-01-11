@@ -27,7 +27,7 @@ export function generateMetadata({
 }: GenerateMetadataProps = {}): Metadata {
   
   const fullTitle = title.includes('MINDAR') ? title : `${title} | MINDAR`
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://mindar.app'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://mindar.tech'
   const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`
   const fullImage = image.startsWith('http') ? image : `${baseUrl}${image}`
 

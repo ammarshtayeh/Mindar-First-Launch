@@ -20,7 +20,7 @@ export function MetaTags({
   description = 'Transform your study materials into smart quizzes and flashcards in seconds using AI. Upload PDF or PPTX files and start learning smarter.',
   keywords = 'quiz generator, AI quiz, flashcards, study tool, education, learning, AI learning, smart study',
   image = '/og-image.png',
-  url = 'https://mindar.app',
+  url = 'https://mindar.tech',
   type = 'website',
   author = 'Ammar Shtayeh',
   publishedTime,
@@ -29,8 +29,8 @@ export function MetaTags({
   const { language } = useI18n()
   
   const fullTitle = title.includes('MINDAR') ? title : `${title} | MINDAR`
-  const fullUrl = url.startsWith('http') ? url : `https://mindar.app${url}`
-  const fullImage = image.startsWith('http') ? image : `https://mindar.app${image}`
+  const fullUrl = url.startsWith('http') ? url : `https://mindar.tech${url}`
+  const fullImage = image.startsWith('http') ? image : `https://mindar.tech${image}`
 
   return (
     <Head>
