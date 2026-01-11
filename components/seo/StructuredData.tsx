@@ -7,7 +7,7 @@ interface StructuredDataProps {
 }
 
 export function StructuredData({ type = 'website' }: StructuredDataProps) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://mindar.app'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://mindar.tech'
   
   const websiteSchema = {
     "@context": "https://schema.org",
@@ -99,7 +99,7 @@ export function StructuredData({ type = 'website' }: StructuredDataProps) {
 
 // Breadcrumb Schema Component
 export function BreadcrumbSchema({ items }: { items: Array<{ name: string; url: string }> }) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://mindar.app'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://mindar.tech'
   
   const breadcrumbSchema = {
     "@context": "https://schema.org",
