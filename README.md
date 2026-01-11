@@ -2,7 +2,7 @@
 
 MINDAR is a modern, intelligence-driven educational platform designed to transform traditional study materials into interactive learning experiences. Using advanced AI, it parses PDF and PPTX files to generate quizzes, flashcards, and personalized study paths.
 
-![MINDAR Hero Image](https://mindar.app/og-image.png)
+![MINDAR Hero Image](https://mindar.tech/og-image.png)
 
 ## ✨ Core Features
 
@@ -70,13 +70,13 @@ Mindar is a Progressive Web App. You can install it on iOS (via Safari Share -> 
 
 ## ⚖️ Legal
 
-This project includes a [Privacy Policy](https://mindar.app/privacy) and [Terms of Service](https://mindar.app/terms) to ensure user data protection and compliance.
+This project includes a [Privacy Policy](https://mindar.tech/privacy) and [Terms of Service](https://mindar.tech/terms) to ensure user data protection and compliance.
 
 ## 👤 Author
 
 Developed by **Ammar Shtayeh**.
 - LinkedIn: [Ammar Shtayeh](https://www.linkedin.com/in/ammar-shtayeh-174259221/)
-- Instagram: [@ammar._.space](https://www.instagram.com/ammar._.space)
+- Instagram: [@mindar._tech](https://www.instagram.com/mindar._tech/)
 
 ---
 Developed with ❤️ for students worldwide.
