@@ -43,16 +43,23 @@ export default function AdminAdsPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // التأكد من أن الملف صورة
+    // السماح بأي ملف يبدأ بـ image/ بغض النظر عن النوع الفرعي
     if (!file.type.startsWith('image/')) {
-      return alert("يرجى اختيار ملف صورة صالح")
+      // تنبيه بسيط فقط لكن لن نمنع الرفع
+      if(!confirm("الملف المختار قد لا يكون صورة مدعومة. هل تود المتابعة؟")) return;
     }
 
     setIsUploading(true)
     try {
-      // وظيفة لضغط الصورة برمجياً قبل الرفع
-      const compressedFile = await compressImage(file);
-      const url = await uploadAdImage(compressedFile)
+      // نحاول ضغط الصورة، إذا فشل الضغط نرفعها كما هي
+      let fileToUpload = file;
+      try {
+        fileToUpload = await compressImage(file);
+      } catch (e) {
+        console.warn("فشل الضغط، سيتم رفع الملف الأصلي");
+      }
+      
+      const url = await uploadAdImage(fileToUpload)
       setNewAd(prev => ({ ...prev, imageUrl: url }))
     } catch (error) {
       console.error(error)
@@ -88,17 +95,20 @@ export default function AdminAdsPage() {
           
           canvas.toBlob((blob) => {
             if (blob) {
+              // تحويل التايب ليتوافق مع الملف الأصلي قدر الإمكان
               const compressed = new File([blob], file.name, {
-                type: 'image/jpeg',
+                type: file.type || 'image/jpeg', 
                 lastModified: Date.now(),
               });
               resolve(compressed);
             } else {
               resolve(file); // في حال فشل الضغط نرفع الأصل
             }
-          }, 'image/jpeg', 0.7); // ضغط الجودة لـ 70%
+          }, 'image/jpeg', 0.8); // رفع الجودة قليلاً (0.8) لضمان وضوح أفضل
         };
+        img.onerror = () => resolve(file); // إذا فشل تحميل الصورة، نعيد الملف الأصلي
       };
+      reader.onerror = () => resolve(file);
     });
   };
 
@@ -190,38 +200,62 @@ export default function AdminAdsPage() {
               </div>
 
               <div>
-                <label className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2 block">صورة الإعلان</label>
-                <div className="flex items-center gap-4">
-                  <div className="relative flex-1">
-                    <Input 
-                      type="file" 
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      id="ad-image-upload"
-                    />
-                    <label 
-                      htmlFor="ad-image-upload"
-                      className="flex items-center justify-center gap-2 w-full p-4 border-2 border-dashed border-slate-800 rounded-xl hover:border-indigo-500/50 hover:bg-indigo-500/5 cursor-pointer transition-all text-slate-400 hover:text-indigo-400"
-                    >
-                      {isUploading ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : (
-                        <Upload className="w-5 h-5" />
-                      )}
-                      <span className="text-sm font-medium">
-                        {newAd.imageUrl ? "تم اختيار صورة" : "ارفع صورة من الجهاز"}
-                      </span>
-                    </label>
+                <label className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2 block">صورة الإعلان (اختر طريقة واحدة)</label>
+                
+                <div className="space-y-4">
+                  {/* الخيار الأول: الرفع من الجهاز */}
+                  <div className="flex items-center gap-4 p-4 border border-slate-800 rounded-xl bg-slate-950/30">
+                    <div className="relative flex-1">
+                      <Input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        id="ad-image-upload"
+                      />
+                      <label 
+                        htmlFor="ad-image-upload"
+                        className="flex items-center justify-center gap-2 w-full p-3 border border-dashed border-slate-700 rounded-lg hover:border-indigo-500/50 hover:bg-slate-800 cursor-pointer transition-all text-slate-400 hover:text-indigo-400"
+                      >
+                        {isUploading ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <Upload className="w-5 h-5" />
+                        )}
+                        <span className="text-sm font-medium">
+                          {isUploading ? "جاري الرفع والمعالجة..." : "رفع ملف من الجهاز"}
+                        </span>
+                      </label>
+                    </div>
                   </div>
+
+                  <div className="relative flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-800"></div></div>
+                    <span className="relative bg-slate-900 px-2 text-[10px] text-slate-500 uppercase">أو استخدم رابط</span>
+                  </div>
+
+                  {/* الخيار الثاني: رابط خارجي */}
+                  <div>
+                    <Input 
+                      value={newAd.imageUrl}
+                      onChange={e => setNewAd({...newAd, imageUrl: e.target.value})}
+                      placeholder="https://example.com/image.png" 
+                      className="bg-slate-950/50 border-slate-800 focus:ring-indigo-500/50 text-xs font-mono"
+                    />
+                  </div>
+
+                  {/* المعاينة */}
                   {newAd.imageUrl && (
-                    <div className="w-16 h-16 rounded-lg overflow-hidden border border-slate-700">
-                      <img src={newAd.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                    <div className="w-full h-32 rounded-lg overflow-hidden border border-slate-700 bg-black/50 flex items-center justify-center relative mt-2 group">
+                      <img src={newAd.imageUrl} alt="Preview" className="h-full object-contain" />
+                      <div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded text-[10px] text-white">معاينة</div>
                     </div>
                   )}
                 </div>
               </div>
+            </div>
 
+            <div className="space-y-6">
               <div>
                 <label className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2 block">رابط التوجيه (Link)</label>
                 <Input 
@@ -232,9 +266,7 @@ export default function AdminAdsPage() {
                   required
                 />
               </div>
-            </div>
 
-            <div className="space-y-6">
               <div>
                 <label className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-3 block">أماكن الظهور (Multiple selection)</label>
                 <div className="grid grid-cols-1 gap-2">
