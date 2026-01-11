@@ -14,16 +14,15 @@ interface I18nContextType {
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>('ar');
 
   useEffect(() => {
     const saved = localStorage.getItem('app-language') as Language;
     if (saved) {
       setLanguage(saved);
     } else {
-      // Default to Arabic if browser is Arabic, otherwise English
-      const browserLang = navigator.language.startsWith('ar') ? 'ar' : 'en';
-      setLanguage(browserLang);
+      // Default to Arabic for all new users
+      setLanguage('ar');
     }
   }, []);
 
