@@ -44,31 +44,65 @@ export async function POST(req: Request) {
             4. **STRICT TYPE ADHERENCE**: ONLY generate questions of the types specified below: [ ${selectedTypes.join(', ')} ].
             5. **DISTRIBUTION**: You MUST structure the quiz to have exactly: [ ${distributionNote} ]. Do not output all questions as one type.
             
+            ${type === 'coding' ? `
+            **CODING MODE ACTIVATED**:
+            - **EXCEPTION TO RULE 1**: For CODING questions, you represent an expert interviewer. You MAY generate relevant code challenges based on the *concepts* found in the text.
+            - **ACCURACY**: The 'answer' field MUST be 100% correct, working, bug-free code.
+            - **REQUIRED**: context "codeSnippet" field.
+            - **VARIETY (CREATIVE MODES)**:
+                1. **Standard**: "Write function X". 'codeSnippet' is empty.
+                2. **Bug Hunt (50% Chance)**: Provide a 'codeSnippet' with a LOGIC/SYNTAX error. Question: "Fix the bug in this code". 'answer' is the corrected code.
+                3. **Prediction**: "What is the output?". 'codeSnippet' is valid code. 'answer' is the output.
+            - **QUESTION TYPE**: Use 'short-answer'.
+            - **NEW FIELD**: Add "isBugHunt": true if Bug Hunt, and ALWAYS add "isCoding": true to every question object in this mode.
+            ` : ''}
+
+            ${type === 'mindmap' ? `
+            **MINDMAP MODE ACTIVATED**:
+            - **Goal**: Generate a hierarchical structure of concepts using the Source Text.
+            - **Return specific JSON structure**:
+              {
+                "title": "Main Topic",
+                "root": {
+                    "id": "root",
+                    "label": "Central Concept",
+                    "children": [
+                        { "id": "1", "label": "Sub Concept 1", "children": [...] },
+                        { "id": "2", "label": "Sub Concept 2", "children": [...] }
+                    ]
+                }
+              }
+            - **Depth**: Go at least 3 levels deep.
+            ` : ''}
+
             - Target Language: ${requestedLang || "SAME AS SOURCE TEXT"}
             - Difficulty: ${difficulty}.
             - Topic: ${topic}.
             
             Text: ${text.substring(0, 60000)}
-            Total Questions: ${numQuestions}.
             
-            Return RAW JSON ONLY with this schema:
+            Return RAW JSON ONLY.
+            ${type === 'mindmap' ? 'Schema: { "title": "string", "root": { "id": "string", "label": "string", "children": [] } }' : `Schema:
             {
                 "title": "Title",
                 "questions": [
                     {
                         "id": 1,
-                        "type": "The specific type from the allowed list above",
-                        "question": "Question text...",
-                        "options": ["Option A", "Option B", "Option C", "Option D"], // REQUIRED for 'multiple-choice' and 'true-false'
-                        "answer": "Option A", // EXACT MATCH of the correct option string. For 'fill-in-the-blanks', provide the missing word.
-                        "explanation": "Quote from text proving the answer.",
-                        "topic": "Concept-level topic",
+                        "type": "short-answer", // PREFER THIS FOR CODING
+                        "question": "Fix the bug in the following code...",
+                        "codeSnippet": "function test() { retunr true; }", // REQUIRED FOR CODING
+                        "options": null, 
+                        "answer": "function test() { return true; }", 
+                        "explanation": "The typo 'retunr' caused a syntax error.",
+                        "topic": "Topic",
+                        "isBugHunt": true, // OPTIONAL
+                        "isCoding": true, // REQUIRED for coding questions
                         "pageNumber": null 
                     }
                 ],
                 "vocabulary": [],
                 "flashcards": []
-            }
+            }`}
         `;
 
         // --- DUAL-MODEL ROTATION STRATEGY ---
@@ -104,6 +138,7 @@ export async function POST(req: Request) {
 
         // --- DEEP FALLBACK CHAIN (If both primary models fail) ---
         const configs = [
+            { id: "gemini-2.0-flash-lite-preview-02-05", version: "v1beta" },
             { id: "gemini-1.5-flash", version: "v1beta" },
             { id: "gemini-1.5-flash-8b", version: "v1beta" },
             { id: "gemini-2.0-flash", version: "v1beta" }

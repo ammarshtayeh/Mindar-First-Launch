@@ -9,7 +9,7 @@ interface ActivitySettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
     onStart: (settings: { numQuestions: number, difficulty: string, types: string[] }) => void;
-    type: 'quiz' | 'flashcards' | 'challenge';
+    type: 'quiz' | 'flashcards' | 'challenge' | 'coding' | 'mindmap';
 }
 
 export function ActivitySettingsModal({ isOpen, onClose, onStart, type }: ActivitySettingsModalProps) {

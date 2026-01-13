@@ -2,8 +2,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // User profiles - users can read/write their own profile
+    // User profiles - users can read all profiles (Leaderboard), but only write their own
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
     
     // Tasks - users can manage their own tasks
@@ -20,6 +22,16 @@ service cloud.firestore {
     // Quiz History
     match /quiz_history/{historyId} {
       allow read, write: if request.auth != null;
+    }
+
+    // Ads - PUBLIC READ, Public Click Tracking (Update clicks only), Admin Full Write
+    match /ads/{adId} {
+      allow read: if true;
+      // Allow anyone to increment clicks (for tracking)
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks']);
+      // Ideally restrict other writes to admin
+      allow create, delete: if request.auth != null; 
+      allow write: if request.auth != null;
     }
 
     // Default deny

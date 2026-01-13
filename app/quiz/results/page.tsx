@@ -22,7 +22,9 @@ import {
   XCircle,
   MessageCircle,
   Twitter,
-  Copy
+  Copy,
+  Loader2,
+  Sparkles
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -48,7 +50,37 @@ export default function ResultsPage() {
   const [earnedXP, setEarnedXP] = useState(0)
   const [newLevel, setNewLevel] = useState(1)
   const [unlockedBadges, setUnlockedBadges] = useState<any[]>([])
+  const [explainingId, setExplainingId] = useState<number | null>(null)
+  const [explanations, setExplanations] = useState<Record<number, string>>({})
   const router = useRouter()
+
+  const handleExplain = async (q: any, answer: any, idx: number) => {
+    if (explanations[idx]) return; // Already explained
+    
+    setExplainingId(idx);
+    try {
+        const res = await fetch('/api/explain', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                question: q.question,
+                userAnswer: answer?.selectedOption || answer?.textAnswer,
+                correctAnswer: q.answer,
+                context: q.topic,
+                language: language === 'ar' ? 'ar' : 'en'
+            })
+        });
+        const data = await res.json();
+        if (data.explanation) {
+            setExplanations(prev => ({ ...prev, [idx]: data.explanation }));
+        }
+    } catch (error) {
+        console.error("Failed to explain", error);
+        toast({ type: 'error', message: 'AI is busy!', description: 'Could not fetch explanation.' });
+    } finally {
+        setExplainingId(null);
+    }
+  }
 
   useEffect(() => {
     const stored = localStorage.getItem("lastQuizResults")
@@ -88,12 +120,23 @@ export default function ResultsPage() {
         .map((q: any) => q.topic || 'عام')
       results.mistakes = mistakes; // Informative for later if needed
 
-      // Calculate and award XP
-      const xp = GamificationEngine.calculateQuizXP(results.score, results.total, 120); // Dummy time for now
-      const updatedData = GamificationEngine.addXP(xp);
-      setEarnedXP(xp);
-      setNewLevel(updatedData.level);
-      setUnlockedBadges(updatedData.badges.filter((b: any) => (Date.now() - b.unlockedAt) < 10000)); // Show recently unlocked
+      // Calculate and award XP - ONLY IF NOT ALREADY AWARDED
+      const resultId = `xp_awarded_${results.timestamp}`;
+      if (!localStorage.getItem(resultId)) {
+          const xp = GamificationEngine.calculateQuizXP(results.score, results.total, 120); // Dummy time for now
+          const updatedData = GamificationEngine.addXP(xp);
+          setEarnedXP(xp);
+          setNewLevel(updatedData.level);
+          setUnlockedBadges(updatedData.badges.filter((b: any) => (Date.now() - b.unlockedAt) < 10000)); // Show recently unlocked
+          
+          localStorage.setItem(resultId, "true");
+      } else {
+        // If already awarded, just show 0 or current user XP state without re-adding
+        // We can optionally fetch current state to show updated level
+        const currentData = GamificationEngine.getData();
+        setEarnedXP(0);
+        setNewLevel(currentData.level);
+      }
 
       // Check for badges
       if (results.score > 0) {
@@ -479,7 +522,20 @@ export default function ResultsPage() {
                                             </span>
                                         </div>
                                     )}
-                                    {isCorrect ? <CheckCircle className="text-green-500 w-8 h-8 shrink-0" /> : <XCircle className="text-red-500 w-8 h-8 shrink-0" />}
+                                    {isCorrect ? <CheckCircle className="text-green-500 w-8 h-8 shrink-0" /> : (
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleExplain(q, answer, idx)}
+                                                className="h-8 rounded-full border-primary/20 bg-primary/5 text-primary text-xs font-black gap-1 hover:bg-primary hover:text-white transition-all shadow-sm"
+                                            >
+                                                <Sparkles className="w-3 h-3" />
+                                                {language === 'ar' ? 'ليه غلط؟' : 'Why?'}
+                                            </Button>
+                                            <XCircle className="text-red-500 w-8 h-8 shrink-0" />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -498,12 +554,41 @@ export default function ResultsPage() {
                                 )}
                             </div>
 
-                             {q.explanation && (
+                            {q.explanation && (
                                 <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10">
                                     <p className="text-xs font-black uppercase text-primary/60 mb-2">{t('results.explanation')}</p>
                                     <p className="text-sm font-medium opacity-80 italic break-words" dir="auto">{q.explanation}</p>
                                 </div>
                             )}
+
+                            <AnimatePresence>
+                                {explanations[idx] && (
+                                    <motion.div 
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        className="mt-4 p-6 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 relative overflow-hidden"
+                                    >
+                                        <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
+                                        <div className="flex items-center gap-2 mb-2 text-indigo-600 dark:text-indigo-400">
+                                            <Sparkles className="w-4 h-4" />
+                                            <p className="text-xs font-black uppercase tracking-widest">AI Tutor</p>
+                                        </div>
+                                        <p className="text-sm font-bold leading-relaxed text-indigo-900 dark:text-indigo-100" dir="auto">
+                                            {explanations[idx]}
+                                        </p>
+                                    </motion.div>
+                                )}
+                                {explainingId === idx && (
+                                    <motion.div 
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        className="mt-4 flex items-center gap-2 text-muted-foreground text-sm"
+                                    >
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        <span>{language === 'ar' ? 'الذكاء الاصطناعي يفكر...' : 'AI is thinking...'}</span>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     )
                 })}

@@ -64,14 +64,27 @@ class VoiceManager {
     return this.enabled
   }
 
+  private arVoice: SpeechSynthesisVoice | null = null
+  private enVoice: SpeechSynthesisVoice | null = null
+
   private loadVoice() {
     if (!this.synth) return
     const setVoice = () => {
       const voices = this.synth!.getVoices()
-      // Try to find a "natural" or "google" Arabic voice for better quality
-      this.voice = voices.find(v => 
-        (v.lang.includes('ar') && (v.name.includes('Natural') || v.name.includes('Google')))
-      ) || voices.find(v => v.lang.includes('ar')) || voices[0]
+      
+      // 1. Arabic Voice Preference (Google -> Microsoft -> Any)
+      this.arVoice = voices.find(v => v.lang.includes('ar') && v.name.includes('Google')) 
+                  || voices.find(v => v.lang.includes('ar')) 
+                  || null;
+
+      // 2. English Voice Preference (Google US -> Microsoft -> Any English)
+      this.enVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) 
+                  || voices.find(v => v.lang.includes('en-US')) 
+                  || voices.find(v => v.lang.includes('en')) 
+                  || null;
+
+      // Default fallback
+      this.voice = this.arVoice || this.enVoice || voices[0]
     }
     setVoice()
     if (this.synth.onvoiceschanged !== undefined) {
@@ -90,22 +103,33 @@ class VoiceManager {
   speak(text: string) {
     if (!this.enabled || !this.synth) return
     
-    // Safety: ensure a voice is selected if it wasn't earlier
-    if (!this.voice) {
-      this.loadVoice()
+    // Ensure voices are loaded
+    if (!this.arVoice && !this.enVoice) {
+        this.loadVoice()
     }
 
     this.synth.cancel()
 
     const utterance = new SpeechSynthesisUtterance(text)
-    if (this.voice) {
-      utterance.voice = this.voice
-    }
-    utterance.lang = 'ar-SA'
     
-    utterance.rate = 0.9
-    utterance.pitch = 1.0
+    // Auto-detect language: Check if text has considerable Arabic characters
+    const isArabic = /[\u0600-\u06FF]/.test(text);
+
+    if (isArabic && this.arVoice) {
+        utterance.voice = this.arVoice
+        utterance.lang = 'ar-SA'
+        utterance.rate = 1.0
+    } else if (this.enVoice) {
+        utterance.voice = this.enVoice
+        utterance.lang = 'en-US'
+        utterance.rate = 1.0
+    } else {
+        // Fallback
+        utterance.lang = isArabic ? 'ar-SA' : 'en-US'
+    }
+    
     utterance.volume = 1.0
+    utterance.pitch = 1.0
     
     this.synth.speak(utterance)
   }

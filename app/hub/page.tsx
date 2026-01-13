@@ -14,8 +14,10 @@ import {
   Trash2,
   Info,
   User,
+  Terminal,
   X,
-  Lock
+  Lock,
+  Workflow
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -45,7 +47,7 @@ export default function StudyHub() {
   
   const [extractedText, setExtractedText] = useState<string>("")
   const [isGenerating, setIsGenerating] = useState(false)
-  const [settingsModal, setSettingsModal] = useState<{ open: boolean, type: 'quiz' | 'flashcards' | 'challenge' }>({
+  const [settingsModal, setSettingsModal] = useState<{ open: boolean, type: 'quiz' | 'flashcards' | 'challenge' | 'coding' | 'mindmap' }>({
     open: false,
     type: 'quiz'
   })
@@ -125,7 +127,7 @@ export default function StudyHub() {
     }
   }, [extractedText, user])
 
-  const handleStartActivity = (type: 'quiz' | 'flashcards' | 'challenge') => {
+  const handleStartActivity = (type: 'quiz' | 'flashcards' | 'challenge' | 'coding' | 'mindmap') => {
       // Access Control
       if (authLoading) return // Prevent starting until auth is ready
 
@@ -161,21 +163,40 @@ export default function StudyHub() {
           const res = await fetch("/api/generate", {
               method: "POST",
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
-                  text: extractedText, // STRICT: Only use currently extracted text, never fall back to old quizData
-                  ...settings,
-                  language: language === 'ar' ? 'Arabic' : 'English'
-              })
-          })
+                body: JSON.stringify({ 
+                    text: extractedText, // STRICT: Only use currently extracted text, never fall back to old quizData
+                    ...settings,
+                    types: settingsModal.type === 'coding' ? ['coding'] : (settingsModal.type === 'mindmap' ? ['mindmap'] : settings.types), 
+                    type: settingsModal.type, // Explicitly pass main type
+                    // Fix: For coding/mindmap questions, ALWAYS use source language to prevent bad translations
+                    language: ['coding', 'mindmap'].includes(settingsModal.type) || settings.types?.includes('coding') ? 'Same as Source' : (language === 'ar' ? 'Arabic' : 'English')
+                })
+            })
 
-          if (!res.ok) throw new Error("Generation failed")
+            const data = await res.json()
+
+            if (!res.ok) {
+                if (res.status === 402) {
+                     setShowLimitModal(true)
+                     return
+                }
+                throw new Error(data.error || "Generation failed")
+            }
+
+            // Save to Redux / LocalStorage based on type
+            if (settingsModal.type === 'mindmap') {
+                localStorage.setItem('currentMindMap', JSON.stringify(data))
+                router.push('/mindmap')
+            } else {
+                dispatch(setQuiz(data))
+                localStorage.setItem("currentQuiz", JSON.stringify(data))
+                
+                if (settingsModal.type === 'flashcards') router.push('/flashcards')
+                else if (settingsModal.type === 'coding') router.push("/quiz?mode=coding")
+                else if (settingsModal.type === 'quiz') router.push('/quiz')
+            }
           
-          const data = await res.json()
-          dispatch(setQuiz(data))
-          
-          if (settingsModal.type === 'quiz') router.push("/quiz")
-          else if (settingsModal.type === 'flashcards') router.push("/flashcards")
-          else if (settingsModal.type === 'challenge') {
+          if (settingsModal.type === 'challenge') {
              const filtered = data.questions.filter((q: any) => 
                 q.type === 'multiple-choice' || q.type === 'true-false'
              )
@@ -186,6 +207,7 @@ export default function StudyHub() {
           
           if (settingsModal.type === 'quiz') trackQuizStart(data.title || "New Quiz")
           if (settingsModal.type === 'flashcards') trackFlashcardView()
+          if (settingsModal.type === 'coding') trackQuizStart("Coding Challenge") // Use existing track function or new one
       } catch (err) {
           console.error(err)
       } finally {
@@ -217,6 +239,22 @@ export default function StudyHub() {
       color: "from-red-500 to-orange-600",
       type: "challenge" as const,
       badgeKey: "ONLINE"
+    },
+    {
+      key: "common.coding",
+      descKey: "hub.codingDesc", 
+      icon: Terminal,
+      color: "from-slate-800 to-black",
+      type: "coding" as const,
+      badgeKey: "BETA"
+    },
+    {
+      key: "common.mindmap",
+      descKey: "hub.mindmapDesc",
+      icon: Workflow,
+      color: "from-violet-600 to-fuchsia-600",
+      type: "mindmap" as const,
+      badgeKey: "NEW"
     }
   ]
 
@@ -285,7 +323,7 @@ export default function StudyHub() {
             <AdPlaceholder variant="banner" label={language === 'ar' ? 'مساحة إعلانية لـ AI' : 'AI Sponsored Slot'} />
         </div>
 
-        <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 transition-all duration-500 ${!extractedText && !quizData ? 'opacity-30 grayscale pointer-events-none' : ''}`}>
+        <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 transition-all duration-500 ${!extractedText && !quizData ? 'opacity-30 grayscale pointer-events-none' : ''}`} suppressHydrationWarning>
             {hubItems.map((item, idx) => (
                 <motion.div
                     key={idx}
@@ -329,7 +367,7 @@ export default function StudyHub() {
         </div>
 
         {/* Stats Preview Card */}
-        {quizData && (
+        {isMounted && quizData && (
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
