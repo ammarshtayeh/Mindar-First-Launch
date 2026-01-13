@@ -9,7 +9,7 @@ interface ActivitySettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
     onStart: (settings: { numQuestions: number, difficulty: string, types: string[] }) => void;
-    type: 'quiz' | 'flashcards' | 'challenge' | 'coding' | 'mindmap';
+    type: 'quiz' | 'flashcards' | 'challenge' | 'coding' | 'mindmap' | 'checklist';
 }
 
 export function ActivitySettingsModal({ isOpen, onClose, onStart, type }: ActivitySettingsModalProps) {
@@ -59,11 +59,11 @@ export function ActivitySettingsModal({ isOpen, onClose, onStart, type }: Activi
                         <div className="p-8 pb-0 flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                                    {type === 'quiz' ? <BrainCircuit className="w-8 h-8" /> : <BookOpen className="w-8 h-8" />}
+                                    {type === 'quiz' ? <BrainCircuit className="w-8 h-8" /> : (type === 'checklist' ? <Target className="w-8 h-8" /> : <BookOpen className="w-8 h-8" />)}
                                 </div>
                                 <div>
                                     <h2 className="text-3xl font-black tracking-tight capitalize">
-                                        {type === 'quiz' ? t('common.quiz') : t('common.flashcards')}
+                                        {type === 'quiz' ? t('common.quiz') : (type === 'checklist' ? t('common.studyChecklist') : t('common.flashcards'))}
                                     </h2>
                                     <p className="text-sm font-bold text-muted-foreground opacity-60">
                                         {language === 'ar' ? 'قم بتخصيص جلستك الدراسية' : 'Customize your study session'}
@@ -91,23 +91,25 @@ export function ActivitySettingsModal({ isOpen, onClose, onStart, type }: Activi
                             </div>
 
                             {/* Difficulty */}
-                            <div>
-                                <h3 className="text-lg font-black mb-4 flex items-center gap-2">
-                                    <Target className="w-5 h-5 text-primary" />
-                                    {t('upload.difficulty')}
-                                </h3>
-                                <div className="grid grid-cols-3 gap-3">
-                                    {(['easy', 'medium', 'hard'] as const).map((level) => (
-                                        <button
-                                            key={level}
-                                            onClick={() => setDifficulty(level)}
-                                            className={`p-4 rounded-2xl border-2 font-black text-sm capitalize transition-all duration-300 ${difficulty === level ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'bg-card/50 border-border hover:border-primary/20'}`}
-                                        >
-                                            {level}
-                                        </button>
-                                    ))}
+                            {type !== 'checklist' && (
+                                <div>
+                                    <h3 className="text-lg font-black mb-4 flex items-center gap-2">
+                                        <Target className="w-5 h-5 text-primary" />
+                                        {t('upload.difficulty')}
+                                    </h3>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {(['easy', 'medium', 'hard'] as const).map((level) => (
+                                            <button
+                                                key={level}
+                                                onClick={() => setDifficulty(level)}
+                                                className={`p-4 rounded-2xl border-2 font-black text-sm capitalize transition-all duration-300 ${difficulty === level ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'bg-card/50 border-border hover:border-primary/20'}`}
+                                            >
+                                                {level}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Question Types - Only for Quiz/Challenge */}
                             {(type === 'quiz' || type === 'challenge') && (
@@ -133,6 +135,14 @@ export function ActivitySettingsModal({ isOpen, onClose, onStart, type }: Activi
                                              );
                                          })}
                                     </div>
+                                </div>
+                            )}
+
+                            {type === 'checklist' && (
+                                <div className="py-6 text-center">
+                                    <p className="text-xl font-bold text-primary italic">
+                                        {language === 'ar' ? 'الذكاء الاصطناعي سيقوم بتحويل مادتك إلى خطة عمل ذكية' : 'AI will transform your material into a smart action plan'}
+                                    </p>
                                 </div>
                             )}
                         </div>

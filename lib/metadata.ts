@@ -89,7 +89,7 @@ export function generateMetadata({
     manifest: '/manifest.json',
     
     icons: {
-      icon: '/favicon.ico',
+      icon: '/logo-2026.png',
       apple: '/apple-icon.png'
     },
     

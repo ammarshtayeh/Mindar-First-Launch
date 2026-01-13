@@ -83,9 +83,9 @@ export function Navbar() {
           <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg border-2 border-primary/20 overflow-hidden glow-primary relative">
               <img 
-                src="/logo.png" 
+                src="/logo-2026.png" 
                 alt="Logo" 
-                className="w-full h-full object-contain pointer-events-none"
+                className="w-full h-full object-contain pointer-events-none scale-125"
                 onError={(e) => {
                   (e.target as any).style.display = 'none';
                   (e.target as any).nextSibling.style.display = 'flex';

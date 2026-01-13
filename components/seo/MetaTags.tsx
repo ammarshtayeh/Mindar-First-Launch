@@ -85,7 +85,7 @@ export function MetaTags({
       <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       
       {/* Favicon */}
-      <link rel="icon" href="/favicon.ico" />
+      <link rel="icon" href="/icon-2026.png" />
       <link rel="apple-touch-icon" href="/apple-icon.png" />
     </Head>
   )

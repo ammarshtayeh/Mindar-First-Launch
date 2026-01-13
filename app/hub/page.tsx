@@ -17,7 +17,8 @@ import {
   Terminal,
   X,
   Lock,
-  Workflow
+  Workflow,
+  ListChecks
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -49,7 +50,7 @@ export default function StudyHub() {
   
   const [extractedText, setExtractedText] = useState<string>("")
   const [isGenerating, setIsGenerating] = useState(false)
-  const [settingsModal, setSettingsModal] = useState<{ open: boolean, type: 'quiz' | 'flashcards' | 'challenge' | 'coding' | 'mindmap' }>({
+  const [settingsModal, setSettingsModal] = useState<{ open: boolean, type: 'quiz' | 'flashcards' | 'challenge' | 'coding' | 'mindmap' | 'checklist' }>({
     open: false,
     type: 'quiz'
   })
@@ -151,7 +152,18 @@ export default function StudyHub() {
     }
   }, [user, authLoading, language, toast])
 
-  const handleStartActivity = (type: 'quiz' | 'flashcards' | 'challenge' | 'coding' | 'mindmap') => {
+  const handleStartActivity = (type: 'quiz' | 'flashcards' | 'challenge' | 'coding' | 'mindmap' | 'checklist') => {
+      // Check for Coming Soon features
+      const item = hubItems.find(i => i.type === type);
+      if (item?.isComingSoon) {
+          toast({
+              type: 'warning',
+              message: language === 'ar' ? 'ميزة قادمة قريباً!' : 'Feature coming soon!',
+              description: language === 'ar' ? 'هذه الميزة ستكون جاهزة للاستخدام قريباً جداً. خليك متابع! 🚀' : 'This feature will be ready for use very soon. Stay tuned! 🚀'
+          });
+          return;
+      }
+
       // Access Control
       if (authLoading) return // Prevent starting until auth is ready
 
@@ -184,6 +196,53 @@ export default function StudyHub() {
       setIsGenerating(true)
       
       try {
+          if (!user) {
+              toast({ type: 'error', message: language === 'ar' ? 'يجب تسجيل الدخول أولاً' : 'Please login first' });
+              return;
+          }
+
+          if (settingsModal.type === 'checklist') {
+              // Save to Firebase via checklistService
+              const { createChecklist, getChecklistByMaterial } = await import('@/lib/services/checklistService')
+              
+              // Try to find existing first
+              const existing = await getChecklistByMaterial(user!.uid, quizData?.id || extractedText.substring(0, 50));
+              if (existing) {
+                  router.push(`/checklist/${existing.materialId}`);
+                  return;
+              }
+
+              const res = await fetch("/api/generate-checklist", {
+                  method: "POST",
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ 
+                      text: extractedText,
+                      language: language === 'ar' ? 'ar' : 'en',
+                      materialTitle: quizData?.title || "New Study Material"
+                  })
+              })
+
+              const data = await res.json()
+
+              if (!res.ok) throw new Error(data.error || "Checklist generation failed")
+
+              const checklistId = await createChecklist(
+                  user!.uid, 
+                  quizData?.id || crypto.randomUUID(), 
+                  data.materialTitle, 
+                  data.items
+              )
+
+              toast({
+                  type: 'success',
+                  message: language === 'ar' ? 'تم إنشاء خطتك الدراسية! 📋' : 'Study plan created! 📋',
+                  description: language === 'ar' ? 'يمكنك الآن متابعة تقدمك في الدراسة.' : 'You can now track your study progress.'
+              })
+
+              router.push(`/checklist/${quizData?.id || checklistId}`)
+              return
+          }
+
           const res = await fetch("/api/generate", {
               method: "POST",
               headers: { 'Content-Type': 'application/json' },
@@ -279,6 +338,15 @@ export default function StudyHub() {
       color: "from-violet-600 to-fuchsia-600",
       type: "mindmap" as const,
       badgeKey: "NEW"
+    },
+    {
+      key: "common.studyChecklist",
+      descKey: "hub.checklistDesc",
+      icon: ListChecks,
+      color: "from-emerald-600 to-green-500",
+      type: "checklist" as const,
+      badgeKey: "common.comingSoon",
+      isComingSoon: true
     }
   ]
 
@@ -383,18 +451,23 @@ export default function StudyHub() {
                     >
                         <Card 
                             onClick={() => handleStartActivity(item.type)}
-                            className="group cursor-pointer h-full border-4 border-transparent hover:border-primary/20 transition-all duration-500 rounded-[3rem] overflow-hidden bg-card/50 backdrop-blur-xl shadow-2xl hover:scale-[1.02]"
+                            className={`group cursor-pointer h-full border-4 border-transparent hover:border-primary/20 transition-all duration-500 rounded-[3rem] overflow-hidden bg-card/50 backdrop-blur-xl shadow-2xl hover:scale-[1.02] ${item.isComingSoon ? 'opacity-70 grayscale-[0.5]' : ''}`}
                         >
                             <CardContent className="p-10 flex flex-col h-full">
-                                <div className={`w-20 h-20 rounded-[2rem] bg-gradient-to-br ${item.color} flex items-center justify-center text-white mb-8 shadow-xl group-hover:rotate-12 transition-transform duration-500`}>
+                                <div className={`w-20 h-20 rounded-[2rem] bg-gradient-to-br ${item.color} flex items-center justify-center text-white mb-8 shadow-xl group-hover:rotate-12 transition-transform duration-500 relative`}>
                                     <item.icon className="w-10 h-10" />
+                                    {item.isComingSoon && (
+                                        <div className="absolute -top-2 -right-2 bg-yellow-500 text-white text-[8px] font-black px-2 py-1 rounded-full shadow-lg">
+                                            {t('common.comingSoon')}
+                                        </div>
+                                    )}
                                 </div>
                                 
                                 <div className="space-y-4 mb-10 flex-1">
                                     <div className="flex items-center gap-2">
                                         <h3 className="text-3xl font-black">{t(item.key)}</h3>
                                         <span className="bg-primary/10 text-primary text-[10px] font-black px-2 py-0.5 rounded-lg uppercase">
-                                            {item.badgeKey}
+                                            {item.badgeKey.includes('.') ? t(item.badgeKey) : item.badgeKey}
                                         </span>
                                     </div>
                                     <p className="text-lg text-muted-foreground leading-snug font-bold">
@@ -404,11 +477,17 @@ export default function StudyHub() {
 
                                 <div className="flex items-center justify-between pt-6 border-t border-border/50">
                                     <span className="text-primary font-black uppercase tracking-widest text-xs flex items-center gap-2">
-                                        {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Zap className="w-4 h-4 fill-primary" /> {t('hub.start')}</>}
+                                        {item.isComingSoon ? (
+                                            <span className="text-muted-foreground">{t('common.comingSoon')}</span>
+                                        ) : (
+                                            isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Zap className="w-4 h-4 fill-primary" /> {t('hub.start')}</>
+                                        )}
                                     </span>
-                                    <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
-                                        <ArrowLeft className={`w-5 h-5 ${language === 'en' ? '-rotate-180' : ''}`} />
-                                    </div>
+                                    {!item.isComingSoon && (
+                                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+                                            <ArrowLeft className={`w-5 h-5 ${language === 'en' ? '-rotate-180' : ''}`} />
+                                        </div>
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>

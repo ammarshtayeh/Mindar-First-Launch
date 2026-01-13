@@ -24,7 +24,8 @@ import {
   Twitter,
   Copy,
   Loader2,
-  Sparkles
+  Sparkles,
+  ListChecks
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -394,6 +395,21 @@ export default function ResultsPage() {
                 <h3 className="text-4xl font-black mb-2">{t('common.flashcards')} 🗂️</h3>
                 <p className="text-xl opacity-90 font-bold">{t('common.flashcardsDesc')}</p>
                 <div className="mt-8 bg-white/20 inline-block px-6 py-2 rounded-full font-black">{t('common.flashcardsBtn')}</div>
+            </motion.div>
+
+            <motion.div 
+                whileHover={{ scale: 1.02 }}
+                onClick={() => router.push(`/checklist/${data.materialId || data.id}`)}
+                className="cursor-pointer bg-gradient-to-br from-emerald-500 to-green-600 p-8 rounded-[3rem] text-white shadow-xl group overflow-hidden relative md:col-span-2"
+            >
+                <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:scale-110 transition-transform">
+                    <ListChecks className="w-32 h-32" />
+                </div>
+                <h3 className="text-4xl font-black mb-2">{t('common.studyChecklist')} 📋</h3>
+                <p className="text-xl opacity-90 font-bold">{t('hub.checklistDesc')}</p>
+                <div className="mt-8 bg-white/20 inline-block px-6 py-2 rounded-full font-black">
+                    {language === 'ar' ? 'افتح الخطة الدراسية' : 'Open Study Plan'}
+                </div>
             </motion.div>
         </div>
 
