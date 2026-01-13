@@ -25,6 +25,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -69,20 +70,34 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
   };
 
   const handleGoogleSignIn = async () => {
-    // Note: We don't set loading immediately to avoid interfering with the popup trigger
+    if (googleLoading) return;
+    
+    setGoogleLoading(true);
     setError(null);
+    
     try {
       await signInWithGoogle();
       if (onSuccess) onSuccess();
     } catch (err: any) {
-      if (err.message && err.message.includes('popup-blocked')) {
+      const errorMessage = typeof err === 'string' ? err : (err.message || "");
+      
+      // Handle normal cancellation cases silently
+      if ( 
+        errorMessage.includes('auth/cancelled-popup-request') || 
+        errorMessage.includes('auth/popup-closed-by-user') ||
+        errorMessage.includes('cancelled-popup-request')
+      ) {
+        setGoogleLoading(false);
+        return;
+      }
+
+      if (errorMessage.includes('popup-blocked')) {
         setError("المتصفح منع النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.");
       } else {
-        setError(err.message || "حدث خطأ أثناء تسجيل الدخول عبر جوجل.");
+        setError(errorMessage || "حدث خطأ أثناء تسجيل الدخول عبر جوجل.");
       }
     } finally {
-      // We can set loading false here, although we never set it true. 
-      // If we want loading state, we should handle it carefully, but priority is popup working.
+      setGoogleLoading(false);
     }
   };
 
@@ -253,7 +268,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
             <Button
               type="button"
               variant="outline"
-              disabled={loading}
+              disabled={loading || googleLoading}
               onClick={handleGoogleSignIn}
               className="w-full h-14 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-transparent text-slate-900 dark:text-white text-lg font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-3"
             >
