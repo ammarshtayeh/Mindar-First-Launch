@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useI18n } from '@/lib/i18n'
@@ -37,6 +38,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { trackQuizStart, trackFileUpload, trackFlashcardView, trackChallengeStart } from '@/lib/analytics'
 import { AccessControl, MAX_GUEST_QUIZZES } from '@/lib/services/accessControl'
 import { AuthLimitModal } from '@/components/auth/AuthLimitModal'
+import { useToast } from '@/components/ui/toast-provider'
 
 export default function StudyHub() {
   const { t, language } = useI18n()
@@ -55,6 +57,7 @@ export default function StudyHub() {
   const [resetKey, setResetKey] = useState(0)
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
   const [showLimitModal, setShowLimitModal] = useState(false)
+  const { toast } = useToast()
 
   const loadingMessages = language === 'ar' ? [
     "جاري استخراج العبقرية من أوراقك...",
@@ -126,6 +129,27 @@ export default function StudyHub() {
         }
     }
   }, [extractedText, user])
+
+  // Welcome greeting on login - ONCE PER SESSION
+  useEffect(() => {
+    if (user && !authLoading) {
+      const welcomeKey = `welcomed_${user.uid}`
+      const hasWelcomed = sessionStorage.getItem(welcomeKey)
+      
+      if (!hasWelcomed) {
+        const displayName = user.displayName || user.email?.split('@')[0] || 'Student'
+        const firstName = displayName.split(' ')[0]
+        
+        toast({
+          type: 'success',
+          message: language === 'ar' ? `أهلاً بك يا ${firstName}! 🎉` : `Welcome back, ${firstName}! 🎉`,
+          description: language === 'ar' ? 'سعداء بعودتك للدراسة الذكية' : 'Happy to have you back for smart studying'
+        })
+        
+        sessionStorage.setItem(welcomeKey, 'true')
+      }
+    }
+  }, [user, authLoading, language, toast])
 
   const handleStartActivity = (type: 'quiz' | 'flashcards' | 'challenge' | 'coding' | 'mindmap') => {
       // Access Control
@@ -324,46 +348,73 @@ export default function StudyHub() {
         </div>
 
         <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 transition-all duration-500 ${!extractedText && !quizData ? 'opacity-30 grayscale pointer-events-none' : ''}`} suppressHydrationWarning>
-            {hubItems.map((item, idx) => (
-                <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                >
-                    <Card 
-                        onClick={() => handleStartActivity(item.type)}
-                        className="group cursor-pointer h-full border-4 border-transparent hover:border-primary/20 transition-all duration-500 rounded-[3rem] overflow-hidden bg-card/50 backdrop-blur-xl shadow-2xl hover:scale-[1.02]"
+            {authLoading ? (
+                // Skeleton Loading State
+                Array.from({ length: 5 }).map((_, idx) => (
+                    <motion.div
+                        key={`skeleton-${idx}`}
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.1 }}
                     >
-                        <CardContent className="p-10 flex flex-col h-full">
-                            <div className={`w-20 h-20 rounded-[2rem] bg-gradient-to-br ${item.color} flex items-center justify-center text-white mb-8 shadow-xl group-hover:rotate-12 transition-transform duration-500`}>
-                                <item.icon className="w-10 h-10" />
-                            </div>
-                            
-                            <div className="space-y-4 mb-10 flex-1">
-                                <div className="flex items-center gap-2">
-                                    <h3 className="text-3xl font-black">{t(item.key)}</h3>
-                                    <span className="bg-primary/10 text-primary text-[10px] font-black px-2 py-0.5 rounded-lg uppercase">
-                                        {item.badgeKey}
-                                    </span>
+                        <Card className="h-full border-4 border-transparent rounded-[3rem] overflow-hidden bg-card/50 backdrop-blur-xl shadow-2xl">
+                            <CardContent className="p-10 flex flex-col h-full">
+                                <Skeleton className="w-20 h-20 rounded-[2rem] mb-8" />
+                                <div className="space-y-4 mb-10 flex-1">
+                                    <Skeleton className="h-9 w-3/4" />
+                                    <Skeleton className="h-6 w-full" />
+                                    <Skeleton className="h-6 w-5/6" />
                                 </div>
-                                <p className="text-lg text-muted-foreground leading-snug font-bold">
-                                    {t(item.descKey)}
-                                </p>
-                            </div>
+                                <div className="flex items-center justify-between pt-6 border-t border-border/50">
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="w-10 h-10 rounded-full" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                ))
+            ) : (
+                hubItems.map((item, idx) => (
+                    <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.1 }}
+                    >
+                        <Card 
+                            onClick={() => handleStartActivity(item.type)}
+                            className="group cursor-pointer h-full border-4 border-transparent hover:border-primary/20 transition-all duration-500 rounded-[3rem] overflow-hidden bg-card/50 backdrop-blur-xl shadow-2xl hover:scale-[1.02]"
+                        >
+                            <CardContent className="p-10 flex flex-col h-full">
+                                <div className={`w-20 h-20 rounded-[2rem] bg-gradient-to-br ${item.color} flex items-center justify-center text-white mb-8 shadow-xl group-hover:rotate-12 transition-transform duration-500`}>
+                                    <item.icon className="w-10 h-10" />
+                                </div>
+                                
+                                <div className="space-y-4 mb-10 flex-1">
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="text-3xl font-black">{t(item.key)}</h3>
+                                        <span className="bg-primary/10 text-primary text-[10px] font-black px-2 py-0.5 rounded-lg uppercase">
+                                            {item.badgeKey}
+                                        </span>
+                                    </div>
+                                    <p className="text-lg text-muted-foreground leading-snug font-bold">
+                                        {t(item.descKey)}
+                                    </p>
+                                </div>
 
-                            <div className="flex items-center justify-between pt-6 border-t border-border/50">
-                                <span className="text-primary font-black uppercase tracking-widest text-xs flex items-center gap-2">
-                                    {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Zap className="w-4 h-4 fill-primary" /> {t('hub.start')}</>}
-                                </span>
-                                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
-                                    <ArrowLeft className={`w-5 h-5 ${language === 'en' ? '-rotate-180' : ''}`} />
+                                <div className="flex items-center justify-between pt-6 border-t border-border/50">
+                                    <span className="text-primary font-black uppercase tracking-widest text-xs flex items-center gap-2">
+                                        {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Zap className="w-4 h-4 fill-primary" /> {t('hub.start')}</>}
+                                    </span>
+                                    <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+                                        <ArrowLeft className={`w-5 h-5 ${language === 'en' ? '-rotate-180' : ''}`} />
+                                    </div>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-            ))}
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                ))
+            )}
         </div>
 
         {/* Stats Preview Card */}

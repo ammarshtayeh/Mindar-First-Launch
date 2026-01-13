@@ -20,8 +20,14 @@ export const signInWithGoogle = async (): Promise<User> => {
     const userCredential = await signInWithPopup(auth, googleProvider);
     const user = userCredential.user;
     
-    // Create/Update Firestore profile
-    await createUserProfile(user.uid, user.email, user.displayName);
+    // Create/Update Firestore profile - NON-BLOCKING
+    try {
+      createUserProfile(user.uid, user.email, user.displayName).catch(err => {
+        console.error("Non-blocking profile update failed:", err);
+      });
+    } catch (e) {
+      console.error("Sync profile trigger failed:", e);
+    }
     
     return user;
   } catch (error: any) {
@@ -44,8 +50,14 @@ export const signUp = async (
       displayName: `${firstName} ${lastName}`
     });
     
-    // Create Firestore profile
-    await createUserProfile(user.uid, user.email, `${firstName} ${lastName}`, firstName, lastName);
+    // Create Firestore profile - NON-BLOCKING
+    try {
+      createUserProfile(user.uid, user.email, `${firstName} ${lastName}`, firstName, lastName).catch(err => {
+         console.error("Non-blocking profile creation failed:", err);
+      });
+    } catch (e) {
+      console.error("Sync profile trigger failed:", e);
+    }
     
     return user;
   } catch (error: any) {
@@ -58,8 +70,14 @@ export const login = async (email: string, password: string): Promise<User> => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
-    // Update last login in Firestore
-    await createUserProfile(user.uid, user.email, user.displayName);
+    // Update last login in Firestore - NON-BLOCKING
+    try {
+      createUserProfile(user.uid, user.email, user.displayName).catch(err => {
+        console.error("Non-blocking login update failed:", err);
+      });
+    } catch (e) {
+      console.error("Sync profile trigger failed:", e);
+    }
     
     return user;
   } catch (error: any) {

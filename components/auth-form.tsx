@@ -31,6 +31,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+    
     setLoading(true);
     setError(null);
     setSuccess(false);
@@ -63,7 +65,20 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
       }
       if (onSuccess && !isResetting) onSuccess();
     } catch (err: any) {
-      setError(err.message || "حدث خطأ ما، يرجى المحاولة لاحقاً.");
+      console.error("Auth process error:", err);
+      const msg = err.message || "";
+      
+      if (msg.includes("auth/invalid-credential") || msg.includes("auth/user-not-found") || msg.includes("auth/wrong-password")) {
+        setError("تأكد من البريد الإلكتروني أو كلمة المرور.");
+      } else if (msg.includes("auth/email-already-in-use")) {
+        setError("هذا البريد مسجل مسبقاً، جرب تسجيل الدخول.");
+      } else if (msg.includes("auth/weak-password")) {
+        setError("كلمة المرور ضعيفة جداً.");
+      } else if (msg.includes("auth/too-many-requests")) {
+        setError("طلبات كثيرة جداً، يرجى المحاولة لاحقاً.");
+      } else {
+        setError(msg || "حدث خطأ ما، يرجى المحاولة لاحقاً.");
+      }
     } finally {
       setLoading(false);
     }
