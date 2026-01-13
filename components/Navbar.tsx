@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from "@/components/ui/button"
 import { Home, ClipboardList, BookOpen, BrainCircuit, Swords, Star, Zap, Trophy, History, Menu } from 'lucide-react'
@@ -34,6 +34,7 @@ const navItems = [
 
 export function Navbar() {
   const pathname = usePathname()
+  const router = useRouter()
   const { t, setLanguage: setI18nLanguage } = useI18n()
   const dispatch = useDispatch()
   
@@ -233,8 +234,9 @@ export function Navbar() {
                     </Link>
                     <Button
                       variant="ghost"
-                      onClick={() => {
-                        logout()
+                      onClick={async () => {
+                        await logout()
+                        router.push('/')
                         setMobileMenuOpen(false)
                       }}
                       className="w-full mt-2 justify-start gap-3 px-4 py-3 h-auto rounded-xl hover:bg-red-500/10 text-red-500"
@@ -305,7 +307,10 @@ export function Navbar() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => logout()}
+                  onClick={async () => {
+                    await logout()
+                    router.push('/')
+                  }}
                   className="w-10 h-10 rounded-2xl hover:bg-red-500/10 text-red-500 transition-all active:scale-95"
                   title="Logout"
                 >
