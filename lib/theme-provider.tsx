@@ -22,6 +22,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (savedTheme && ['light', 'dark', 'focus'].includes(savedTheme)) {
       setThemeState(savedTheme)
       document.documentElement.setAttribute('data-theme', savedTheme)
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark')
+      }
     } else {
       document.documentElement.setAttribute('data-theme', 'light')
     }
@@ -31,6 +34,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setThemeState(newTheme)
     localStorage.setItem('quiz-theme', newTheme)
     document.documentElement.setAttribute('data-theme', newTheme)
+    
+    // Toggle 'dark' class for Tailwind dark mode support
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
   }
 
   return (

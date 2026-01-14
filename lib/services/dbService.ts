@@ -239,6 +239,9 @@ export const onRecentActivities = (callback: (activities: UserActivity[]) => voi
       });
       
     callback(activities);
+  }, (error) => {
+    console.error("Recent activities listener failed:", error);
+    callback([]); // Return empty on error
   });
 };
 

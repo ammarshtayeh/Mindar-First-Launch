@@ -40,6 +40,7 @@ import { trackQuizStart, trackFileUpload, trackFlashcardView, trackChallengeStar
 import { AccessControl, MAX_GUEST_QUIZZES } from '@/lib/services/accessControl'
 import { AuthLimitModal } from '@/components/auth/AuthLimitModal'
 import { useToast } from '@/components/ui/toast-provider'
+import { cn } from '@/lib/utils'
 
 export default function StudyHub() {
   const { t, language } = useI18n()
@@ -541,7 +542,10 @@ export default function StudyHub() {
         <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="lg:col-span-2 bg-card/40 backdrop-blur-2xl border border-border/50 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden"
+            className={cn(
+                "bg-card/40 backdrop-blur-2xl border border-border/50 rounded-[3rem] p-10 shadow-2xl relative overflow-hidden",
+                !user ? "lg:col-span-3" : "lg:col-span-2"
+            )}
         >
             <div className="flex items-center justify-between mb-8">
                 <div 
@@ -702,34 +706,24 @@ export default function StudyHub() {
         )}
       </AnimatePresence>
  
-        <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-primary/5 backdrop-blur-3xl border-2 border-primary/20 rounded-[3rem] p-10 shadow-2xl flex flex-col items-center justify-center text-center relative"
-        >
-            <div className="absolute top-4 right-6 bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full animate-bounce">LIVE</div>
-            <div className="w-24 h-24 bg-primary text-primary-foreground rounded-[2rem] flex items-center justify-center shadow-2xl mb-6 transform rotate-12">
-                <BarChart3 className="w-12 h-12" />
-            </div>
-            {!user ? (
-                <>
-                    <h3 className="text-xl font-black mb-2">{language === 'ar' ? 'الأوائل' : 'Top Performers'}</h3>
-                    <p className="text-sm font-bold opacity-60 mb-6">{language === 'ar' ? 'عليك تسجيل الدخول' : 'Please log in'}</p>
-                    <Button className="w-full h-14 rounded-2xl font-black" onClick={() => router.push('/')}>
-                        <span>{language === 'ar' ? 'تسجيل الدخول' : 'Log In'}</span>
-                    </Button>
-                </>
-            ) : (
-                <>
-                    <h3 className="text-xl font-black mb-2">{t('results.legendary')}</h3>
-                    <p className="text-sm font-bold opacity-60 mb-6">{t('radar.beFirst')}</p>
-                    <Button className="w-full h-14 rounded-2xl font-black group overflow-hidden relative">
-                        <span className="relative z-10">{t('common.challenge')}</span>
-                        <div className="absolute inset-0 bg-primary/20 translate-y-full group-hover:translate-y-0 transition-transform" />
-                    </Button>
-                </>
-            )}
-        </motion.div>
+        {user && (
+            <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="bg-primary/5 backdrop-blur-3xl border-2 border-primary/20 rounded-[3rem] p-10 shadow-2xl flex flex-col items-center justify-center text-center relative"
+            >
+                <div className="absolute top-4 right-6 bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full animate-bounce">LIVE</div>
+                <div className="w-24 h-24 bg-primary text-primary-foreground rounded-[2rem] flex items-center justify-center shadow-2xl mb-6 transform rotate-12">
+                    <BarChart3 className="w-12 h-12" />
+                </div>
+                <h3 className="text-xl font-black mb-2">{t('results.legendary')}</h3>
+                <p className="text-sm font-bold opacity-60 mb-6">{t('radar.beFirst')}</p>
+                <Button className="w-full h-14 rounded-2xl font-black group overflow-hidden relative">
+                    <span className="relative z-10">{t('common.challenge')}</span>
+                    <div className="absolute inset-0 bg-primary/20 translate-y-full group-hover:translate-y-0 transition-transform" />
+                </Button>
+            </motion.div>
+        )}
       </div>
 
       <ActivitySettingsModal 

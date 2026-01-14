@@ -161,7 +161,9 @@ export default function TodoPage() {
                         layout
                     >
                         <Card className={`overflow-hidden border-2 transition-all ${
-                            task.completed ? 'opacity-60 bg-slate-50 border-transparent' : 'bg-white hover:border-blue-200'
+                            task.completed 
+                                ? 'opacity-60 bg-slate-50 dark:bg-slate-900/50 border-transparent' 
+                                : 'bg-white dark:bg-slate-900 hover:border-blue-200'
                         }`}>
                             <CardContent className="p-4 flex items-center gap-4">
                                 <button onClick={() => toggleTask(task)} className="focus:outline-none">
@@ -173,7 +175,7 @@ export default function TodoPage() {
                                 </button>
                                 
                                 <div className="flex-1">
-                                    <h3 className={`font-bold text-lg ${task.completed ? 'line-through text-slate-400' : 'text-slate-800'}`}>
+                                    <h3 className={`font-bold text-lg ${task.completed ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-100'}`}>
                                         {task.title}
                                     </h3>
                                     {task.scheduledAt && (

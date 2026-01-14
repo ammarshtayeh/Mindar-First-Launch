@@ -97,5 +97,8 @@ export const subscribeToTasks = (userId: string, callback: (tasks: TodoTask[]) =
       } as TodoTask;
     });
     callback(tasks);
+  }, (error) => {
+    console.error("Tasks subscription failed:", error);
+    callback([]);
   });
 };

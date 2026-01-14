@@ -112,6 +112,9 @@ export const subscribeToChecklists = (userId: string, callback: (checklists: Stu
       ...doc.data()
     } as StudyChecklist));
     callback(checklists);
+  }, (error) => {
+    console.error("Checklist subscription failed:", error);
+    callback([]);
   });
 };
 

@@ -1,7 +1,6 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // User profiles - users can read/write their own profile
     // User profiles - users can read all profiles (Leaderboard), but only write their own
     match /users/{userId} {
       allow read: if request.auth != null;
@@ -14,14 +13,21 @@ service cloud.firestore {
       allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
     
-    // Activity Feed - allow authenticated read/write for now
+    // Activity Feed - allow public read for radar, authenticated write
     match /activity_feed/{activityId} {
-      allow read, write: if request.auth != null;
+      allow read: if true;
+      allow write: if request.auth != null;
     }
 
     // Quiz History
     match /quiz_history/{historyId} {
       allow read, write: if request.auth != null;
+    }
+
+    // Study Checklists
+    match /study_checklists/{checklistId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if request.auth != null && (resource == null || resource.data.userId == request.auth.uid);
     }
 
     // Ads - PUBLIC READ, Public Click Tracking (Update clicks only), Admin Full Write
@@ -30,8 +36,7 @@ service cloud.firestore {
       // Allow anyone to increment clicks (for tracking)
       allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks']);
       // Ideally restrict other writes to admin
-      allow create, delete: if request.auth != null; 
-      allow write: if request.auth != null;
+      allow create, delete, write: if request.auth != null;
     }
 
     // Default deny

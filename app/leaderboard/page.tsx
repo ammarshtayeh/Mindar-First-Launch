@@ -9,12 +9,16 @@ import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { getGlobalLeaderboard, UserProfile } from "@/lib/services/dbService"
 
+import { useAuth } from "@/hooks/useAuth"
+
 export default function LeaderboardPage() {
+  const { user, loading: authLoading } = useAuth()
   const [leaders, setLeaders] = useState<UserProfile[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchLeaders = async () => {
+      if (!user) return
       try {
         const data = await getGlobalLeaderboard(20)
         setLeaders(data)
@@ -24,14 +28,32 @@ export default function LeaderboardPage() {
         setLoading(false)
       }
     }
-    fetchLeaders()
-  }, [])
+    if (!authLoading) {
+      if (user) fetchLeaders()
+      else setLoading(false)
+    }
+  }, [user, authLoading])
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-slate-50 dark:bg-slate-950">
         <Loader2 className="w-12 h-12 text-primary animate-spin" />
         <p className="font-black text-slate-500">جاري تحميل قائمة الأبطال...</p>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-4 text-center">
+        <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-400">
+            <Trophy className="w-12 h-12" />
+        </div>
+        <h1 className="text-3xl font-black text-slate-800 dark:text-slate-100">لوحة المتصدرين متاحة للأعضاء فقط</h1>
+        <p className="text-slate-500 font-bold max-w-md">سجل دخولك الآن لتنافس بقية الطلاب وتتصدر القائمة!</p>
+        <Link href="/">
+            <Button className="h-14 px-8 rounded-2xl font-black">تسجيل الدخول / العودة للرئيسية</Button>
+        </Link>
       </div>
     )
   }

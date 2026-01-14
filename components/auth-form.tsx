@@ -138,7 +138,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
             {isLogin ? <LogIn className="w-8 h-8 text-white" /> : <UserPlus className="w-8 h-8 text-white" />}
           </div>
           <CardTitle className="text-3xl font-black text-slate-900 dark:text-white">
-            {isResetting ? t('auth.resetPassword') : (isLogin ? t('Login') : "إنشاء حساب جديد")}
+            {isResetting ? t('auth.resetPassword') : (isLogin ? t('common.login') : "إنشاء حساب جديد")}
           </CardTitle>
           <CardDescription className="text-slate-500 font-medium">
             {isResetting ? t('auth.sendLink') : (isLogin ? t('home.subtitle') : "انضم إلى عائلة مندار اليوم!")}
@@ -233,7 +233,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="p-4 rounded-2xl bg-red-50 border border-red-100 flex items-center gap-3 text-red-600 text-sm font-bold"
+                  className="p-4 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 flex items-center gap-3 text-red-600 dark:text-red-400 text-sm font-bold"
                 >
                   <AlertCircle className="w-5 h-5 flex-shrink-0" />
                   <p>{error}</p>
@@ -245,7 +245,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="p-4 rounded-2xl bg-green-50 border border-green-100 flex items-center gap-3 text-green-600 text-sm font-bold"
+                  className="p-4 rounded-2xl bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/20 flex items-center gap-3 text-green-600 dark:text-green-400 text-sm font-bold"
                 >
                   <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
                   <p>{isResetting ? t('auth.checkEmail') : (isLogin ? "تم تسجيل الدخول!" : "تم إنشاء الحساب بنجاح!")}</p>
@@ -263,7 +263,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
               ) : isResetting ? (
                 t('auth.sendLink')
               ) : isLogin ? (
-                "دخول"
+                t('common.login')
               ) : (
                 "إنشاء حساب"
               )}

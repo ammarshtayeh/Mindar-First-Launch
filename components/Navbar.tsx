@@ -78,8 +78,49 @@ export function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-white/70 dark:bg-slate-950/70 backdrop-blur-2xl border-b border-white/20 dark:border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all duration-500">
       <div className="max-w-[2000px] mx-auto px-4 sm:px-8 py-2 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
         
-        {/* Right Section: Logo & Time & XP */}
+        {/* Right Section: Auth & Logo (for Desktop) */}
         <div className="flex items-center gap-6">
+          {/* User Profile / Auth Button (Desktop: visible at the start) */}
+          <div className="hidden lg:block relative">
+            {user ? (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-2 pr-4 pl-2 h-10 rounded-2xl bg-primary/5 hover:bg-primary/10 border border-primary/10 focus-visible:ring-0"
+                  asChild
+                >
+                   <Link href="/profile" className="flex items-center gap-2">
+                     <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+                        <UserIcon className="w-5 h-5" />
+                     </div>
+                     <span className="text-sm font-black truncate max-w-[100px] text-slate-900 dark:text-slate-100">
+                        {user.email?.split('@')[0]}
+                     </span>
+                   </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={async () => {
+                    await logout()
+                    router.push('/')
+                  }}
+                  className="w-10 h-10 rounded-2xl hover:bg-red-500/10 text-red-500 transition-all active:scale-95"
+                  title="Logout"
+                >
+                  <LogOut className="w-6 h-6" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={() => setShowAuthModal(true)}
+                className="h-10 px-8 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-500 dark:to-indigo-500 text-white font-black shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_25px_rgba(124,58,237,0.5)] hover:scale-[1.05] active:scale-[0.95] transition-all border border-white/20"
+              >
+                {t('common.login')}
+              </Button>
+            )}
+          </div>
+
           <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg border-2 border-primary/20 overflow-hidden glow-primary relative">
               <img 
@@ -135,9 +176,13 @@ export function Navbar() {
 
         </div>
 
-        {/* Desktop Navigation - Hidden on Mobile */}
+        {/* Desktop Navigation - Middle */}
         <ul className="hidden lg:flex items-center gap-1 sm:gap-3">
-          {navItems.map((item) => {
+          {navItems.filter(item => {
+            if (user) return true;
+            // Hide leaderboard and history for guests
+            return item.key !== 'common.leaderboard' && item.key !== 'common.history';
+          }).map((item) => {
             const isActive = pathname === item.href
             const Icon = item.icon
             
@@ -170,88 +215,7 @@ export function Navbar() {
           })}
         </ul>
 
-        {/* Mobile Hamburger Menu */}
-        <div className="lg:hidden">
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="w-10 h-10 rounded-2xl hover:bg-primary/10 transition-all active:scale-95"
-              >
-                <Menu className="w-6 h-6 text-muted-foreground" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] sm:w-[320px]">
-              <SheetTitle className="sr-only">{t('common.menu')}</SheetTitle>
-              <SheetDescription className="sr-only">Navigation menu</SheetDescription>
-              <div className="flex flex-col gap-6 mt-8">
-                <div className="flex flex-col gap-2">
-                  <h2 className="text-lg font-black text-foreground mb-2">{t('common.menu')}</h2>
-                  {navItems.map((item) => {
-                    const isActive = pathname === item.href
-                    const Icon = item.icon
-                    const isDisabled = !hasData && (item.key === 'common.quiz' || item.key === 'common.flashcards')
-                    
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => !isDisabled && setMobileMenuOpen(false)}
-                        className={cn(
-                          "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-bold",
-                          isActive 
-                            ? "text-primary bg-primary/10 shadow-sm" 
-                            : isDisabled
-                              ? "text-muted-foreground/30 pointer-events-none"
-                              : "text-muted-foreground hover:text-primary hover:bg-primary/5"
-                        )}
-                      >
-                        <Icon className="w-5 h-5" />
-                        <span>{t(item.key)}</span>
-                      </Link>
-                    )
-                  })}
-                </div>
-
-                {/* User Section in Mobile Menu */}
-                {user && (
-                  <div className="border-t border-border pt-4 mt-2">
-                    <Link 
-                      href="/profile" 
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5 transition-all"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
-                        <UserIcon className="w-5 h-5" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-black text-foreground">
-                          {user.email?.split('@')[0]}
-                        </span>
-                        <span className="text-xs text-muted-foreground">{t('profile.title')}</span>
-                      </div>
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      onClick={async () => {
-                        await logout()
-                        router.push('/')
-                        setMobileMenuOpen(false)
-                      }}
-                      className="w-full mt-2 justify-start gap-3 px-4 py-3 h-auto rounded-xl hover:bg-red-500/10 text-red-500"
-                    >
-                      <LogOut className="w-5 h-5" />
-                      <span className="font-bold">Logout</span>
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-
-        {/* Left Section: Theme Toggle */}
+        {/* Left Section: Controls & Mobile Menu */}
         <div className="flex items-center gap-3">
           <div className="md:hidden flex items-center gap-2 bg-yellow-400/20 px-3 py-1.5 rounded-xl border border-yellow-400/30">
             <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
@@ -287,44 +251,100 @@ export function Navbar() {
 
           <ThemeToggle />
 
-          {/* User Profile / Auth Button */}
-          <div className="relative">
-            {user ? (
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  className="hidden md:flex items-center gap-2 pr-4 pl-2 h-10 rounded-2xl bg-primary/5 hover:bg-primary/10 border border-primary/10"
-                >
-                   <Link href="/profile" className="flex items-center gap-2">
-                     <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
-                        <UserIcon className="w-5 h-5" />
-                     </div>
-                     <span className="text-sm font-black truncate max-w-[100px] text-slate-900 dark:text-slate-100">
-                        {user.email?.split('@')[0]}
-                     </span>
-                   </Link>
-                </Button>
+          {/* Mobile Hamburger Menu */}
+          <div className="lg:hidden">
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={async () => {
-                    await logout()
-                    router.push('/')
-                  }}
-                  className="w-10 h-10 rounded-2xl hover:bg-red-500/10 text-red-500 transition-all active:scale-95"
-                  title="Logout"
+                  className="w-10 h-10 rounded-2xl hover:bg-primary/10 transition-all active:scale-95"
                 >
-                  <LogOut className="w-6 h-6" />
+                  <Menu className="w-6 h-6 text-muted-foreground" />
                 </Button>
-              </div>
-            ) : (
-              <Button
-                onClick={() => setShowAuthModal(true)}
-                className="h-10 px-8 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-500 dark:to-indigo-500 text-white font-black shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_25px_rgba(124,58,237,0.5)] hover:scale-[1.05] active:scale-[0.95] transition-all border border-white/20"
-              >
-                {t('Login') || 'دخول'}
-              </Button>
-            )}
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[280px] sm:w-[320px]">
+                <SheetTitle className="sr-only">{t('common.menu')}</SheetTitle>
+                <SheetDescription className="sr-only">Navigation menu</SheetDescription>
+                <div className="flex flex-col gap-6 mt-8">
+                  <div className="flex flex-col gap-2">
+                    <h2 className="text-lg font-black text-foreground mb-2">{t('common.menu')}</h2>
+                    {navItems.filter(item => {
+                      if (user) return true;
+                      return item.key !== 'common.leaderboard' && item.key !== 'common.history';
+                    }).map((item) => {
+                      const isActive = pathname === item.href
+                      const Icon = item.icon
+                      const isDisabled = !hasData && (item.key === 'common.quiz' || item.key === 'common.flashcards')
+                      
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => !isDisabled && setMobileMenuOpen(false)}
+                          className={cn(
+                            "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-bold",
+                            isActive 
+                              ? "text-primary bg-primary/10 shadow-sm" 
+                              : isDisabled
+                                ? "text-muted-foreground/30 pointer-events-none"
+                                : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                          )}
+                        >
+                          <Icon className="w-5 h-5" />
+                          <span>{t(item.key)}</span>
+                        </Link>
+                      )
+                    })}
+                  </div>
+
+                  {/* User Section in Mobile Menu */}
+                  <div className="border-t border-border pt-4 mt-2">
+                    {user ? (
+                      <>
+                        <Link 
+                          href="/profile" 
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5 transition-all"
+                        >
+                          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
+                            <UserIcon className="w-5 h-5" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-black text-foreground">
+                              {user.email?.split('@')[0]}
+                            </span>
+                            <span className="text-xs text-muted-foreground text-slate-500 dark:text-slate-400">{t('profile.title')}</span>
+                          </div>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          onClick={async () => {
+                            await logout()
+                            router.push('/')
+                            setMobileMenuOpen(false)
+                          }}
+                          className="w-full mt-2 justify-start gap-3 px-4 py-3 h-auto rounded-xl hover:bg-red-500/10 text-red-500"
+                        >
+                          <LogOut className="w-5 h-5" />
+                          <span className="font-bold">Logout</span>
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        onClick={() => {
+                          setShowAuthModal(true)
+                          setMobileMenuOpen(false)
+                        }}
+                        className="w-full h-14 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-500 dark:to-indigo-500 text-white font-black shadow-lg"
+                      >
+                        {t('common.login')}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>

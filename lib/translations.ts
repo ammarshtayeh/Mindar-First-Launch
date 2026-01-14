@@ -53,6 +53,7 @@ export const translations = {
       pwa_android_instruction: "Tap the menu icon (⋮) then 'Install App'",
       pwa_in_app_warning: "App cannot be installed from inside this browser. Please open in Safari or Chrome.",
       menu: "Menu",
+      login: "Login",
     },
     home: {
       badge: "Expertly crafted quizzes, lightning fast 🚀",
@@ -246,6 +247,7 @@ export const translations = {
       pwa_android_instruction: "اضغط على القائمة (⋮) واختار 'تثبيت التطبيق'",
       pwa_in_app_warning: "لا يمكن التثبيت من داخل هذا المتصفح. يرجى الفتح عبر سفاري أو كروم.",
       menu: "القائمة",
+      login: "سجل دخولك",
     },
     home: {
       badge: "كويزات أسطورية، بلمح البصر 🚀",
