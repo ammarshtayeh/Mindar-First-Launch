@@ -168,7 +168,7 @@ export function Navbar() {
               </div>
             </Link>
 
-            {user && (
+            {isMounted && user && (
               <div className="hidden xl:flex items-center gap-4 bg-primary/5 dark:bg-primary/10 px-4 py-1.5 rounded-2xl border border-primary/10 backdrop-blur-md">
                 <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg transform -rotate-3 group-hover:rotate-0 transition-transform">
                   <Star className="text-white w-6 h-6 fill-white" />
@@ -248,7 +248,7 @@ export function Navbar() {
 
           {/* Left Section: Controls & Mobile Menu */}
           <div className="flex items-center gap-3">
-            {user && (
+            {isMounted && user && (
               <div className="md:hidden flex items-center gap-2 bg-yellow-400/20 px-3 py-1.5 rounded-xl border border-yellow-400/30">
                 <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                 <span className="text-sm font-black text-yellow-600">

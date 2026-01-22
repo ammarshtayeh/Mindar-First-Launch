@@ -538,10 +538,12 @@ export default function StudyHub() {
               animate={{ opacity: 1, x: 0 }}
               className="flex flex-wrap items-center gap-3 mb-4"
             >
-              <div className="flex items-center gap-3 text-primary font-black bg-primary/10 px-4 py-1.5 rounded-full">
-                <FileCheck className="w-5 h-5" />
-                <span>{t("hub.success")}</span>
-              </div>
+              {(extractedText || quizData) && (
+                <div className="flex items-center gap-3 text-primary font-black bg-primary/10 px-4 py-1.5 rounded-full">
+                  <FileCheck className="w-5 h-5" />
+                  <span>{t("hub.success")}</span>
+                </div>
+              )}
 
               {!authLoading && !user && (
                 <div className="flex items-center gap-2 bg-yellow-500/10 text-yellow-600 px-4 py-1.5 rounded-full font-black text-sm border border-yellow-500/20">
@@ -689,7 +691,7 @@ export default function StudyHub() {
                           !extractedText &&
                           !quizData &&
                           isEnabled &&
-                          "opacity-30 grayscale pointer-events-none",
+                          "opacity-30 grayscale pointer-events-none disabled-card",
                       )}
                     >
                       {!isEnabled && (
