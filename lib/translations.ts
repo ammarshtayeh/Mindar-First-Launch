@@ -14,7 +14,7 @@ export const translations = {
       search: "Search...",
       upload: "Upload",
       newQuiz: "New Quiz",
-      coding: "Coding",
+      coding: "Mindar Tech Lab",
       mindmap: "Mind Map",
       studyChecklist: "Study Checklist",
       homeBtn: "Home",
@@ -34,10 +34,12 @@ export const translations = {
       copyLink: "Copy Link",
       linkCopied: "Link copied to clipboard! ✅",
       revenge: "Revenge Round",
-      revengeDesc: "Want to retry the questions you missed? Show them who's boss!",
+      revengeDesc:
+        "Want to retry the questions you missed? Show them who's boss!",
       revengeBtn: "Click to Start",
       flashcardsBtn: "Open Cards",
-      flashcardsDesc: "Review key concepts quickly and funly before your next challenge.",
+      flashcardsDesc:
+        "Review key concepts quickly and funly before your next challenge.",
       submit: "Submit Answer",
       voiceEnabled: "Voice Feedback: ON",
       voiceDisabled: "Voice Feedback: OFF",
@@ -51,20 +53,87 @@ export const translations = {
       pwa_safari_instruction: "Tap 'Share' then 'Add to Home Screen'",
       pwa_chrome_instruction: "Tap 'Share' then 'Add to Home Screen'",
       pwa_android_instruction: "Tap the menu icon (⋮) then 'Install App'",
-      pwa_in_app_warning: "App cannot be installed from inside this browser. Please open in Safari or Chrome.",
+      pwa_in_app_warning:
+        "App cannot be installed from inside this browser. Please open in Safari or Chrome.",
       menu: "Menu",
       login: "Login",
+    },
+    library: {
+      title: "My Library",
+      newFolder: "New Folder",
+      folderName: "Folder Name",
+      create: "Create",
+      empty: "Your library is empty. Upload your first material!",
+      move: "Move to Folder",
+      rename: "Rename Folder",
+      delete: "Delete Folder",
+      materials: "Materials",
+      folders: "Folders",
+      root: "All Files",
+    },
+    command: {
+      placeholder: "What do you want to do? (Ctrl+K)",
+      searching: "Searching for material...",
+      noResults: "No results found for {query}",
+      sections: {
+        actions: "Quick Actions",
+        materials: "My Materials",
+        settings: "Settings",
+      },
+      actions: {
+        newQuiz: "Start New Quiz",
+        zenMode: "Zen Mode (Focus)",
+        toggleVoice: "Toggle Voice Assistant",
+      },
+    },
+    askMindar: {
+      title: "Ask Mindar",
+      desc: "Chat with your material and get instant answers.",
+    },
+    roadmap: {
+      title: "Study Roadmap",
+      desc: "AI-suggested step-by-step plan to conquer this material.",
+    },
+    techLab: {
+      logic: {
+        title: "Logic & Circuits",
+        desc: "Design logic gates and K-Maps with AI assistance.",
+      },
+      arch: {
+        title: "Arch & Assembly",
+        desc: "Master Microprocessors and Assembly with visuals.",
+      },
+      network: {
+        title: "Networks & Security",
+        desc: "Explore OSI Layers and Subnetting visually.",
+      },
+      ds: {
+        title: "Data Structures",
+        desc: "Watch algorithms (Trees, Lists) animate in real-time.",
+      },
+      web: {
+        title: "Web Sandbox",
+        desc: "Experiment with HTML/CSS/JS in a live sandbox.",
+      },
+      code: {
+        title: "Elite Coding",
+        desc: "Solve elite problems with AI logic debugging.",
+      },
     },
     home: {
       badge: "Expertly crafted quizzes, lightning fast 🚀",
       title: "MINDAR",
-      subtitle: "Why struggle with studying? Upload your slides and I'll generate the perfect questions in seconds!",
+      subtitle:
+        "Why struggle with studying? Upload your slides and I'll generate the perfect questions in seconds!",
       feature1Title: "Smart Parsing",
-      feature1Desc: "Upload PDF or PPTX and let our engine extract the genius within.",
+      feature1Desc:
+        "Upload PDF or PPTX and let our engine extract the genius within.",
       feature2Title: "Safe & Secure",
-      feature2Desc: "Your files are private and protected. Study with peace of mind.",
+      feature2Desc:
+        "Your files are private and protected. Study with peace of mind.",
       feature3Title: "Friendly AI",
-      feature3Desc: "A simple, intuitive interface designed to make learning effortless.",
+      feature3Desc:
+        "A simple, intuitive interface designed to make learning effortless.",
       discoverStory: "Discover Our Story",
     },
     upload: {
@@ -85,15 +154,37 @@ export const translations = {
     hub: {
       success: "Material processed successfully!",
       title: "Ready for the Grind? 🚀",
-      subtitle: "Everything is ready for: {title}. Choose your path to excellence today.",
+      subtitle:
+        "Everything is ready for: {title}. Choose your path to excellence today.",
       change: "Change Material",
       start: "Let's start",
       compete: "Ready to Compete?",
-      codingDesc: "Coding challenges, output prediction & debugging.",
+      codingDesc: "AI-powered tech lab for CS students (Logic, Arch, DS, Web).",
       mindmapDesc: "Visualize concepts and connections in a smart map.",
-      discovery: "We discovered {questions} questions and {flashcards} flashcards in this material.",
+      discovery:
+        "We discovered {questions} questions and {flashcards} flashcards in this material.",
       rewards: "Possible Rewards",
       checklistDesc: "AI-powered study plan from your material.",
+      mulakhasat: "Summaries",
+      mulakhasatDesc: "Share & discover study summaries from peers.",
+    },
+    summaries: {
+      title: "Student Summaries",
+      upload: "Upload Summary",
+      searchPlaceholder: "Search for summaries...",
+      uploadTitle: "Upload New Summary",
+      fileLabel: "Summary File (PDF or Image)",
+      titleLabel: "Title",
+      descLabel: "Description",
+      uploadBtn: "Upload Now",
+      success: "Summary uploaded successfully!",
+      noSummaries: "No summaries found. Be the first to share!",
+      download: "Download",
+      view: "View",
+      by: "By",
+      uploading: "Uploading...",
+      fileRequired: "Please select a file",
+      titleRequired: "Please enter a title",
     },
     checklist: {
       title: "Study Checklist",
@@ -120,7 +211,8 @@ export const translations = {
       processing: "Generating questions... smells delicious!",
       vocabTitle: "Vocabulary Bank",
       whyTitle: "Why this answer?",
-      defaultExplanation: "This is the correct answer based on your study material.",
+      defaultExplanation:
+        "This is the correct answer based on your study material.",
       answerToContinue: "Answer to continue...",
       typeAnswer: "Type your answer here...",
       typeExplanation: "Write your explanation here...",
@@ -144,14 +236,15 @@ export const translations = {
       errorCount: "{count} mistakes",
       accuracy: "{percentage}% Accuracy",
       foundMistakesTitle: "Found exactly where to improve 🎯",
-      foundMistakesDesc: "These parts of the material need review to master them.",
+      foundMistakesDesc:
+        "These parts of the material need review to master them.",
       questionReview: "Question Review",
       yourAnswer: "Your Answer:",
       correctAnswer: "Correct Answer:",
       explanation: "Explanation:",
       notAnswered: "Not answered",
       revengeRound: "Revenge Round: {title}",
-      newBadges: "New Badges! 🎖️"
+      newBadges: "New Badges! 🎖️",
     },
     medic: {
       title: "Smart Medic 🩺",
@@ -160,7 +253,8 @@ export const translations = {
       tip: "Advice",
       good: "Excellent condition! Your brain is a machine.",
       warn: "Minor fatigue detected in some topics. Follow the prescription.",
-      critical: "Emergency! Critical weak spots found. Immediate review required.",
+      critical:
+        "Emergency! Critical weak spots found. Immediate review required.",
     },
     radar: {
       title: "Peer Radar 📡",
@@ -173,6 +267,7 @@ export const translations = {
       action_completed_quiz: "{name} completed a quiz",
       action_joined_challenge: "{name} joined a challenge",
       action_is_on_fire: "{name} is on fire 🔥",
+      action_uploaded_summary: "{name} shared a summary",
     },
     auth: {
       forgotPassword: "Forgot Password?",
@@ -191,35 +286,35 @@ export const translations = {
       updateBtn: "Update Password",
       email: "Email",
       displayName: "Display Name",
-    }
+    },
   },
   ar: {
     common: {
       home: "الرئيسية",
-      quiz: "كويز",
-      flashcards: "بطاقات",
-      challenge: "تحدي",
+      quiz: "الاختبار",
+      flashcards: "البطاقات",
+      challenge: "التحدي",
       todo: "مهامي",
-      back: "رجوع",
-      loading: "التحميل...",
+      back: "العودة",
+      loading: "جاري التحميل...",
       comingSoon: "قريباً",
       getStarted: "ابدأ الآن",
-      seeSample: "شوف نموذج",
+      seeSample: "عرض نموذج",
       search: "بحث...",
-      upload: "ارفع ملف",
-      newQuiz: "كويز جديد",
-      coding: "برمجة",
+      upload: "رفع ملف",
+      newQuiz: "اختبار جديد",
+      coding: "مختبر تكنولوجيا تقني متكامل",
       mindmap: "خريطة ذهنية",
       studyChecklist: "خطة الدراسة",
       homeBtn: "الرئيسية",
-      correct: "الصح",
-      wrong: "غلط",
+      correct: "صحيح",
+      wrong: "خطأ",
       question: "سؤال",
-      next: "السؤال الجاي",
+      next: "السؤال التالي",
       prev: "السابق",
-      finish: "شوف النتيجة",
-      score: "تقديرك",
-      date: "تاريخ الكويز",
+      finish: "عرض النتيجة",
+      score: "درجتك",
+      date: "تاريخ الاختبار",
       performance: "تحليل الأداء التفصيلي",
       share: "مشاركة النتائج",
       export: "تصدير PDF",
@@ -227,73 +322,160 @@ export const translations = {
       shareTwitter: "تويتر (X)",
       copyLink: "نسخ الرابط",
       linkCopied: "تم نسخ الرابط! ✅",
-      revenge: "جولة الانتقام 🥊",
-      revengeDesc: "بدك تعيد الأسئلة اللي غلطت فيها؟ فرجيهم مين البطل!",
+      revenge: "جولة التحدي 🥊",
+      revengeDesc:
+        "هل ترغب في إعادة المحاولة للأسئلة التي تعثرت بها؟ أثبت جدارتك!",
       revengeBtn: "اضغط هنا للبدء",
-      flashcardsBtn: "افتح البطاقات",
-      flashcardsDesc: "راجع الأسئلة بسرعة وبطريقة ممتعة قبل الكويز الجاي.",
-      submit: "إرسال الجواب",
+      flashcardsBtn: "فتح البطاقات",
+      flashcardsDesc: "راجع المفاهيم بسرعة وبطريقة ممتعة قبل الاختبار القادم.",
+      submit: "إرسال الإجابة",
       voiceEnabled: "المساعد الصوتي: مفعل",
       voiceDisabled: "المساعد الصوتي: معطل",
-      leaderboard: "الأوائل",
-      history: "سجلات الكويزات",
+      leaderboard: "المتصدرون",
+      history: "سجل الاختبارات",
       installApp: "تثبيت التطبيق",
-      pwa_ios_title: "تثبيت على آيفون 📱",
+      pwa_ios_title: "التثبيت على آيفون 📱",
       pwa_ios_step1: "اضغط على زر 'مشاركة' بالأسفل",
-      pwa_ios_step2: "اختار 'إضافة إلى الشاشة الرئيسية'",
+      pwa_ios_step2: "اختر 'إضافة إلى الشاشة الرئيسية'",
       pwa_ios_got_it: "فهمت!",
       pwa_safari_instruction: "اضغط زر 'مشاركة' ثم 'إضافة للشاشة الرئيسية'",
       pwa_chrome_instruction: "اضغط زر 'مشاركة' ثم 'إضافة للشاشة الرئيسية'",
-      pwa_android_instruction: "اضغط على القائمة (⋮) واختار 'تثبيت التطبيق'",
-      pwa_in_app_warning: "لا يمكن التثبيت من داخل هذا المتصفح. يرجى الفتح عبر سفاري أو كروم.",
+      pwa_android_instruction: "اضغط على القائمة (⋮) واختر 'تثبيت التطبيق'",
+      pwa_in_app_warning:
+        "لا يمكن التثبيت من داخل هذا المتصفح. يرجى الفتح عبر سفاري أو كروم.",
       menu: "القائمة",
-      login: "سجل دخولك",
+      login: "تسجيل الدخول",
+    },
+    library: {
+      title: "مكتبتي",
+      newFolder: "مجلد جديد",
+      folderName: "اسم المجلد",
+      create: "إنشاء",
+      empty: "مكتبتك فارغة. ارفع ملفك الأول الآن!",
+      move: "نقل إلى مجلد",
+      rename: "إعادة تسمية المجلد",
+      delete: "حذف المجلد",
+      materials: "المواد الدراسية",
+      folders: "المجلدات",
+      root: "كافة الملفات",
+    },
+    command: {
+      placeholder: "ماذا تريد أن تفعل؟ (Ctrl+K)",
+      searching: "جاري البحث عن المواد...",
+      noResults: "لا توجد نتائج لـ {query}",
+      sections: {
+        actions: "إجراءات سريعة",
+        materials: "موادي الدراسية",
+        settings: "الإعدادات",
+      },
+      actions: {
+        newQuiz: "بدء اختبار جديد",
+        zenMode: "وضع الزن (تركيز)",
+        toggleVoice: "تبديل المساعد الصوتي",
+      },
+    },
+    askMindar: {
+      title: "اسأل Mindar",
+      desc: "دردش مع المادة واحصل على إجابات فورية.",
+    },
+    roadmap: {
+      title: "خارطة الطريق",
+      desc: "خطة دراسية مقترحة خطوة بخطوة لاتقان المادة.",
+    },
+    techLab: {
+      logic: {
+        title: "المنطق والدوائر",
+        desc: "صمم دوائر منطقية، جداول حقيقة وخرائط كارنوف بذكاء.",
+      },
+      arch: {
+        title: "المعمارية والأسيمبلي",
+        desc: "تعلم المعالجات وكود الأسيمبلي مع محاكاة بصرية.",
+      },
+      network: {
+        title: "الشبكات والأمن",
+        desc: "استكشف طبقات OSI والـ Subnetting بشكل مرئي.",
+      },
+      ds: {
+        title: "هياكل البيانات",
+        desc: "شاهد الخوارزميات وهياكل البيانات تتحرك أمامك.",
+      },
+      web: {
+        title: "مختبر الويب",
+        desc: "جرب كود HTML/CSS/JS مع معاينة فورية.",
+      },
+      code: {
+        title: "تحديات الكود",
+        desc: "حل مشاكل برمجية مع مراجعة ذكية لمنطق الكود.",
+      },
     },
     home: {
-      badge: "كويزات أسطورية، بلمح البصر 🚀",
+      badge: "اختبارات استثنائية، بلمح البصر 🚀",
       title: "MINDAR",
-      subtitle: "ليش تغلب حالك بالدراسة؟ ارفع سلايداتك وأنا بعملّك أحلى أسئلة بثواني!",
+      subtitle:
+        "لماذا تعاني في الدراسة؟ ارفع ملفاتك وسأقوم بإنشاء الأسئلة المثالية لك في ثوانٍ!",
       feature1Title: "تحليل ذكي",
-      feature1Desc: "ارفع PDF أو PPTX وخلي محركنا يستخرج العبقرية اللي جواهم.",
+      feature1Desc:
+        "ارفع ملفات PDF أو PPTX وسيقوم محركنا باستخراج المادة العلمية بدقة.",
       feature2Title: "آمن ومحمي",
-      feature2Desc: "ملفاتك خاصة ومحمية. ادرس وإنت مرتاح البال.",
+      feature2Desc: "ملفاتك خاصة ومحمية. ادرس بكل طمأنينة.",
       feature3Title: "ذكاء ودود",
-      feature3Desc: "واجهة بسيطة وسهلة مصممة عشان تخلي الدراسة لعبة.",
+      feature3Desc: "واجهة بسيطة وسهلة مصممة لجعل الدراسة ممتعة ويسيرة.",
       discoverStory: "اكتشف قصتنا",
     },
     upload: {
-      title: "ارفع مادتك",
-      subtitle: "ارمي ملفات الـ PDF أو الـ PPTX وخلي السحر يصير",
-      dropzone: "اضغط للرفع أو اسحب الملف لهون",
-      supported: "PDF أو PPTX (الحد الأقصى 50MB)",
-      settings: "إعدادات الكويز",
+      title: "رفع المادة العلمية",
+      subtitle: "ارفع ملفات PDF أو PPTX ودع الذكاء الاصطناعي يقوم بعمله",
+      dropzone: "اضغط للرفع أو اسحب الملف هنا",
+      supported: "ملفات PDF أو PPTX (الحد الأقصى 50 ميجابايت)",
+      settings: "إعدادات الاختبار",
       difficulty: "مستوى الصعوبة",
       questionsCount: "عدد الأسئلة",
-      generate: "اصنع السحر",
-      parsing: "جاري عصر الملفات...",
-      generating: "الذكاء عم بفكر...",
-      errorTitle: "يا ساتر! صار غلط",
+      generate: "بدء التوليد",
+      parsing: "جاري تحليل الملفات...",
+      generating: "الذكاء الاصطناعي قيد المعالجة...",
+      errorTitle: "عذراً! حدث خطأ غير متوقع",
       readyToStudy: "جاهز للدراسة!",
-      footerNote: "مشروع تعليمي بلهجة مفهومة قابل للتطوير 🚀",
+      footerNote: "مشروع تعليمي متطور يهدف لخدمة الطلاب 🚀",
     },
     hub: {
-      success: "تم معالجة الملف بنجاح!",
-      title: "جاهز للدعك؟ 🚀",
-      subtitle: "كل شيء جاهز للمادة: {title}. اختر طريقك للتميز اليوم.",
+      success: "تمت معالجة الملف بنجاح!",
+      title: "هل أنت مستعد للتفوق؟ 🚀",
+      subtitle: "كل شيء جاهز للمادة: {title}. اختر مسار التميز الخاص بك اليوم.",
       change: "تغيير المادة",
-      start: "يلا ندخل",
-      compete: "جاهز للمنافسة؟",
-      codingDesc: "تحديات برمجية، توقع المخرجات، وتصحيح الكود.",
-      mindmapDesc: "حول النص المعقد إلى شجرة مفاهيم بصرية ذكية.",
-      discovery: "لقد اكتشفنا {questions} سؤالاً و {flashcards} بطاقة تعليمية في هذا الملف.",
+      start: "لنبدأ",
+      compete: "مستعد للمنافسة؟",
+      codingDesc: "مختبر ذكي يشمل البرمجة، المعمارية، الشبكات وهياكل البيانات.",
+      mindmapDesc: "تحويل النصوص المعقدة إلى شجرة مفاهيم بصرية ذكية.",
+      discovery:
+        "لقد استخرجنا {questions} سؤالاً و {flashcards} بطاقة تعليمية من هذا الملف.",
       rewards: "النقاط المتوقعة",
-      checklistDesc: "خطة دراسية ذكية من مادتك الدراسية.",
+      checklistDesc: "خطة دراسية ذكية مستوحاة من مادتك الدراسية.",
+      mulakhasat: "الملخصات",
+      mulakhasatDesc: "شارك واكتشف الملخصات الدراسية من زملائك.",
+    },
+    summaries: {
+      title: "ملخصات الطلاب",
+      upload: "رفع ملخص",
+      searchPlaceholder: "ابحث عن ملخص...",
+      uploadTitle: "رفع ملخص جديد",
+      fileLabel: "ملف الملخص (PDF أو صورة)",
+      titleLabel: "العنوان",
+      descLabel: "الوصف",
+      uploadBtn: "رفع الآن",
+      success: "تم رفع الملخص بنجاح!",
+      noSummaries: "لا توجد ملخصات حالياً. كن أول من يشارك!",
+      download: "تحميل",
+      view: "عرض",
+      by: "بواسطة",
+      uploading: "جاري الرفع...",
+      fileRequired: "يرجى اختيار ملف",
+      titleRequired: "يرجى إدخال عنوان",
     },
     checklist: {
       title: "قائمة الدراسة",
       progress: "التقدم",
-      tasksCompleted: "{completed} من {total} مهمة مكتملة",
-      emptyState: "لا توجد مهام بعد. أنشئ أو أضف مهمتك الأولى!",
+      tasksCompleted: "{completed} من أصل {total} مهمة مكتملة",
+      emptyState: "لا توجد مهام بعد. أنشئ مهمتك الأولى الآن!",
       aiGenerate: "توليد بالذكاء الاصطناعي",
       manualAdd: "إضافة يدوياً",
       filterAll: "جميع المهام",
@@ -311,69 +493,73 @@ export const translations = {
       checklistGenerated: "تم إنشاء قائمة الدراسة بنجاح!",
     },
     quiz: {
-      processing: "جاري طبخ الأسئلة.. ريحتهم بتجنن!",
-      vocabTitle: "قاموس الكلمات",
-      whyTitle: "ليش هيك الجواب؟",
-      defaultExplanation: "هذا هو الجواب الصح بناءً على المحتوى اللي رفعته.",
-      answerToContinue: "جاوب ع السؤال عشان تكمل..",
-      typeAnswer: "اكتب جوابك هون...",
-      typeExplanation: "اكتب شرحك أو مقالك هون...",
-      speakAnswer: "جاوب بصوتك",
-      listening: "عم بسمعك...",
+      processing: "جاري إعداد الأسئلة.. كن مستعداً!",
+      vocabTitle: "بنك المصطلحات",
+      whyTitle: "توضيح الإجابة",
+      defaultExplanation:
+        "هذه هي الإجابة الصحيحة بناءً على المحتوى الذي تم رفعه.",
+      answerToContinue: "أجب عن السؤال للمتابعة...",
+      typeAnswer: "اكتب إجابتك هنا...",
+      typeExplanation: "اكتب شرحك أو مقالك هنا...",
+      speakAnswer: "الإجابة بالصوت",
+      listening: "جاري الاستماع...",
       autoRead: "القراءة التلقائية",
-      voiceInput: "إجابة صوتية",
-      returnToHub: "العودة للمركز",
-      vocabEmpty: "مساكين، ما لقيت كلمات صعبة هون! إنت أصلاً بطل. 🧠",
+      voiceInput: "إدخال صوتي",
+      returnToHub: "العودة للرئيسية",
+      vocabEmpty:
+        "رائع! لم يتم العثور على مصطلحات معقدة هنا. أنت متمكن بالفعل. 🧠",
     },
     results: {
       legendary: "إنجاز أسطوري!",
-      wellDone: "بطل والله!",
-      keepGoing: "بسيطة، الجاي أحسن!",
-      completed: "لقد أتممت كويز: {title}",
-      noMistakes: "ما شاء الله عليك، ما عندك أغلاط تنتقم منها! 🎉",
-      xpEarned: "ربحت +{xp} XP! وصلت لمستوى {level}",
+      wellDone: "أحسنت صنعاً!",
+      keepGoing: "بداية جيدة، استمر في التقدم!",
+      completed: "لقد أتممت الاختبار: {title}",
+      noMistakes: "مذهل! ليس لديك أخطاء لمراجعتها! 🎉",
+      xpEarned: "لقد حصلت على +{xp} نقطة خبرة! وصلت للمستوى {level}",
       strengthMap: "خارطة القوة والضعف",
-      smartDetails: "تفاصيل للأذكياء",
+      smartDetails: "تفاصيل متقدمة",
       mistakePages: "صفحات الأخطاء:",
-      errorCount: "غلطت في {count} أسئلة",
-      accuracy: "{percentage}% دقة",
-      foundMistakesTitle: "حددنا وين الخلل بالضبط 🎯",
-      foundMistakesDesc: "هذه الأجزاء من المادة محتاجة منك مراجعة عشان تسيطر عليها.",
+      errorCount: "أخطأت في {count} أسئلة",
+      accuracy: "{percentage}% دقة الإجابة",
+      foundMistakesTitle: "حددنا جوانب التحسين بدقة 🎯",
+      foundMistakesDesc:
+        "هذه الأجزاء من المادة تحتاج منك إلى مراجعة إضافية لإتقانها.",
       questionReview: "مراجعة الأسئلة",
       yourAnswer: "إجابتك:",
       correctAnswer: "الإجابة الصحيحة:",
       explanation: "الشرح:",
       notAnswered: "لم تتم الإجابة",
-      revengeRound: "جولة الانتقام: {title}",
-      newBadges: "أوسمة جديدة! 🎖️"
+      revengeRound: "جولة المراجعة: {title}",
+      newBadges: "أوسمة جديدة! 🎖️",
     },
     medic: {
       title: "المسعف الذكي 🩺",
       diagnosis: "التشخيص",
-      prescription: "الروشتة الدراسية",
-      tip: "نصيحة الطبيب",
-      good: "حالة ممتازة! دماغك شغال زي الماكينة.",
-      warn: "تم اكتشاف إجهاد بسيط في بعض المواضيع. اتبع الروشتة.",
-      critical: "حالة طارئة! نقاط ضعف حرجة. مراجعة فورية مطلوبة.",
+      prescription: "الخطة الدراسية العلاجية",
+      tip: "نصيحة الخبير",
+      good: "حالة ممتازة! تركيزك في أعلى مستوياته.",
+      warn: "تم اكتشاف إجهاد دراسي بسيط. يرجى اتباع الخطة المقترحة.",
+      critical: "تنبيه هام! توجد نقاط ضعف حرجة تحتاج لمراجعة فورية.",
     },
     radar: {
       title: "رادار الزملاء 📡",
-      online: "{count} زملاء يدرسون الآن",
-      activity: "نشاط الأصدقاء",
-      studying: "{name} عم بدعك في {topic}",
-      finished: "{name} لسه مخلص كويز!",
+      online: "{count} زملاء يدرسون حالياً",
+      activity: "نشاط الزملاء الأخير",
+      studying: "{name} يدرس الآن {topic}",
+      finished: "{name} أتم اختباراً للتو!",
       beFirst: "كن أول من ينهي دراسته اليوم!",
-      action_started_study: "{name} بدأ يدرس حالياً",
-      action_completed_quiz: "{name} أنهى اختباراً بنجاح",
-      action_joined_challenge: "{name} دخل في تحدي جديد",
-      action_is_on_fire: "{name} شغال نار 🔥",
+      action_started_study: "{name} بدأ الدراسة الآن",
+      action_completed_quiz: "{name} أكمل اختباراً بنجاح",
+      action_joined_challenge: "{name} انضم إلى تحدٍ جديد",
+      action_is_on_fire: "{name} في حالة نشاط قصوى 🔥",
+      action_uploaded_summary: "{name} شارك ملخصاً جديداً",
     },
     auth: {
       forgotPassword: "نسيت كلمة المرور؟",
       resetPassword: "إعادة تعيين كلمة المرور",
       sendLink: "إرسال رابط التعيين",
       backToLogin: "العودة لتسجيل الدخول",
-      checkEmail: "تفقد بريدك الإلكتروني للحصول على رابط التعيين.",
+      checkEmail: "يرجى تفقد بريدك الإلكتروني للحصول على رابط التعيين.",
       passwordChanged: "تم تغيير كلمة المرور بنجاح!",
     },
     profile: {
@@ -385,6 +571,6 @@ export const translations = {
       updateBtn: "تحديث كلمة المرور",
       email: "البريد الإلكتروني",
       displayName: "الاسم",
-    }
-  }
+    },
+  },
 };

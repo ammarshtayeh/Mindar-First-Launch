@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-
-
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -58,32 +56,32 @@
   [data-theme="light"] {
     --background: 210 40% 98%;
     --foreground: 222 47% 11%;
-    
+
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
- 
+
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
- 
+
     /* Logo Colors Extraction */
     /* Primary: Deep Purple (Base) */
     /* Secondary: Vibrant Pink/Magenta (Accent) - Replacing Turquoise */
-    
+
     --primary: 270 80% 55%; /* Deep Purple */
     --primary-foreground: 210 40% 98%;
- 
+
     --secondary: 300 90% 60%; /* Vibrant Pink */
     --secondary-foreground: 210 40% 98%;
- 
+
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
- 
+
     --accent: 300 90% 60%; /* Pink Accent */
     --accent-foreground: 210 40% 98%;
- 
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
- 
+
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 270 80% 55%;
@@ -94,13 +92,13 @@
   [data-theme="dark"] {
     --background: 240 30% 6%; /* Deep Space */
     --foreground: 210 40% 98%;
-    
+
     --card: 240 25% 10%;
     --card-foreground: 210 40% 98%;
- 
+
     --popover: 240 25% 10%;
     --popover-foreground: 210 40% 98%;
- 
+
     --primary: 270 80% 65%; /* Neon Purple (Primary) */
     --primary-foreground: 210 40% 98%;
 
@@ -112,10 +110,10 @@
 
     --accent: 180 100% 50%; /* Cyan Accent */
     --accent-foreground: 240 30% 6%;
- 
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
- 
+
     --border: 240 20% 15%;
     --input: 240 20% 15%;
     --ring: 270 80% 65%;
@@ -126,62 +124,84 @@
   [data-theme="focus"] {
     --background: 0 0% 98%;
     --foreground: 0 0% 10%;
-    
+
     --card: 0 0% 100%;
     --card-foreground: 0 0% 10%;
- 
+
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
- 
+
     --primary: 210 50% 45%;
     --primary-foreground: 0 0% 100%;
- 
+
     --secondary: 0 0% 95%;
     --secondary-foreground: 0 0% 10%;
- 
+
     --muted: 0 0% 95%;
     --muted-foreground: 0 0% 40%;
- 
+
     --accent: 210 50% 45%;
     --accent-foreground: 0 0% 100%;
- 
+
     --destructive: 0 50% 50%;
     --destructive-foreground: 0 0% 98%;
- 
+
     --border: 0 0% 90%;
     --input: 0 0% 90%;
     --ring: 210 50% 45%;
     --radius: 0.75rem;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', 'Cairo', sans-serif;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    font-family: "Inter", "Cairo", sans-serif;
+    font-size: 0.9rem; /* Refined 14.4px base for premium feel */
+    line-height: 1.6;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.03em;
+    font-weight: 800; /* Bolder headings for better hierarchy */
   }
 
   /* Light theme background */
   [data-theme="light"] body {
-    background: linear-gradient(to bottom, #ffffff 0%, #f0f9fa 100%);
+    background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
     background-attachment: fixed;
   }
 
   /* Dark theme background */
   [data-theme="dark"] body {
-    background-image: 
-      radial-gradient(circle at 20% 20%, rgba(17, 160, 165, 0.1) 0%, transparent 40%),
-      radial-gradient(circle at 80% 80%, rgba(17, 58, 93, 0.2) 0%, transparent 40%);
+    background-image:
+      radial-gradient(
+        circle at 20% 20%,
+        rgba(139, 92, 246, 0.05) 0%,
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at 80% 80%,
+        rgba(6, 182, 212, 0.08) 0%,
+        transparent 40%
+      );
+    background-color: #020617; /* Slate-950 base */
     background-attachment: fixed;
   }
 
   /* Focus theme - no background patterns */
   [data-theme="focus"] body {
     background-image: none;
+    background-color: #f8fafc;
   }
 
   /* Space effect elements */
@@ -189,68 +209,59 @@
     content: "";
     position: fixed;
     inset: 0;
-    background-image: 
+    background-image:
       radial-gradient(1px 1px at 20% 30%, white 100%, transparent),
       radial-gradient(1px 1px at 40% 70%, white 100%, transparent),
-      radial-gradient(2px 2px at 60% 10%, white 100%, transparent),
+      radial-gradient(
+        2px 2px at 60% 10%,
+        rgba(139, 92, 246, 0.5) 100%,
+        transparent
+      ),
       radial-gradient(1px 1px at 80% 50%, white 100%, transparent),
-      radial-gradient(2px 2px at 10% 90%, white 100%, transparent);
+      radial-gradient(
+        2px 2px at 10% 90%,
+        rgba(6, 182, 212, 0.5) 100%,
+        transparent
+      );
     background-size: 200% 200%;
-    opacity: 0.1;
+    opacity: 0.05;
     pointer-events: none;
     z-index: -1;
-    /* animation: space-float 100s linear infinite; */
   }
 
   [data-theme="dark"] body::before {
-    opacity: 0.3;
-  }
-
-  @keyframes space-float {
-    from { background-position: 0 0; }
-    to { background-position: 100% 100%; }
+    opacity: 0.2;
   }
 }
 
 @layer utilities {
   /* Theme-aware glow effects */
   .glow-primary {
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.15);
   }
   .glow-primary-lg {
-    box-shadow: 0 0 40px hsl(var(--primary) / 0.4);
+    box-shadow: 0 0 40px hsl(var(--primary) / 0.2);
   }
   .text-glow {
-    text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
+    text-shadow: 0 0 8px hsl(var(--primary) / 0.4);
   }
   .border-glow {
-    box-shadow: inset 0 0 15px hsl(var(--primary) / 0.1), 0 0 15px hsl(var(--primary) / 0.1);
-  }
-
-  /* Calm animations - disabled for performance */
-  .calm-pulse {
-    opacity: 1;
-  }
-
-  /* Focus mode - disable all animations and effects */
-  [data-theme="focus"] .glow-primary,
-  [data-theme="focus"] .glow-primary-lg,
-  [data-theme="focus"] .text-glow,
-  [data-theme="focus"] .border-glow {
-    box-shadow: none;
-    text-shadow: none;
-  }
-
-  [data-theme="focus"] .animate-pulse,
-  [data-theme="focus"] .animate-bounce,
-  [data-theme="focus"] .calm-pulse {
-    animation: none;
+    box-shadow:
+      inset 0 0 10px hsl(var(--primary) / 0.05),
+      0 0 10px hsl(var(--primary) / 0.05);
   }
 
   /* Glassmorphism effect */
   .glassmorphism {
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    @apply bg-background/60 border border-white/10 dark:border-white/5;
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+  }
+
+  .glassmorphism-card {
+    @apply bg-card/40 border border-white/10 dark:border-white/5 shadow-xl;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
   }
 
   /* Utility to hide scrollbar but keep functionality */
