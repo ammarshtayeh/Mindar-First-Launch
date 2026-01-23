@@ -1,16 +1,15 @@
-
-import { 
-  collection, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  doc, 
-  query, 
-  where, 
-  orderBy, 
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  where,
+  orderBy,
   onSnapshot,
   serverTimestamp,
-  Timestamp 
+  Timestamp,
 } from "firebase/firestore";
 import { db } from "../firebase";
 
@@ -20,20 +19,22 @@ export interface TodoTask {
   title: string;
   description?: string;
   completed: boolean;
+  status: "todo" | "in-progress" | "done";
   scheduledAt: Date | null;
   reminderSent: boolean;
   createdAt: any;
-  priority: 'low' | 'medium' | 'high';
+  priority: "low" | "medium" | "high";
+  position: number;
   email?: string;
 }
 
 export const addTask = async (
-  userId: string, 
+  userId: string,
   email: string,
-  title: string, 
+  title: string,
   scheduledAt: Date | null,
-  priority: 'low' | 'medium' | 'high' = 'medium',
-  description: string = ""
+  priority: "low" | "medium" | "high" = "medium",
+  description: string = "",
 ) => {
   try {
     const taskData: any = {
@@ -42,9 +43,11 @@ export const addTask = async (
       title,
       description,
       completed: false,
+      status: "todo",
       reminderSent: false,
       priority,
-      createdAt: serverTimestamp()
+      position: Date.now(), // Default position based on timestamp
+      createdAt: serverTimestamp(),
     };
 
     if (scheduledAt) {
@@ -60,10 +63,14 @@ export const addTask = async (
   }
 };
 
-export const updateTaskStatus = async (taskId: string, completed: boolean) => {
+export const updateTaskStatus = async (
+  taskId: string,
+  status: "todo" | "in-progress" | "done",
+) => {
   try {
     const taskRef = doc(db, "tasks", taskId);
-    await updateDoc(taskRef, { completed });
+    const completed = status === "done";
+    await updateDoc(taskRef, { status, completed });
   } catch (error) {
     console.error("Error updating task:", error);
     throw error;
@@ -79,26 +86,35 @@ export const deleteTask = async (taskId: string) => {
   }
 };
 
-export const subscribeToTasks = (userId: string, callback: (tasks: TodoTask[]) => void) => {
+export const subscribeToTasks = (
+  userId: string,
+  callback: (tasks: TodoTask[]) => void,
+) => {
   const tasksRef = collection(db, "tasks");
   const q = query(
-    tasksRef, 
+    tasksRef,
     where("userId", "==", userId),
-    orderBy("createdAt", "desc")
+    orderBy("createdAt", "desc"),
   );
 
-  return onSnapshot(q, (snapshot) => {
-    const tasks = snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        ...data,
-        scheduledAt: data.scheduledAt ? data.scheduledAt.toDate() : null
-      } as TodoTask;
-    });
-    callback(tasks);
-  }, (error) => {
-    console.error("Tasks subscription failed:", error);
-    callback([]);
-  });
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const tasks = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          status: data.status || (data.completed ? "done" : "todo"),
+          position: data.position || 0,
+          scheduledAt: data.scheduledAt ? data.scheduledAt.toDate() : null,
+        } as TodoTask;
+      });
+      callback(tasks);
+    },
+    (error) => {
+      console.error("Tasks subscription failed:", error);
+      callback([]);
+    },
+  );
 };

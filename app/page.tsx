@@ -125,7 +125,7 @@ export default function Home() {
 
         <motion.h1
           variants={item}
-          className="text-5xl md:text-8xl font-black tracking-tighter leading-[0.95] py-4 bg-clip-text text-transparent bg-gradient-to-b from-foreground via-primary to-primary/40 font-[family-name:var(--font-orbitron)]"
+          className="text-6xl md:text-9xl font-black tracking-tighter leading-[0.95] py-4 bg-clip-text text-transparent bg-gradient-to-b from-foreground via-primary to-primary/40 font-[family-name:var(--font-orbitron)]"
         >
           {t("home.title")}
         </motion.h1>
