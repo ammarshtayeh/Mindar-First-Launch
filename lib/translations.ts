@@ -57,6 +57,8 @@ export const translations = {
         "App cannot be installed from inside this browser. Please open in Safari or Chrome.",
       menu: "Menu",
       login: "Login",
+      passwordTooShort: "Password must be at least 8 characters",
+      passwordMismatch: "Passwords do not match",
     },
     library: {
       title: "My Library",
@@ -286,6 +288,8 @@ export const translations = {
       updateBtn: "Update Password",
       email: "Email",
       displayName: "Display Name",
+      personalInfoDesc: "Manage your personal details and account settings",
+      changePasswordDesc: "Update your password to keep your account secure",
     },
   },
   ar: {
@@ -345,6 +349,8 @@ export const translations = {
         "لا يمكن التثبيت من داخل هذا المتصفح. يرجى الفتح عبر سفاري أو كروم.",
       menu: "القائمة",
       login: "تسجيل الدخول",
+      passwordTooShort: "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
+      passwordMismatch: "كلمات المرور غير متطابقة",
     },
     library: {
       title: "مكتبتي",
@@ -571,6 +577,8 @@ export const translations = {
       updateBtn: "تحديث كلمة المرور",
       email: "البريد الإلكتروني",
       displayName: "الاسم",
+      personalInfoDesc: "إدارة تفاصيلك الشخصية وإعدادات الحساب",
+      changePasswordDesc: "تحديث كلمة المرور الخاصة بك لتأمين حسابك",
     },
   },
 };

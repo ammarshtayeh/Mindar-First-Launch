@@ -96,7 +96,7 @@ export function Navbar() {
     <>
       <LevelUpOverlay />
       <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-white/70 dark:bg-slate-950/70 backdrop-blur-2xl border-b border-white/20 dark:border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all duration-500">
-        <div className="max-w-[2000px] mx-auto px-4 sm:px-8 py-2 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
+        <div className="max-w-[2000px] mx-auto px-4 sm:px-8 py-2 flex items-center justify-between gap-4">
           {/* Right Section: Auth & Logo (for Desktop) */}
           <div className="flex items-center gap-6">
             {/* User Profile / Auth Button (Desktop: visible at the start) */}
@@ -112,8 +112,8 @@ export function Navbar() {
                       <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
                         <UserIcon className="w-5 h-5" />
                       </div>
-                      <span className="text-sm font-black truncate max-w-[100px] text-slate-900 dark:text-slate-100">
-                        {user.email?.split("@")[0]}
+                      <span className="text-sm font-black truncate max-w-[120px] text-slate-900 dark:text-slate-100">
+                        {user.displayName || user.email?.split("@")[0]}
                       </span>
                     </Link>
                   </Button>
@@ -298,13 +298,24 @@ export function Navbar() {
             <div className="lg:hidden">
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="w-10 h-10 rounded-2xl hover:bg-primary/10 transition-all active:scale-95"
-                  >
-                    <Menu className="w-6 h-6 text-muted-foreground" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {!user && (
+                      <Button
+                        size="sm"
+                        onClick={() => setShowAuthModal(true)}
+                        className="h-9 px-4 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-black text-xs shadow-lg"
+                      >
+                        {t("common.login")}
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="w-10 h-10 rounded-2xl hover:bg-primary/10 transition-all active:scale-95"
+                    >
+                      <Menu className="w-6 h-6 text-muted-foreground" />
+                    </Button>
+                  </div>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[280px] sm:w-[320px]">
                   <SheetTitle className="sr-only">
@@ -371,7 +382,7 @@ export function Navbar() {
                             </div>
                             <div className="flex flex-col">
                               <span className="text-sm font-black text-foreground">
-                                {user.email?.split("@")[0]}
+                                {user.displayName || user.email?.split("@")[0]}
                               </span>
                               <span className="text-xs text-muted-foreground text-slate-500 dark:text-slate-400">
                                 {t("profile.title")}

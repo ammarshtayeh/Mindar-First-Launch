@@ -2,11 +2,32 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, LogIn, UserPlus, AlertCircle, CheckCircle2, Loader2, X } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  LogIn,
+  UserPlus,
+  AlertCircle,
+  CheckCircle2,
+  Loader2,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { signUp, login, signInWithGoogle, resetPassword } from "@/lib/services/authService";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  signUp,
+  login,
+  signInWithGoogle,
+  resetPassword,
+} from "@/lib/services/authService";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +37,7 @@ interface AuthFormProps {
 }
 
 export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [isLogin, setIsLogin] = useState(true);
   const [isResetting, setIsResetting] = useState(false);
   const [email, setEmail] = useState("");
@@ -32,7 +53,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
-    
+
     setLoading(true);
     setError(null);
     setSuccess(false);
@@ -49,13 +70,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
         await login(email, password);
       } else {
         // Validation for Signup
-        if (password !== confirmPassword) {
-          setError(t('common.passwordMismatch') || "كلمات المرور غير متطابقة!");
-          setLoading(false);
-          return;
-        }
-        if (!firstName || !lastName) {
-          setError(t('common.namesRequired') || "يرجى إدخال الاسم الأول واسم العائلة.");
+        if (password.length < 8) {
+          setError(t("common.passwordTooShort"));
           setLoading(false);
           return;
         }
@@ -67,8 +83,12 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
     } catch (err: any) {
       console.error("Auth process error:", err);
       const msg = err.message || "";
-      
-      if (msg.includes("auth/invalid-credential") || msg.includes("auth/user-not-found") || msg.includes("auth/wrong-password")) {
+
+      if (
+        msg.includes("auth/invalid-credential") ||
+        msg.includes("auth/user-not-found") ||
+        msg.includes("auth/wrong-password")
+      ) {
         setError("تأكد من البريد الإلكتروني أو كلمة المرور.");
       } else if (msg.includes("auth/email-already-in-use")) {
         setError("هذا البريد مسجل مسبقاً، جرب تسجيل الدخول.");
@@ -86,28 +106,30 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
 
   const handleGoogleSignIn = async () => {
     if (googleLoading) return;
-    
+
     setGoogleLoading(true);
     setError(null);
-    
+
     try {
       await signInWithGoogle();
       if (onSuccess) onSuccess();
     } catch (err: any) {
-      const errorMessage = typeof err === 'string' ? err : (err.message || "");
-      
+      const errorMessage = typeof err === "string" ? err : err.message || "";
+
       // Handle normal cancellation cases silently
-      if ( 
-        errorMessage.includes('auth/cancelled-popup-request') || 
-        errorMessage.includes('auth/popup-closed-by-user') ||
-        errorMessage.includes('cancelled-popup-request')
+      if (
+        errorMessage.includes("auth/cancelled-popup-request") ||
+        errorMessage.includes("auth/popup-closed-by-user") ||
+        errorMessage.includes("cancelled-popup-request")
       ) {
         setGoogleLoading(false);
         return;
       }
 
-      if (errorMessage.includes('popup-blocked')) {
-        setError("المتصفح منع النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.");
+      if (errorMessage.includes("popup-blocked")) {
+        setError(
+          "المتصفح منع النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.",
+        );
       } else {
         setError(errorMessage || "حدث خطأ أثناء تسجيل الدخول عبر جوجل.");
       }
@@ -135,13 +157,25 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
 
         <CardHeader className="space-y-1 pt-8 pb-4 text-center">
           <div className="mx-auto w-16 h-16 bg-red-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-red-500/20">
-            {isLogin ? <LogIn className="w-8 h-8 text-white" /> : <UserPlus className="w-8 h-8 text-white" />}
+            {isLogin ? (
+              <LogIn className="w-8 h-8 text-white" />
+            ) : (
+              <UserPlus className="w-8 h-8 text-white" />
+            )}
           </div>
           <CardTitle className="text-3xl font-black text-slate-900 dark:text-white">
-            {isResetting ? t('auth.resetPassword') : (isLogin ? t('common.login') : "إنشاء حساب جديد")}
+            {isResetting
+              ? t("auth.resetPassword")
+              : isLogin
+                ? t("common.login")
+                : "إنشاء حساب جديد"}
           </CardTitle>
           <CardDescription className="text-slate-500 font-medium">
-            {isResetting ? t('auth.sendLink') : (isLogin ? t('home.subtitle') : "انضم إلى عائلة مندار اليوم!")}
+            {isResetting
+              ? t("auth.sendLink")
+              : isLogin
+                ? t("home.subtitle")
+                : "انضم إلى عائلة مندار اليوم!"}
           </CardDescription>
         </CardHeader>
 
@@ -153,7 +187,9 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
                   <Input
                     placeholder="الاسم الأول"
                     value={firstName}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setFirstName(e.target.value)
+                    }
                     className="h-14 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-red-500 focus:border-red-500 transition-all font-medium"
                     required
                   />
@@ -162,7 +198,9 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
                   <Input
                     placeholder="اسم العائلة"
                     value={lastName}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLastName(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setLastName(e.target.value)
+                    }
                     className="h-14 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-red-500 focus:border-red-500 transition-all font-medium"
                     required
                   />
@@ -177,7 +215,9 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
                   type="email"
                   placeholder="البريد الإلكتروني"
                   value={email}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setEmail(e.target.value)
+                  }
                   className="pr-12 h-14 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-red-500 focus:border-red-500 transition-all font-medium"
                   required
                 />
@@ -192,7 +232,9 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
                     type="password"
                     placeholder="كلمة المرور"
                     value={password}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setPassword(e.target.value)
+                    }
                     className="pr-12 h-14 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-red-500 focus:border-red-500 transition-all font-medium"
                     required
                   />
@@ -204,7 +246,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
                       onClick={() => setIsResetting(true)}
                       className="text-sm font-bold text-slate-500 hover:text-red-500 transition-colors"
                     >
-                      {t('auth.forgotPassword')}
+                      {t("auth.forgotPassword")}
                     </button>
                   </div>
                 )}
@@ -219,7 +261,9 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
                     type="password"
                     placeholder="تأكيد كلمة المرور"
                     value={confirmPassword}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setConfirmPassword(e.target.value)
+                    }
                     className="pr-12 h-14 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-red-500 focus:border-red-500 transition-all font-medium"
                     required
                   />
@@ -248,7 +292,13 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
                   className="p-4 rounded-2xl bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/20 flex items-center gap-3 text-green-600 dark:text-green-400 text-sm font-bold"
                 >
                   <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-                  <p>{isResetting ? t('auth.checkEmail') : (isLogin ? "تم تسجيل الدخول!" : "تم إنشاء الحساب بنجاح!")}</p>
+                  <p>
+                    {isResetting
+                      ? t("auth.checkEmail")
+                      : isLogin
+                        ? "تم تسجيل الدخول!"
+                        : "تم إنشاء الحساب بنجاح!"}
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -261,9 +311,9 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
               {loading ? (
                 <Loader2 className="w-6 h-6 animate-spin" />
               ) : isResetting ? (
-                t('auth.sendLink')
+                t("auth.sendLink")
               ) : isLogin ? (
-                t('common.login')
+                t("common.login")
               ) : (
                 "إنشاء حساب"
               )}
@@ -287,7 +337,11 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
               onClick={handleGoogleSignIn}
               className="w-full h-14 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-transparent text-slate-900 dark:text-white text-lg font-black hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-3"
             >
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-6 h-6" alt="Google" />
+              <img
+                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                className="w-6 h-6"
+                alt="Google"
+              />
               <span>متابعة باستخدام جوجل</span>
             </Button>
           </form>
@@ -300,14 +354,16 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, onClose }) => {
                 onClick={() => setIsResetting(false)}
                 className="text-slate-600 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 font-bold transition-colors"
               >
-                {t('auth.backToLogin')}
+                {t("auth.backToLogin")}
               </button>
             ) : (
               <button
                 onClick={() => setIsLogin(!isLogin)}
                 className="text-slate-600 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 font-bold transition-colors"
               >
-                {isLogin ? "ليس لديك حساب؟ سجل الآن" : "لديك حساب بالفعل؟ سجل دخولك"}
+                {isLogin
+                  ? "ليس لديك حساب؟ سجل الآن"
+                  : "لديك حساب بالفعل؟ سجل دخولك"}
               </button>
             )}
           </div>
