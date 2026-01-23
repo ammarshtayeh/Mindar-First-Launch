@@ -134,9 +134,7 @@ export function AnalyticsDashboard({
                 <AlertTriangle className="w-10 h-10 text-primary opacity-50" />
               </div>
               <p className="text-xl font-black opacity-40 leading-relaxed">
-                {language === "ar"
-                  ? "ما في مواضيع كافية عشان أرسم الخريطة. المرة الجاي رح أحاول أفصّل المواضيع أكثر!"
-                  : "Not enough topics to draw the map. I will try to be more specific next time!"}
+                {t("medic.notEnoughTopics")}
               </p>
             </div>
           )}
@@ -202,7 +200,9 @@ export function AnalyticsDashboard({
             <div className="bg-primary/5 p-4 rounded-2xl border border-primary/20">
               <div className="flex items-center gap-2 text-primary mb-1">
                 <Zap className="w-4 h-4" />
-                <span className="text-xs font-black uppercase">أقوى موضوع</span>
+                <span className="text-xs font-black uppercase">
+                  {t("medic.strongestTopic")}
+                </span>
               </div>
               <p className="font-black text-lg truncate">
                 {[...topicPerformance].sort(
@@ -214,7 +214,7 @@ export function AnalyticsDashboard({
               <div className="flex items-center gap-2 text-red-500 mb-1">
                 <BookOpen className="w-4 h-4" />
                 <span className="text-xs font-black uppercase">
-                  محتاج مراجعة
+                  {t("medic.needsReview")}
                 </span>
               </div>
               <p className="font-black text-lg truncate">
@@ -383,14 +383,10 @@ export function AnalyticsDashboard({
                         <AlertTriangle className="text-red-500 w-5 h-5 flex-shrink-0 mt-1" />
                         <div>
                           <p className="font-black text-red-600 dark:text-red-400">
-                            {language === "ar"
-                              ? `راجع موضوع "${topic.topic}" فورا`
-                              : `Review "${topic.topic}" immediately`}
+                            {t("medic.reviewNow", { topic: topic.topic })}
                           </p>
                           <p className="text-sm font-bold opacity-70">
-                            {language === "ar"
-                              ? "درجتك فيه أقل من المتوقع. جرب تدرس البطاقات التعليمية الخاصة بهذا الجزء."
-                              : "Your score here is below average. Try studying the relevant flashcards."}
+                            {t("medic.reviewDesc")}
                           </p>
                         </div>
                       </li>
@@ -401,14 +397,10 @@ export function AnalyticsDashboard({
                       <CheckCircle2 className="text-green-500 w-5 h-5 flex-shrink-0 mt-1" />
                       <div>
                         <p className="font-black text-green-600 dark:text-green-400">
-                          {language === "ar"
-                            ? "أنت في حالة ممتازة!"
-                            : "You are in top shape!"}
+                          {t("medic.topShape")}
                         </p>
                         <p className="text-sm font-bold opacity-70">
-                          {language === "ar"
-                            ? "استمر في مراجعة البطاقات للحفاظ على هذا المستوى."
-                            : "Keep reviewing flashcards to maintain this level."}
+                          {t("medic.topShapeDesc")}
                         </p>
                       </div>
                     </li>

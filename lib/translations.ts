@@ -59,6 +59,7 @@ export const translations = {
       login: "Login",
       passwordTooShort: "Password must be at least 8 characters",
       passwordMismatch: "Passwords do not match",
+      openInBrowser: "Open in Browser",
     },
     library: {
       title: "My Library",
@@ -151,7 +152,9 @@ export const translations = {
       generating: "AI is thinking...",
       errorTitle: "Oops! Something went wrong",
       readyToStudy: "Ready to study!",
-      footerNote: "Educational project with a friendly dialect 🚀",
+      footerNote: "Educational project with a professional dialect 🚀",
+      readyMaterials: "Ready Materials",
+      preparing: "Preparing...",
     },
     hub: {
       success: "Material processed successfully!",
@@ -169,6 +172,8 @@ export const translations = {
       checklistDesc: "AI-powered study plan from your material.",
       mulakhasat: "Summaries",
       mulakhasatDesc: "Share & discover study summaries from peers.",
+      featureComingSoon:
+        "This feature will be ready for use very soon. Stay tuned! 🚀",
     },
     summaries: {
       title: "Student Summaries",
@@ -223,6 +228,7 @@ export const translations = {
       autoRead: "Auto Read",
       voiceInput: "Voice Input",
       returnToHub: "Return to Hub",
+      bugHunt: "🐞 BUG HUNT: Find the error!",
       vocabEmpty: "No difficult words found here! You're a pro already. 🧠",
     },
     results: {
@@ -257,6 +263,15 @@ export const translations = {
       warn: "Minor fatigue detected in some topics. Follow the prescription.",
       critical:
         "Emergency! Critical weak spots found. Immediate review required.",
+      notEnoughTopics:
+        "Not enough topics to draw the map. I will try to be more specific next time!",
+      strongestTopic: "Strongest Topic",
+      needsReview: "Needs Review",
+      reviewNow: "Review {topic} immediately",
+      reviewDesc:
+        "Your score here is below average. Try studying the relevant flashcards.",
+      topShape: "You are in top shape!",
+      topShapeDesc: "Keep reviewing flashcards to maintain this level.",
     },
     radar: {
       title: "Peer Radar 📡",
@@ -376,6 +391,7 @@ export const translations = {
       login: "تسجيل الدخول",
       passwordTooShort: "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
       passwordMismatch: "كلمات المرور غير متطابقة",
+      openInBrowser: "افتح في المتصفح",
     },
     library: {
       title: "مكتبتي",
@@ -467,6 +483,8 @@ export const translations = {
       errorTitle: "عذراً! حدث خطأ غير متوقع",
       readyToStudy: "جاهز للدراسة!",
       footerNote: "مشروع تعليمي متطور يهدف لخدمة الطلاب 🚀",
+      readyMaterials: "المواد الجاهزة",
+      preparing: "جاري التحضير...",
     },
     hub: {
       success: "تمت معالجة الملف بنجاح!",
@@ -483,6 +501,8 @@ export const translations = {
       checklistDesc: "خطة دراسية ذكية مستوحاة من مادتك الدراسية.",
       mulakhasat: "الملخصات",
       mulakhasatDesc: "شارك واكتشف الملخصات الدراسية من زملائك.",
+      featureComingSoon:
+        "هذه الميزة ستكون جاهزة للاستخدام قريباً جداً. يرجى البقاء على اطلاع! 🚀",
     },
     summaries: {
       title: "ملخصات الطلاب",
@@ -537,6 +557,7 @@ export const translations = {
       autoRead: "القراءة التلقائية",
       voiceInput: "إدخال صوتي",
       returnToHub: "العودة للرئيسية",
+      bugHunt: "🐞 تحدي: اكتشف الخطأ!",
       vocabEmpty:
         "رائع! لم يتم العثور على مصطلحات معقدة هنا. أنت متمكن بالفعل. 🧠",
     },
@@ -571,6 +592,15 @@ export const translations = {
       good: "حالة ممتازة! تركيزك في أعلى مستوياته.",
       warn: "تم اكتشاف إجهاد دراسي بسيط. يرجى اتباع الخطة المقترحة.",
       critical: "تنبيه هام! توجد نقاط ضعف حرجة تحتاج لمراجعة فورية.",
+      notEnoughTopics:
+        "لا توجد مواضيع كافية لرسم الخريطة. في المرة القادمة سأحاول تفصيل المواضيع أكثر",
+      strongestTopic: "أقوى موضوع",
+      needsReview: "يتطلب المراجعة",
+      reviewNow: "راجع موضوع {topic} فوراً",
+      reviewDesc:
+        "درجتك في هذا الموضوع أقل من المتوقع. جرب دراسة البطاقات التعليمية التابعة له.",
+      topShape: "أنت في حالة ممتازة!",
+      topShapeDesc: "استمر في مراجعة البطاقات للحفاظ على هذا المستوى.",
     },
     radar: {
       title: "رادار الزملاء 📡",

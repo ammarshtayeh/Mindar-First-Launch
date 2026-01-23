@@ -153,13 +153,9 @@ export function UploadSection({
               )}
             </div>
             <div className="text-center">
-              <h3 className="text-3xl font-black mb-2">
-                {language === "ar" ? "ارفع مادتك" : t("upload.title")}
-              </h3>
+              <h3 className="text-3xl font-black mb-2">{t("upload.title")}</h3>
               <p className="text-muted-foreground font-bold">
-                {language === "ar"
-                  ? "اسحب الملفات هنا أو اضغط للاختيار"
-                  : t("upload.dragDrop")}
+                {t("upload.dragDrop")}
               </p>
             </div>
             <input
@@ -231,7 +227,7 @@ export function UploadSection({
                 <div className="flex items-center gap-2 mb-4">
                   <FileCheck className="text-green-500 w-5 h-5" />
                   <h4 className="font-black text-sm uppercase text-green-600">
-                    {language === "ar" ? "المواد الجاهزة" : "Ready Materials"}
+                    {t("upload.readyMaterials")}
                   </h4>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -286,7 +282,7 @@ export function UploadSection({
         <div className="mt-4 px-10">
           <div className="flex justify-between mb-2">
             <span className="text-xs font-black opacity-60 uppercase">
-              {language === "ar" ? "جاري التحضير..." : "Preparing..."}
+              {t("upload.preparing")}
             </span>
             <span className="text-xs font-black text-primary">{progress}%</span>
           </div>

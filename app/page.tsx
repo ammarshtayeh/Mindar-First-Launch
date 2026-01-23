@@ -257,9 +257,7 @@ export default function Home() {
                   >
                     <Smartphone className="w-5 h-5" />
                     {browserType === "in-app"
-                      ? language === "ar"
-                        ? "افتح في المتصفح"
-                        : "Open in Browser"
+                      ? t("common.openInBrowser")
                       : t("common.installApp")}
                   </Button>
 

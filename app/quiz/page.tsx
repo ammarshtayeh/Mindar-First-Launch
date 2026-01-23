@@ -223,7 +223,7 @@ export default function QuizPage() {
                 const matchers: Record<number, string[]> = {
                     0: ['first', 'one', 'number one', 'الاولى', 'الأولى', 'الاجابة الاولى', 'الاجابة الأولى', 'رقم واحد', 'أ', 'واحد', 'الأول', 'الاول'],
                     1: ['second', 'two', 'number two', 'الثانية', 'الثانيه', 'الاجابة الثانية', 'رقم اثنين', 'ب', 'اثنين', 'الثاني'],
-                    2: ['third', 'three', 'number three', 'الثالثة', 'الثالثه', 'الاجابة الثالثة', 'رقم ثلاثة', 'رقم تلاتة', 'ج', 'تلاتة', 'ثلاثة', 'الثالث'],
+                    2: ['third', 'three', 'number three', 'الثالثة', 'الثالثه', 'الاجابة الثالثة', 'رقم ثلاثة', 'ج', 'ثلاثة', 'الثالث'],
                     3: ['fourth', 'four', 'number four', 'الرابعة', 'الرابعه', 'الاجابة الرابعة', 'رقم اربعة', 'د', 'اربعة', 'الرابع']
                 }
 
@@ -457,11 +457,9 @@ export default function QuizPage() {
                                     <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
                                     <div className="w-3 h-3 rounded-full bg-green-500/80" />
                                     <span className="ml-2 text-xs text-slate-400 font-mono">
-                                        {(currentQuestion as any).isBugHunt ? (
-                                            <span className="flex items-center gap-1 text-red-400 font-black animate-pulse" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-                                                🐞 {language === 'ar' ? 'تحدي: اكتشف الخطأ!' : 'BUG HUNT: Find the error!'}
-                                            </span>
-                                        ) : 'code_challenge.js'}
+                                        {(currentQuestion as any).isBugHunt ? 
+                                            t("quiz.bugHunt")
+                                         : 'code_challenge.js'}
                                     </span>
                                 </div>
                                 <pre className="p-6 overflow-x-auto text-sm sm:text-base font-mono text-[#d4d4d4] leading-relaxed whitespace-pre-wrap">

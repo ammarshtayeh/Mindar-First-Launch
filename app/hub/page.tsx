@@ -245,12 +245,7 @@ export default function StudyHub() {
     if (item?.isComingSoon) {
       toast({
         type: "warning",
-        message:
-          language === "ar" ? "ميزة قادمة قريباً!" : "Feature coming soon!",
-        description:
-          language === "ar"
-            ? "هذه الميزة ستكون جاهزة للاستخدام قريباً جداً. خليك متابع! 🚀"
-            : "This feature will be ready for use very soon. Stay tuned! 🚀",
+        message: t("hub.featureComingSoon"),
       });
       return;
     }
@@ -1090,7 +1085,7 @@ export default function StudyHub() {
               className="mt-10 text-center px-6"
             >
               <h3 className="text-3xl font-black mb-2 text-primary">
-                {language === "ar" ? "جاري التحضير..." : "Preparing..."}
+                {t("upload.preparing")}
               </h3>
               <p className="text-xl font-bold opacity-60 max-w-md mx-auto">
                 {loadingMessages[loadingMessageIndex]}
