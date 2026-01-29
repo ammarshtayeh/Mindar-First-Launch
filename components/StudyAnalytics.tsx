@@ -26,6 +26,7 @@ export function StudyAnalytics({ data }: StudyAnalyticsProps) {
   const { language } = useI18n();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     setIsMounted(true);
   }, []);
 

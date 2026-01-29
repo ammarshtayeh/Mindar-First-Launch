@@ -1,9 +1,9 @@
-  "use client"
+"use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { translations } from './translations';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { translations } from "./translations";
 
-type Language = 'en' | 'ar';
+type Language = "en" | "ar";
 
 interface I18nContextType {
   language: Language;
@@ -14,34 +14,35 @@ interface I18nContextType {
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>('ar');
+  const [language, setLanguage] = useState<Language>("ar");
 
   useEffect(() => {
-    const saved = localStorage.getItem('app-language') as Language;
+    const saved = localStorage.getItem("app-language") as Language;
     if (saved) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setLanguage(saved);
     } else {
       // Default to Arabic for all new users
-      setLanguage('ar');
+      setLanguage("ar");
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('app-language', language);
+    localStorage.setItem("app-language", language);
     document.documentElement.lang = language;
-    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
   }, [language]);
 
   const t = (keyPath: string, params?: Record<string, any>) => {
-    const keys = keyPath.split('.');
+    const keys = keyPath.split(".");
     let result: any = translations[language];
-    
+
     for (const key of keys) {
       if (result && result[key]) {
         result = result[key];
       } else {
         // Fallback to English if translation missing
-        let fallback: any = translations['en'];
+        let fallback: any = translations["en"];
         for (const fKey of keys) {
           if (fallback && fallback[fKey]) {
             fallback = fallback[fKey];
@@ -54,7 +55,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    if (typeof result === 'string' && params) {
+    if (typeof result === "string" && params) {
       let templated = result;
       Object.entries(params).forEach(([key, value]) => {
         templated = templated.replace(`{${key}}`, String(value));
@@ -62,7 +63,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       return templated;
     }
 
-    return typeof result === 'string' ? result : keyPath;
+    return typeof result === "string" ? result : keyPath;
   };
 
   return (
@@ -75,7 +76,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 export function useI18n() {
   const context = useContext(I18nContext);
   if (!context) {
-    throw new Error('useI18n must be used within an I18nProvider');
+    throw new Error("useI18n must be used within an I18nProvider");
   }
   return context;
 }

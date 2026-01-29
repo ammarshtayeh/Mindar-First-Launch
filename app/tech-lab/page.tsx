@@ -95,6 +95,7 @@ export default function TechLabPage() {
   useEffect(() => {
     const savedText = localStorage.getItem("tech_lab_source_text");
     const savedTitle = localStorage.getItem("tech_lab_material_title");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     if (savedText) setExtractedText(savedText);
     if (savedTitle) setMaterialTitle(savedTitle);
   }, []);

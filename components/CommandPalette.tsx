@@ -52,6 +52,7 @@ export function CommandPalette() {
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setQuery("");
       setSelectedIndex(0);
       setTimeout(() => inputRef.current?.focus(), 100);

@@ -96,24 +96,33 @@ export default function LabModulePage({
   const { t, language } = useI18n();
   const { toast } = useToast();
   const router = useRouter();
+  /* State Declarations - Hoisted to top */
   const [extractedText, setExtractedText] = useState<string>("");
   const [activeTool, setActiveTool] = useState(0);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState<string | null>(null);
 
-  const config = labConfigs[moduleId] || labConfigs.logic;
+  // AI Chat State
+  const [messages, setMessages] = useState<any[]>([]);
+  const [userInput, setUserInput] = useState("");
 
-  useEffect(() => {
-    const savedText = localStorage.getItem("tech_lab_source_text");
-    if (savedText) {
-      setExtractedText(savedText);
-      analyzeWithAi(savedText);
-    } else if (!isPromptMode) {
-      router.push("/tech-lab");
-    } else {
-      analyzeWithAi("");
-    }
-  }, [moduleId, router, isPromptMode]);
+  // Tool Specific States
+  const [selectedGate, setSelectedGate] = useState("AND");
+  const [webCode, setWebCode] = useState(
+    "<h1>Hello Mindar</h1>\n<style>\nh1 { color: #6366f1; }\n</style>",
+  );
+  const [asmCode, setAsmCode] = useState(
+    "MOV AX, 4C00h\nINT 21h\n; Simple exit code",
+  );
+  const [gateA, setGateA] = useState(false);
+  const [gateB, setGateB] = useState(false);
+  const [ipAddress, setIpAddress] = useState("192.168.1.1");
+  const [cidr, setCidr] = useState(24);
+  const [dsData, setDsData] = useState([10, 5, 15, 2, 7]);
+  const [dsCode, setDsCode] = useState("");
+  const [isDsCodeMode, setIsDsCodeMode] = useState(false);
+
+  const config = labConfigs[moduleId] || labConfigs.logic;
 
   const analyzeWithAi = async (text: string) => {
     setIsAiLoading(true);
@@ -135,8 +144,19 @@ export default function LabModulePage({
     }, 1500);
   };
 
+  useEffect(() => {
+    const savedText = localStorage.getItem("tech_lab_source_text");
+    if (savedText) {
+      setExtractedText(savedText);
+      analyzeWithAi(savedText);
+    } else if (!isPromptMode) {
+      router.push("/tech-lab");
+    } else {
+      analyzeWithAi("");
+    }
+  }, [moduleId, router, isPromptMode]);
+
   // --- Logic Tool: Truth Table ---
-  const [selectedGate, setSelectedGate] = useState("AND");
   const generateLogicRows = () => {
     const rows = [
       { a: 0, b: 0 },
@@ -170,23 +190,13 @@ export default function LabModulePage({
   };
 
   // --- Web Tool: Sandbox ---
-  const [webCode, setWebCode] = useState(
-    "<h1>Hello Mindar</h1>\n<style>\nh1 { color: #6366f1; }\n</style>",
-  );
 
   // --- Arch Tool: Assembly Analyzer ---
-  const [asmCode, setAsmCode] = useState(
-    "MOV AX, 4C00h\nINT 21h\n; Simple exit code",
-  );
 
   // --- Logic Tool States ---
-  const [gateA, setGateA] = useState(false);
-  const [gateB, setGateB] = useState(false);
   const gateOutput = calculateGateLogic(selectedGate, gateA, gateB);
 
   // --- Networking Tool: Subnet Calculator ---
-  const [ipAddress, setIpAddress] = useState("192.168.1.1");
-  const [cidr, setCidr] = useState(24);
   const calculateHosts = (c: number) => Math.pow(2, 32 - c) - 2;
 
   const osiLayers = [
@@ -200,7 +210,7 @@ export default function LabModulePage({
   ];
 
   // --- DS Tool: Tree View ---
-  const [dsData, setDsData] = useState([10, 5, 15, 2, 7]);
+  // --- DS Tool: Tree View ---
   const handlePushDS = () => {
     const newVal = Math.floor(Math.random() * 100);
     if (activeTool === 1) {
@@ -222,8 +232,6 @@ export default function LabModulePage({
   };
 
   // --- DS Tool: Code Editor Logic ---
-  const [dsCode, setDsCode] = useState("");
-  const [isDsCodeMode, setIsDsCodeMode] = useState(false);
 
   useEffect(() => {
     if (moduleId === "ds") {
@@ -295,8 +303,7 @@ export default function LabModulePage({
   };
 
   // --- AI Chat Logic ---
-  const [messages, setMessages] = useState<any[]>([]);
-  const [userInput, setUserInput] = useState("");
+  // --- AI Chat Logic ---
 
   useEffect(() => {
     // Initial AI sequence
@@ -651,7 +658,7 @@ export default function LabModulePage({
                           )}
                         </div>
 
-                        <div className="flex items-center gap-8">
+                        <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
                           <div className="flex flex-col gap-4">
                             <Button
                               onClick={() => setGateA(!gateA)}
@@ -676,14 +683,14 @@ export default function LabModulePage({
                               {selectedGate === "NOT" ? "-" : gateB ? "1" : "0"}
                             </Button>
                           </div>
-                          <div className="w-24 h-2 bg-primary/20 rounded-full" />
+                          <div className="w-2 h-12 lg:w-24 lg:h-2 bg-primary/20 rounded-full" />
                           <div className="p-8 px-12 rounded-[2.5rem] bg-card border-4 border-primary/20 shadow-2xl relative min-w-[140px] text-center">
                             <span className="font-black text-3xl text-primary">
                               {selectedGate}
                             </span>
                             <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-4 h-1 bg-primary/40" />
                           </div>
-                          <div className="w-24 h-2 bg-primary/20 rounded-full" />
+                          <div className="w-2 h-12 lg:w-24 lg:h-2 bg-primary/20 rounded-full" />
                           <div
                             className={cn(
                               "w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500",
@@ -1006,7 +1013,7 @@ export default function LabModulePage({
                         ))}
                       </div>
                     ) : moduleId === "networking" && activeTool === 1 ? (
-                      <div className="max-w-md mx-auto p-10 bg-card rounded-[3rem] border-2 border-primary/20 shadow-2xl flex flex-col gap-8">
+                      <div className="max-w-md mx-auto p-6 md:p-10 bg-card rounded-[3rem] border-2 border-primary/20 shadow-2xl flex flex-col gap-8">
                         <div className="space-y-4">
                           <label className="text-xs font-black opacity-40 uppercase tracking-widest">
                             IP Address
@@ -1267,10 +1274,10 @@ export default function LabModulePage({
                         ) : (
                           <div
                             className={cn(
-                              "flex gap-8 h-full items-center justify-center p-16 rounded-[4rem] relative transition-all duration-700 overflow-y-auto no-scrollbar scroll-smooth",
+                              "flex gap-8 h-full items-center justify-center p-6 md:p-16 rounded-[4rem] relative transition-all duration-700 overflow-y-auto no-scrollbar scroll-smooth",
                               activeTool === 0
-                                ? "flex-col justify-start border-x-4 border-b-4 border-primary/20 bg-primary/5 pt-40 pb-10 min-w-[250px]"
-                                : "flex-row p-12 rounded-[3.5rem] border-2 border-dashed border-primary/20 bg-primary/5",
+                                ? "flex-col justify-start border-x-4 border-b-4 border-primary/20 bg-primary/5 pt-32 md:pt-40 pb-10 min-w-[250px]"
+                                : "flex-row p-6 md:p-12 rounded-[3.5rem] border-2 border-dashed border-primary/20 bg-primary/5",
                             )}
                           >
                             {activeTool === 0 && (

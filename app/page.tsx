@@ -38,6 +38,7 @@ export default function Home() {
   >("other");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     setMounted(true);
     // Platform detection
     const ua = navigator.userAgent;

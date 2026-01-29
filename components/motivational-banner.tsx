@@ -1,56 +1,60 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { getRandomContent, MotivationalContent } from '@/lib/motivational-content'
-import { Sparkles, X } from 'lucide-react'
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  getRandomContent,
+  MotivationalContent,
+} from "@/lib/motivational-content";
+import { Sparkles, X } from "lucide-react";
 
 interface MotivationalBannerProps {
-  context?: 'home' | 'upload' | 'quiz' | 'results'
-  autoRotate?: boolean
-  rotateInterval?: number // in milliseconds
+  context?: "home" | "upload" | "quiz" | "results";
+  autoRotate?: boolean;
+  rotateInterval?: number; // in milliseconds
 }
 
-export function MotivationalBanner({ 
-  context, 
-  autoRotate = true, 
-  rotateInterval = 10000 
+export function MotivationalBanner({
+  context,
+  autoRotate = true,
+  rotateInterval = 10000,
 }: MotivationalBannerProps) {
-  const [content, setContent] = useState<MotivationalContent | null>(null)
-  const [isVisible, setIsVisible] = useState(true)
-  const [isDismissed, setIsDismissed] = useState(false)
+  const [content, setContent] = useState<MotivationalContent | null>(null);
+  const [isVisible, setIsVisible] = useState(true);
+  const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
     // Check if user has dismissed the banner
-    const dismissed = localStorage.getItem('motivational-banner-dismissed')
-    if (dismissed === 'true') {
-      setIsDismissed(true)
-      return
+    const dismissed = localStorage.getItem("motivational-banner-dismissed");
+    if (dismissed === "true") {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      setIsDismissed(true);
+      return;
     }
 
     // Set initial content
-    setContent(getRandomContent(context))
+    setContent(getRandomContent(context));
 
     // Auto-rotate content if enabled
     if (autoRotate) {
       const interval = setInterval(() => {
-        setIsVisible(false)
+        setIsVisible(false);
         setTimeout(() => {
-          setContent(getRandomContent(context))
-          setIsVisible(true)
-        }, 500)
-      }, rotateInterval)
+          setContent(getRandomContent(context));
+          setIsVisible(true);
+        }, 500);
+      }, rotateInterval);
 
-      return () => clearInterval(interval)
+      return () => clearInterval(interval);
     }
-  }, [context, autoRotate, rotateInterval])
+  }, [context, autoRotate, rotateInterval]);
 
   const handleDismiss = () => {
-    setIsDismissed(true)
-    localStorage.setItem('motivational-banner-dismissed', 'true')
-  }
+    setIsDismissed(true);
+    localStorage.setItem("motivational-banner-dismissed", "true");
+  };
 
-  if (isDismissed || !content) return null
+  if (isDismissed || !content) return null;
 
   return (
     <AnimatePresence>
@@ -69,7 +73,7 @@ export function MotivationalBanner({
                   <Sparkles className="w-8 h-8 text-primary" />
                 </div>
               </div>
-              
+
               <div className="flex-1 min-w-0">
                 <p className="text-foreground text-2xl font-black leading-relaxed">
                   {content.text}
@@ -88,5 +92,5 @@ export function MotivationalBanner({
         </motion.div>
       )}
     </AnimatePresence>
-  )
+  );
 }

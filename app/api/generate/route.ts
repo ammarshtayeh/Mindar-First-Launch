@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Groq from "groq-sdk";
+import { normalizeArabic } from "@/lib/text-normalizer";
 
 export const maxDuration = 60; // Allow up to 60 seconds for AI generation (Vercel limit)
 export const dynamic = "force-dynamic";
@@ -28,6 +29,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No text provided" }, { status: 400 });
     }
 
+    // Normalize Arabic text to ensure consistency
+    text = normalizeArabic(text);
+
     // Calculate distribution
     const selectedTypes =
       Array.isArray(body.types) && body.types.length > 0 ? body.types : [type];
@@ -47,10 +51,11 @@ export async function POST(req: Request) {
             
             CRITICAL RULES (Prevention of Hallucinations):
             1. **STRICT GROUNDING**: All questions and answers MUST be derived directly from the text. If it's not in the text, DO NOT ask it.
-            2. **ANSWER CONSISTENCY**: For 'multiple-choice', the 'answer' field MUST BE an EXACT string match to one of the 'options'. 
-            3. **LANGUAGE MATCHING**: Output must match the source text language (Arabic/English).
-            4. **STRICT TYPE ADHERENCE**: ONLY generate questions of the types specified below: [ ${selectedTypes.join(", ")} ].
-            5. **DISTRIBUTION**: You MUST structure the quiz to have exactly: [ ${distributionNote} ]. Do not output all questions as one type.
+            2. **TOC FILTERING**: NEVER generate questions from Table of Contents pages (keywords: فهرس، محتويات، جدول، Contents, Index). Skip lines that look like: "Chapter X ........ Page Y".
+            3. **ANSWER CONSISTENCY**: For 'multiple-choice', the 'answer' field MUST BE an EXACT string match to one of the 'options'. 
+            4. **LANGUAGE MATCHING**: Output must match the source text language (Arabic/English).
+            5. **STRICT TYPE ADHERENCE**: ONLY generate questions of the types specified below: [ ${selectedTypes.join(", ")} ].
+            6. **DISTRIBUTION**: You MUST structure the quiz to have exactly: [ ${distributionNote} ]. Do not output all questions as one type.
             
             ${
               type === "coding"
@@ -323,6 +328,10 @@ function parseAndVerifyQuiz(responseText: string) {
         q.options &&
         Array.isArray(q.options)
       ) {
+        // Normalize options and answer for Arabic consistency
+        q.options = q.options.map((opt: string) => normalizeArabic(opt));
+        q.answer = normalizeArabic(q.answer);
+        
         const exactMatch = q.options.find((opt: string) => opt === q.answer);
         if (!exactMatch) {
           const looseMatch = q.options.find(

@@ -67,6 +67,7 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     setIsMounted(true);
   }, []);
 
@@ -95,10 +96,235 @@ export function Navbar() {
   return (
     <>
       <LevelUpOverlay />
-      <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-white/70 dark:bg-slate-950/70 backdrop-blur-2xl border-b border-white/20 dark:border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all duration-500">
-        <div className="max-w-[2000px] mx-auto px-4 sm:px-8 py-2 flex items-center justify-between gap-4">
+      <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-white/70 dark:bg-slate-950/70 backdrop-blur-2xl border-b border-white/20 dark:border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all duration-500 overflow-x-clip">
+        <div className="max-w-[1400px] w-full mx-auto px-3 sm:px-6 py-2 flex items-center justify-between gap-2 sm:gap-4">
           {/* Right Section: Auth & Logo (for Desktop) */}
           <div className="flex items-center gap-6">
+            {/* Burger Menu - Visible on all but XL screens */}
+            <div className="xl:hidden">
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <div className="flex items-center gap-2">
+                    {!user && (
+                      <Button
+                        size="sm"
+                        onClick={() => setShowAuthModal(true)}
+                        className="h-9 px-4 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-black text-xs shadow-lg"
+                      >
+                        {t("common.login")}
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="w-10 h-10 rounded-2xl hover:bg-primary/10 transition-all active:scale-95"
+                    >
+                      <Menu className="w-6 h-6 text-muted-foreground" />
+                    </Button>
+                  </div>
+                </SheetTrigger>
+                <SheetContent
+                  side={language === "ar" ? "right" : "left"}
+                  className="w-[300px] sm:w-[350px] p-0 border-none bg-background/95 backdrop-blur-xl"
+                >
+                  <SheetTitle className="sr-only">
+                    {t("common.menu")}
+                  </SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Navigation menu
+                  </SheetDescription>
+
+                  <div className="flex flex-col h-full">
+                    {/* 1. User Section - Now at the Top */}
+                    <div className="p-6 bg-primary/5 border-b border-primary/10">
+                      {user ? (
+                        <div className="flex flex-col gap-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg">
+                              <UserIcon className="w-6 h-6" />
+                            </div>
+                            <div className="flex flex-col overflow-hidden">
+                              <span className="text-base font-black text-foreground truncate">
+                                {user.displayName || user.email?.split("@")[0]}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {user.email}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-xl font-bold bg-background dark:bg-slate-900 border-primary/10 text-slate-900 dark:text-slate-100 hover:bg-primary/5 hover:text-primary transition-all shadow-sm"
+                              asChild
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              <Link href="/profile">{t("profile.title")}</Link>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={async () => {
+                                await logout();
+                                router.push("/");
+                                setMobileMenuOpen(false);
+                              }}
+                              className="rounded-xl font-bold hover:bg-red-500/10 text-red-500 gap-2"
+                            >
+                              <LogOut className="w-4 h-4" />
+                              <span>Logout</span>
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-3">
+                          <h2 className="text-xl font-black text-foreground">
+                            {t("common.menu")}
+                          </h2>
+                          <Button
+                            onClick={() => {
+                              setShowAuthModal(true);
+                              setMobileMenuOpen(false);
+                            }}
+                            className="w-full h-12 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-black shadow-lg hover:scale-[1.02] transition-transform"
+                          >
+                            {t("common.login")}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto px-4 py-6">
+                      {/* 2. Navigation Section */}
+                      <div className="flex flex-col gap-1.5">
+                        <h3 className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60 px-4 mb-2">
+                          {language === "ar" ? "القائمة الرئيسية" : "Main Menu"}
+                        </h3>
+                        {navItems
+                          .filter((item) => {
+                            if (user) return true;
+                            return (
+                              item.key !== "common.leaderboard" &&
+                              item.key !== "common.history"
+                            );
+                          })
+                          .map((item) => {
+                            const isActive = pathname === item.href;
+                            const Icon = item.icon;
+                            const isDisabled =
+                              !hasData &&
+                              (item.key === "common.quiz" ||
+                                item.key === "common.flashcards");
+
+                            return (
+                              <Link
+                                key={item.href}
+                                href={item.href}
+                                onClick={() =>
+                                  !isDisabled && setMobileMenuOpen(false)
+                                }
+                                className={cn(
+                                  "flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 font-bold",
+                                  isActive
+                                    ? "text-primary bg-primary/10 shadow-sm"
+                                    : isDisabled
+                                      ? "text-muted-foreground/30 pointer-events-none"
+                                      : "text-muted-foreground hover:text-primary hover:bg-primary/5",
+                                )}
+                              >
+                                <Icon className="w-5 h-5" />
+                                <span>{t(item.key)}</span>
+                              </Link>
+                            );
+                          })}
+                      </div>
+
+                      {/* 3. Reorganized Quick Settings - Stacked Vertically */}
+                      <div className="mt-8 flex flex-col gap-4">
+                        <h3 className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60 px-4">
+                          {language === "ar"
+                            ? "إعدادات سريعة"
+                            : "Quick Settings"}
+                        </h3>
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            variant="ghost"
+                            onClick={toggleVoiceHandler}
+                            className={cn(
+                              "flex items-center justify-between w-full h-14 px-5 rounded-2xl border transition-all",
+                              voiceEnabled
+                                ? "bg-primary/10 border-primary/20 text-primary"
+                                : "bg-slate-50 dark:bg-slate-900/50 border-transparent text-muted-foreground",
+                            )}
+                          >
+                            <div className="flex items-center gap-3">
+                              {voiceEnabled ? (
+                                <Volume2 className="w-5 h-5" />
+                              ) : (
+                                <VolumeX className="w-5 h-5" />
+                              )}
+                              <span className="font-bold">
+                                {voiceEnabled
+                                  ? t("common.voiceEnabled")
+                                  : t("common.voiceDisabled")}
+                              </span>
+                            </div>
+                            <div
+                              className={cn(
+                                "w-2 h-2 rounded-full",
+                                voiceEnabled
+                                  ? "bg-primary animate-pulse"
+                                  : "bg-slate-300",
+                              )}
+                            />
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            onClick={() =>
+                              setLanguageHandler(
+                                language === "ar" ? "en" : "ar",
+                              )
+                            }
+                            className="flex items-center justify-between w-full h-14 px-5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border-transparent text-muted-foreground border hover:bg-primary/5 transition-all text-left"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Languages className="w-5 h-5" />
+                              <span className="font-bold">
+                                {language === "ar"
+                                  ? "Switch to English"
+                                  : "تغيير للعربية"}
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-black opacity-40 uppercase">
+                              {language === "ar" ? "English" : "عربي"}
+                            </span>
+                          </Button>
+
+                          <div className="flex items-center justify-between w-full h-14 px-5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-transparent text-muted-foreground">
+                            <div className="flex items-center gap-3">
+                              <ThemeToggle />
+                              <span className="font-bold">
+                                {language === "ar" ? "المظهر" : "Theme Mode"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer branding or Logout in footer if needed */}
+                    <div className="p-6 text-center border-t border-border/50">
+                      <span className="text-[10px] uppercase font-black tracking-[0.2em] text-primary/40">
+                        MINDAR &bull; 2026
+                      </span>
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+
             {/* User Profile / Auth Button (Desktop: visible at the start) */}
             <div className="hidden lg:block relative">
               {user ? (
@@ -140,8 +366,8 @@ export function Navbar() {
               )}
             </div>
 
-            <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg border-2 border-primary/20 overflow-hidden glow-primary relative">
+            <Link href="/" className="flex items-center gap-2 group shrink-0">
+              <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg border-2 border-primary/20 overflow-hidden glow-primary relative">
                 <img
                   src="/logo-2026.png"
                   alt="Logo"
@@ -159,10 +385,10 @@ export function Navbar() {
                 </div>
               </div>
               <div className="flex flex-col">
-                <span className="text-lg md:text-xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-foreground to-primary leading-none">
+                <span className="text-base md:text-lg font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-foreground to-primary leading-none">
                   {t("home.title")}
                 </span>
-                <span className="text-[8px] md:text-[10px] uppercase font-black tracking-widest text-primary/60 mt-0.5">
+                <span className="text-[8px] md:text-[9px] uppercase font-black tracking-widest text-primary/60 mt-0.5">
                   MINDAR
                 </span>
               </div>
@@ -197,7 +423,7 @@ export function Navbar() {
           </div>
 
           {/* Desktop Navigation - Middle */}
-          <ul className="hidden lg:flex items-center gap-1 sm:gap-3">
+          <ul className="hidden xl:flex items-center gap-1 sm:gap-2">
             {navItems
               .filter((item) => {
                 if (user) return true;
@@ -246,8 +472,8 @@ export function Navbar() {
               })}
           </ul>
 
-          {/* Left Section: Controls & Mobile Menu */}
-          <div className="flex items-center gap-3">
+          {/* Mobile/Tablet Controls & Burger Menu */}
+          <div className="flex items-center gap-2 sm:gap-3">
             {isMounted && user && (
               <div className="md:hidden flex items-center gap-2 bg-yellow-400/20 px-3 py-1.5 rounded-xl border border-yellow-400/30">
                 <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
@@ -257,166 +483,43 @@ export function Navbar() {
               </div>
             )}
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleVoiceHandler}
-              className={cn(
-                "w-10 h-10 rounded-2xl transition-all active:scale-95 group relative",
-                voiceEnabled
-                  ? "hover:bg-primary/10 text-primary"
-                  : "hover:bg-red-500/10 text-muted-foreground",
-              )}
-              title={
-                voiceEnabled
-                  ? t("common.voiceEnabled")
-                  : t("common.voiceDisabled")
-              }
-            >
-              {voiceEnabled ? (
-                <Volume2 className="w-6 h-6" />
-              ) : (
-                <VolumeX className="w-6 h-6" />
-              )}
-            </Button>
+            <div className="hidden md:flex items-center gap-2 sm:gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleVoiceHandler}
+                className={cn(
+                  "w-10 h-10 rounded-2xl transition-all active:scale-95 group relative",
+                  voiceEnabled
+                    ? "hover:bg-primary/10 text-primary"
+                    : "hover:bg-red-500/10 text-muted-foreground",
+                )}
+                title={
+                  voiceEnabled
+                    ? t("common.voiceEnabled")
+                    : t("common.voiceDisabled")
+                }
+              >
+                {voiceEnabled ? (
+                  <Volume2 className="w-6 h-6" />
+                ) : (
+                  <VolumeX className="w-6 h-6" />
+                )}
+              </Button>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() =>
-                setLanguageHandler(language === "ar" ? "en" : "ar")
-              }
-              className="w-10 h-10 rounded-2xl hover:bg-primary/10 transition-all active:scale-95"
-              title={language === "ar" ? "English" : "العربية"}
-            >
-              <Languages className="w-6 h-6 text-muted-foreground" />
-            </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() =>
+                  setLanguageHandler(language === "ar" ? "en" : "ar")
+                }
+                className="w-10 h-10 rounded-2xl hover:bg-primary/10 transition-all active:scale-95"
+                title={language === "ar" ? "English" : "العربية"}
+              >
+                <Languages className="w-6 h-6 text-muted-foreground" />
+              </Button>
 
-            <ThemeToggle />
-
-            {/* Mobile Hamburger Menu */}
-            <div className="lg:hidden">
-              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                <SheetTrigger asChild>
-                  <div className="flex items-center gap-2">
-                    {!user && (
-                      <Button
-                        size="sm"
-                        onClick={() => setShowAuthModal(true)}
-                        className="h-9 px-4 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-black text-xs shadow-lg"
-                      >
-                        {t("common.login")}
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="w-10 h-10 rounded-2xl hover:bg-primary/10 transition-all active:scale-95"
-                    >
-                      <Menu className="w-6 h-6 text-muted-foreground" />
-                    </Button>
-                  </div>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-[280px] sm:w-[320px]">
-                  <SheetTitle className="sr-only">
-                    {t("common.menu")}
-                  </SheetTitle>
-                  <SheetDescription className="sr-only">
-                    Navigation menu
-                  </SheetDescription>
-                  <div className="flex flex-col gap-6 mt-8">
-                    <div className="flex flex-col gap-2">
-                      <h2 className="text-lg font-black text-foreground mb-2">
-                        {t("common.menu")}
-                      </h2>
-                      {navItems
-                        .filter((item) => {
-                          if (user) return true;
-                          return (
-                            item.key !== "common.leaderboard" &&
-                            item.key !== "common.history"
-                          );
-                        })
-                        .map((item) => {
-                          const isActive = pathname === item.href;
-                          const Icon = item.icon;
-                          const isDisabled =
-                            !hasData &&
-                            (item.key === "common.quiz" ||
-                              item.key === "common.flashcards");
-
-                          return (
-                            <Link
-                              key={item.href}
-                              href={item.href}
-                              onClick={() =>
-                                !isDisabled && setMobileMenuOpen(false)
-                              }
-                              className={cn(
-                                "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 font-bold",
-                                isActive
-                                  ? "text-primary bg-primary/10 shadow-sm"
-                                  : isDisabled
-                                    ? "text-muted-foreground/30 pointer-events-none"
-                                    : "text-muted-foreground hover:text-primary hover:bg-primary/5",
-                              )}
-                            >
-                              <Icon className="w-5 h-5" />
-                              <span>{t(item.key)}</span>
-                            </Link>
-                          );
-                        })}
-                    </div>
-
-                    {/* User Section in Mobile Menu */}
-                    <div className="border-t border-border pt-4 mt-2">
-                      {user ? (
-                        <>
-                          <Link
-                            href="/profile"
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/5 transition-all"
-                          >
-                            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
-                              <UserIcon className="w-5 h-5" />
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-sm font-black text-foreground">
-                                {user.displayName || user.email?.split("@")[0]}
-                              </span>
-                              <span className="text-xs text-muted-foreground text-slate-500 dark:text-slate-400">
-                                {t("profile.title")}
-                              </span>
-                            </div>
-                          </Link>
-                          <Button
-                            variant="ghost"
-                            onClick={async () => {
-                              await logout();
-                              router.push("/");
-                              setMobileMenuOpen(false);
-                            }}
-                            className="w-full mt-2 justify-start gap-3 px-4 py-3 h-auto rounded-xl hover:bg-red-500/10 text-red-500"
-                          >
-                            <LogOut className="w-5 h-5" />
-                            <span className="font-bold">Logout</span>
-                          </Button>
-                        </>
-                      ) : (
-                        <Button
-                          onClick={() => {
-                            setShowAuthModal(true);
-                            setMobileMenuOpen(false);
-                          }}
-                          className="w-full h-14 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-500 dark:to-indigo-500 text-white font-black shadow-lg"
-                        >
-                          {t("common.login")}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
+              <ThemeToggle />
             </div>
           </div>
         </div>

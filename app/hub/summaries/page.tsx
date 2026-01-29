@@ -21,16 +21,12 @@ import { UploadDialog } from "@/components/summaries/upload-dialog";
 export default function SummariesPage() {
   const { t, language } = useI18n();
   const router = useRouter();
-  const { user } = useAuth();
+  // const { user } = useAuth();
 
   const [summaries, setSummaries] = useState<Summary[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-
-  useEffect(() => {
-    fetchSummaries();
-  }, []);
 
   const fetchSummaries = async () => {
     setLoading(true);
@@ -38,6 +34,11 @@ export default function SummariesPage() {
     setSummaries(data);
     setLoading(false);
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchSummaries();
+  }, []);
 
   const filteredSummaries = summaries.filter(
     (s) =>

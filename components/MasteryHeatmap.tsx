@@ -103,7 +103,7 @@ export function MasteryHeatmap({ activities }: MasteryHeatmapProps) {
 
       <div className="flex justify-between mt-4 text-[10px] font-black uppercase text-muted-foreground opacity-40">
         <span>
-          {new Date(Date.now() - 364 * 24 * 60 * 60 * 1000).toLocaleDateString(
+          {new Date().toLocaleDateString(
             language === "ar" ? "ar-EG" : "en-US",
             { month: "short", year: "numeric" },
           )}
