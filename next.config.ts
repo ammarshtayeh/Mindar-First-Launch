@@ -28,6 +28,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false, // Keep it strict for launch
   },
+  transpilePackages: ["pdfjs-dist"],
 };
 
 export default nextConfig;

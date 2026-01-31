@@ -23,8 +23,8 @@ import {
   FileText,
   Map as MapIcon,
   Microscope,
+  Users,
 } from "lucide-react";
-import { Library } from "@/components/Library";
 import { ChatPanel } from "@/components/ChatPanel";
 import { RoadmapView } from "@/components/RoadmapView";
 import { MasteryHeatmap } from "@/components/MasteryHeatmap";
@@ -81,7 +81,8 @@ export default function StudyHub() {
       | "challenge"
       | "coding"
       | "mindmap"
-      | "checklist";
+      | "checklist"
+      | "rooms";
   }>({
     open: false,
     type: "quiz",
@@ -218,7 +219,9 @@ export default function StudyHub() {
       | "checklist"
       | "summaries"
       | "ask"
-      | "roadmap",
+      | "roadmap"
+      | "rooms"
+      | "interview",
   ) => {
     if (type === "roadmap") {
       generateRoadmap();
@@ -237,6 +240,16 @@ export default function StudyHub() {
 
     if (type === "ask") {
       setIsChatOpen(true);
+      return;
+    }
+
+    if (type === "rooms") {
+      router.push("/rooms");
+      return;
+    }
+
+    if (type === "interview") {
+      router.push("/interview");
       return;
     }
 
@@ -493,6 +506,15 @@ export default function StudyHub() {
       isComingSoon: false,
     },
     {
+      key: "common.interview",
+      descKey: "hub.interviewDesc",
+      icon: MessageCircle,
+      color: "from-blue-600 to-indigo-600",
+      type: "interview" as const,
+      badgeKey: "BETA",
+      isComingSoon: false,
+    },
+    {
       key: "hub.mulakhasat",
       descKey: "hub.mulakhasatDesc",
       icon: BookOpen,
@@ -517,6 +539,15 @@ export default function StudyHub() {
       color: "from-blue-400 to-cyan-500",
       type: "roadmap" as const,
       badgeKey: "AI",
+      isComingSoon: false,
+    },
+    {
+      key: "common.rooms",
+      descKey: "common.roomsDesc",
+      icon: Users,
+      color: "from-blue-600 to-indigo-700",
+      type: "rooms" as const,
+      badgeKey: "LIVE",
       isComingSoon: false,
     },
   ];
@@ -609,13 +640,6 @@ export default function StudyHub() {
           isProcessing={isGenerating}
         />
 
-        {/* Library Section */}
-        {user && (
-          <div className="mb-16">
-            <Library />
-          </div>
-        )}
-
         {/* Ad Banner on Hub Page */}
         <div className="my-10">
           <AdPlaceholder
@@ -683,6 +707,8 @@ export default function StudyHub() {
                         item.isComingSoon && "opacity-70 grayscale-[0.5]",
                         item.type !== "summaries" &&
                           item.type !== "coding" &&
+                          item.type !== "rooms" &&
+                          item.type !== "interview" &&
                           !extractedText &&
                           !quizData &&
                           isEnabled &&

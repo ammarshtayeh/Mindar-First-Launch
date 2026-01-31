@@ -18,11 +18,28 @@ import {
   Smartphone,
   Share,
   PlusSquare,
+  Users as UsersIcon,
+  ListChecks,
+  MessageSquare,
+  Layout,
+  History,
+  Rocket,
+  Compass,
+  Code as CodeIcon,
+  Library as LibraryIcon,
 } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { MotivationalBanner } from "@/components/motivational-banner";
 import { AdPlaceholder } from "@/components/ads/AdPlaceholder";
 import { useI18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function Home() {
   const { t, language } = useI18n();
@@ -150,57 +167,18 @@ export default function Home() {
               {t("common.getStarted")} <Upload className="ml-3 w-6 h-6" />
             </Button>
           </Link>
-          <Button
-            variant="outline"
-            size="lg"
-            className="h-20 px-12 text-2xl font-black rounded-2xl border-2 border-primary bg-background/80 text-primary hover:bg-primary hover:text-primary-foreground backdrop-blur-md shadow-lg transition-all"
-            onClick={() => {
-              const sampleQuiz = {
-                title: "Human Anatomy 101 (Sample)",
-                questions: [
-                  {
-                    question: "What is the largest organ in the human body?",
-                    options: ["Heart", "Liver", "Skin", "Lungs"],
-                    answer: "Skin",
-                    explanation:
-                      "The skin is the largest organ of the body, with a total area of about 20 square feet.",
-                    topic: "Anatomy",
-                  },
-                  {
-                    question: "How many bones are in the adult human body?",
-                    options: ["206", "305", "150", "210"],
-                    answer: "206",
-                    explanation:
-                      "Adults have 206 bones, while infants are born with around 300.",
-                    topic: "Skeletal System",
-                  },
-                ],
-                flashcards: [
-                  {
-                    front: "Mitochondria",
-                    back: "The powerhouse of the cell.",
-                  },
-                  {
-                    front: "DNA",
-                    back: "Deoxyribonucleic acid, the hereditary material in humans.",
-                  },
-                ],
-                vocabulary: [
-                  {
-                    word: "Homeostasis",
-                    definition:
-                      "A state of steady internal, physical, and chemical conditions maintained by living systems.",
-                  },
-                ],
-                timestamp: Date.now(),
-              };
-              localStorage.setItem("currentQuiz", JSON.stringify(sampleQuiz));
-              window.location.href = "/hub";
-            }}
-          >
-            <Play className="mr-3 w-6 h-6 fill-current" />{" "}
-            {t("common.seeSample")}
-          </Button>
+          <FeaturesModal
+            trigger={
+              <Button
+                variant="outline"
+                size="lg"
+                className="h-20 px-12 text-2xl font-black rounded-2xl border-2 border-primary bg-background/80 text-primary hover:bg-primary hover:text-primary-foreground backdrop-blur-md shadow-lg transition-all"
+              >
+                <Sparkles className="mr-3 w-6 h-6 fill-current" />{" "}
+                {t("common.ourFeatures")}
+              </Button>
+            }
+          />
         </motion.div>
 
         {/* Ad Banner on Home Page - Moved Higher */}
@@ -404,6 +382,148 @@ export default function Home() {
         />
       </div>
     </main>
+  );
+}
+
+function FeaturesModal({ trigger }: { trigger: React.ReactNode }) {
+  const { t } = useI18n();
+
+  const features = [
+    {
+      icon: Zap,
+      title: t("common.features.quiz"),
+      desc: t("common.features.quizDesc"),
+      color: "bg-amber-500",
+    },
+    {
+      icon: Brain,
+      title: t("common.features.flashcards"),
+      desc: t("common.features.flashcardsDesc"),
+      color: "bg-rose-500",
+    },
+    {
+      icon: Rocket,
+      title: t("common.features.challenge"),
+      desc: t("common.features.challengeDesc"),
+      color: "bg-indigo-500",
+    },
+    {
+      icon: CodeIcon,
+      title: t("common.features.techLab"),
+      desc: t("common.features.techLabDesc"),
+      color: "bg-emerald-500",
+    },
+    {
+      icon: Compass,
+      title: t("common.features.mindmap"),
+      desc: t("common.features.mindmapDesc"),
+      color: "bg-cyan-500",
+    },
+    {
+      icon: Layout,
+      title: t("common.features.roadmap"),
+      desc: t("common.features.roadmapDesc"),
+      color: "bg-blue-500",
+    },
+    {
+      icon: UsersIcon,
+      title: t("common.features.rooms"),
+      desc: t("common.features.roomsDesc"),
+      color: "bg-violet-500",
+    },
+    {
+      icon: MessageSquare,
+      title: t("common.features.interview"),
+      desc: t("common.features.interviewDesc"),
+      color: "bg-pink-500",
+    },
+    {
+      icon: ListChecks,
+      title: t("common.features.checklist"),
+      desc: t("common.features.checklistDesc"),
+      color: "bg-orange-500",
+    },
+    {
+      icon: LibraryIcon,
+      title: t("common.features.summaries"),
+      desc: t("common.features.summariesDesc"),
+      color: "bg-yellow-500",
+    },
+    {
+      icon: Sparkles,
+      title: t("common.features.askMindar"),
+      desc: t("common.features.askMindarDesc"),
+      color: "bg-primary",
+    },
+  ];
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-[2rem] border-4 border-primary/10 bg-background/80 backdrop-blur-2xl p-0 shadow-2xl">
+        <div className="p-8 md:p-12 space-y-12">
+          <DialogHeader className="text-center space-y-4">
+            <div className="mx-auto w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+              <Sparkles className="w-10 h-10 fill-current" />
+            </div>
+            <DialogTitle className="text-4xl md:text-5xl font-black tracking-tight leading-tight">
+              {t("common.ourFeatures")}
+            </DialogTitle>
+            <p className="text-muted-foreground text-lg font-bold max-w-2xl mx-auto">
+              تطبيق MINDAR ليس مجرد تطبيق دراسة، بل هو رفيقك التقني المتكامل
+              للنجاح والتميز. اكتشف كيف نجعلك تتصدر المشهد!
+            </p>
+          </DialogHeader>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4">
+            {features.map((feature, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.05 }}
+                className="group relative p-6 rounded-[2rem] bg-card/40 border border-border/50 hover:border-primary/40 transition-all hover:shadow-xl overflow-hidden"
+              >
+                <div
+                  className={cn(
+                    "absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity",
+                    feature.color,
+                  )}
+                />
+                <div className="flex items-start gap-6 relative z-10">
+                  <div
+                    className={cn(
+                      "w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg",
+                      feature.color,
+                    )}
+                  >
+                    <feature.icon className="w-7 h-7" />
+                  </div>
+                  <div className="space-y-1 flex-1">
+                    <h4 className="text-xl font-black text-foreground group-hover:text-primary transition-colors">
+                      {feature.title}
+                    </h4>
+                    <p className="text-sm text-muted-foreground font-bold leading-relaxed">
+                      {feature.desc}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="pt-8 border-t border-border/50 text-center">
+            <Button
+              size="lg"
+              className="rounded-2xl h-14 px-10 font-black text-lg bg-gradient-to-r from-primary to-indigo-600 shadow-xl transition-all hover:scale-105"
+              onClick={() => (window.location.href = "/hub")}
+            >
+              ابدأ تجربتك الآن 🚀
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

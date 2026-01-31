@@ -10,7 +10,8 @@ export const translations = {
       loading: "Loading...",
       comingSoon: "Coming Soon",
       getStarted: "Get Started",
-      seeSample: "See Sample",
+      seeSample: "Our Features",
+      ourFeatures: "What we offer",
       search: "Search...",
       upload: "Upload",
       newQuiz: "New Quiz",
@@ -60,6 +61,44 @@ export const translations = {
       passwordTooShort: "Password must be at least 8 characters",
       passwordMismatch: "Passwords do not match",
       openInBrowser: "Open in Browser",
+      rooms: "Study Rooms",
+      roomsDesc: "Join a live room to study and highlight PDFs with friends.",
+      interview: "AI Interview",
+      features: {
+        quiz: "Smart Quiz",
+        quizDesc:
+          "Generate expertly crafted quizzes from your study materials in seconds.",
+        flashcards: "Flashcards",
+        flashcardsDesc:
+          "Master key concepts quickly with smart AI-generated revision cards.",
+        challenge: "Elite Challenge",
+        challengeDesc:
+          "Test your limits and keep your streak alive with daily technical challenges.",
+        techLab: "Tech Lab",
+        techLabDesc:
+          "Interactive visual environment for Logic, Architecture, Networks, and Data Structures.",
+        mindmap: "Mind Map",
+        mindmapDesc:
+          "Visualize complex concepts and their connections in a smart conceptual map.",
+        roadmap: "AI Roadmap",
+        roadmapDesc:
+          "Get a personalized step-by-step study plan to conquer any material.",
+        rooms: "Study Rooms",
+        roomsDesc:
+          "Collaborate live with peers, share highlights, and study together in real-time.",
+        interview: "AI Interview",
+        interviewDesc:
+          "Simulate professional job interviews with our data-driven AI interviewer.",
+        checklist: "Smart Checklist",
+        checklistDesc:
+          "Get an automated step-by-step study plan to conquer any material.",
+        summaries: "Peer Summaries",
+        summariesDesc:
+          "Discover and share high-quality study summaries from the community.",
+        askMindar: "AI Tutor",
+        askMindarDesc:
+          "Chat directly with your material to clarify anything instantly.",
+      },
     },
     library: {
       title: "My Library",
@@ -155,6 +194,7 @@ export const translations = {
       footerNote: "Educational project with a professional dialect 🚀",
       readyMaterials: "Ready Materials",
       preparing: "Preparing...",
+      prepare: "Prepare for Study",
     },
     hub: {
       success: "Material processed successfully!",
@@ -170,6 +210,7 @@ export const translations = {
         "We discovered {questions} questions and {flashcards} flashcards in this material.",
       rewards: "Possible Rewards",
       checklistDesc: "AI-powered study plan from your material.",
+      interviewDesc: "Professional AI interview based on your CV and material.",
       mulakhasat: "Summaries",
       mulakhasatDesc: "Share & discover study summaries from peers.",
       featureComingSoon:
@@ -343,7 +384,8 @@ export const translations = {
       loading: "جاري التحميل...",
       comingSoon: "قريباً",
       getStarted: "ابدأ الآن",
-      seeSample: "عرض نموذج",
+      seeSample: "ماذا نقدم",
+      ourFeatures: "ماذا نقدم",
       search: "بحث...",
       upload: "رفع ملف",
       newQuiz: "اختبار جديد",
@@ -392,6 +434,40 @@ export const translations = {
       passwordTooShort: "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
       passwordMismatch: "كلمات المرور غير متطابقة",
       openInBrowser: "افتح في المتصفح",
+      rooms: "غرف الدراسة",
+      roomsDesc: "انضم لغرفة حية للدراسة وتظليل ملفات PDF مع أصدقائك.",
+      interview: "المقابلة الذكية",
+      features: {
+        quiz: "الاختبار الذكي",
+        quizDesc: "توليد أسئلة احترافية من ملفاتك بدقة عالية وسرعة فائقة.",
+        flashcards: "البطاقات التعليمية",
+        flashcardsDesc:
+          "إتقان المفاهيم الأساسية عبر بطاقات مراجعة ذكية وممتعة.",
+        challenge: "تحدي النخبة",
+        challengeDesc: "نافس نفسك وزملائك في تحديات تقنية يومية لرفع مستواك.",
+        techLab: "المختبر التقني",
+        techLabDesc:
+          "بيئة بصرية تفاعلية للمنطق، المعمارية، الشبكات، وهياكل البيانات.",
+        mindmap: "الخريطة الذهنية",
+        mindmapDesc:
+          "تحويل النصوص المعقدة إلى شجرة مفاهيم بصرية ذكية ومترابطة.",
+        roadmap: "خارطة الطريق",
+        roadmapDesc: "احصل على خطة دراسية مخصصة خطوة بخطوة لكل مادة ترفعها.",
+        rooms: "غرف الدراسة",
+        roomsDesc:
+          "دراسة جماعية مباشرة، تظليل مشترك للملفات، وتفاعل لحظي مع الزملاء.",
+        interview: "المقابلة الذكية",
+        interviewDesc:
+          "حاكِ مقابلات الشركات الكبرى مع محاور ذكي يعتمد على البيانات.",
+        checklist: "خطة الإنجاز",
+        checklistDesc:
+          "خطة دراسية ذكية مقسمة لخطوات سهلة تضمن لك إتقان المادة.",
+        summaries: "ملخصات المجتمع",
+        summariesDesc: "اكتشف وشارك أفضل الملخصات الدراسية المبدعة مع زملائك.",
+        askMindar: "المدرب الذكي",
+        askMindarDesc:
+          "دردش مباشرة مع مادتك الدراسية لفهم كل التفاصيل المعقدة.",
+      },
     },
     library: {
       title: "مكتبتي",
@@ -485,6 +561,7 @@ export const translations = {
       footerNote: "مشروع تعليمي متطور يهدف لخدمة الطلاب 🚀",
       readyMaterials: "المواد الجاهزة",
       preparing: "جاري التحضير...",
+      prepare: "تجهيز المادة للدراسة ✨",
     },
     hub: {
       success: "تمت معالجة الملف بنجاح!",
@@ -499,6 +576,8 @@ export const translations = {
         "لقد استخرجنا {questions} سؤالاً و {flashcards} بطاقة تعليمية من هذا الملف.",
       rewards: "النقاط المتوقعة",
       checklistDesc: "خطة دراسية ذكية مستوحاة من مادتك الدراسية.",
+      interviewDesc:
+        "مقابلات احترافية بالذكاء الاصطناعي بناءً على مادتك وسيرتك الذاتية.",
       mulakhasat: "الملخصات",
       mulakhasatDesc: "شارك واكتشف الملخصات الدراسية من زملائك.",
       featureComingSoon:

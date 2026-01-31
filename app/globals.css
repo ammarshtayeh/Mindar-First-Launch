@@ -278,4 +278,24 @@
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
   }
+
+  /* PDF.js Text Layer Styling */
+  .textLayer {
+    position: absolute;
+    text-align: initial;
+    inset: 0;
+    overflow: hidden;
+    opacity: 0.2;
+    line-height: 1;
+    text-rendering: optimizeLegibility;
+  }
+
+  .textLayer span,
+  .textLayer br {
+    color: transparent;
+    position: absolute;
+    white-space: pre;
+    cursor: text;
+    transform-origin: 0% 0%;
+  }
 }

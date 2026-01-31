@@ -490,6 +490,8 @@ export interface SystemFeatures {
   summaries: boolean;
   askMindar: boolean;
   roadmap: boolean;
+  rooms: boolean;
+  interview: boolean;
 }
 
 const DEFAULT_FEATURES: SystemFeatures = {
@@ -502,6 +504,8 @@ const DEFAULT_FEATURES: SystemFeatures = {
   summaries: true,
   askMindar: true,
   roadmap: true,
+  rooms: true,
+  interview: true,
 };
 
 export const getSystemConfig = async (): Promise<SystemFeatures | null> => {

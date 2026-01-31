@@ -65,12 +65,51 @@ export function UploadSection({
     });
   };
 
+  // Helper to load PDF.js from CDN to avoid bundler issues
+  const getPdfJs = async () => {
+    if (typeof window === "undefined") return null;
+    if ((window as any).pdfjsLib) return (window as any).pdfjsLib;
+
+    const PDFJS_VERSION = "3.11.174";
+    const CDNS = [
+      `https://unpkg.com/pdfjs-dist@${PDFJS_VERSION}/build/pdf.min.js`,
+      `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.min.js`,
+    ];
+
+    const loadScript = (src: string) =>
+      new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = src;
+        script.onload = () => {
+          const pdfjs = (window as any).pdfjsLib;
+          if (pdfjs) {
+            pdfjs.GlobalWorkerOptions.workerSrc = src.replace(
+              "pdf.min.js",
+              "pdf.worker.min.js",
+            );
+            resolve(pdfjs);
+          } else {
+            reject(new Error("pdfjsLib not found"));
+          }
+        };
+        script.onerror = () => reject(new Error(`Failed to load: ${src}`));
+        document.head.appendChild(script);
+      });
+
+    for (const url of CDNS) {
+      try {
+        return await loadScript(url);
+      } catch (err) {
+        console.warn(`Failed to load PDF.js from ${url}, trying next...`);
+      }
+    }
+
+    throw new Error("Failed to load PDF.js from all CDNs");
+  };
+
   const parseFile = async (file: File): Promise<string> => {
     if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-      const pdfjs = await import("pdfjs-dist");
-      if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-        pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-      }
+      const pdfjs = await getPdfJs();
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
       let fullText = "";
@@ -155,7 +194,7 @@ export function UploadSection({
             <div className="text-center">
               <h3 className="text-3xl font-black mb-2">{t("upload.title")}</h3>
               <p className="text-muted-foreground font-bold">
-                {t("upload.dragDrop")}
+                {t("upload.dropzone")}
               </p>
             </div>
             <input

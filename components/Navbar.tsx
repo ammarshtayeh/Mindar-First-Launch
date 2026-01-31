@@ -91,7 +91,13 @@ export function Navbar() {
     setI18nLanguage(lang);
   };
 
-  if (!isMounted || pathname?.startsWith("/admin") || zenMode) return null;
+  if (
+    !isMounted ||
+    pathname?.startsWith("/admin") ||
+    pathname?.startsWith("/rooms/") ||
+    zenMode
+  )
+    return null;
 
   return (
     <>
