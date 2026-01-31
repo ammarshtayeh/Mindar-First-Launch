@@ -103,9 +103,9 @@ export function Navbar() {
     <>
       <LevelUpOverlay />
       <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-white/70 dark:bg-slate-950/70 backdrop-blur-2xl border-b border-white/20 dark:border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all duration-500 overflow-x-clip">
-        <div className="max-w-[1400px] w-full mx-auto px-3 sm:px-6 py-2 flex items-center justify-between gap-2 sm:gap-4">
+        <div className="max-w-[1400px] w-full mx-auto px-3 sm:px-6 py-1.5 flex items-center justify-between gap-2 sm:gap-4">
           {/* Right Section: Auth & Logo (for Desktop) */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             {/* Burger Menu - Visible on all but XL screens */}
             <div className="xl:hidden">
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -373,7 +373,7 @@ export function Navbar() {
             </div>
 
             <Link href="/" className="flex items-center gap-2 group shrink-0">
-              <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg border-2 border-primary/20 overflow-hidden glow-primary relative">
+              <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg border-2 border-primary/20 overflow-hidden glow-primary relative">
                 <img
                   src="/logo-2026.png"
                   alt="Logo"
@@ -401,22 +401,22 @@ export function Navbar() {
             </Link>
 
             {isMounted && user && (
-              <div className="hidden xl:flex items-center gap-4 bg-primary/5 dark:bg-primary/10 px-4 py-1.5 rounded-2xl border border-primary/10 backdrop-blur-md">
-                <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg transform -rotate-3 group-hover:rotate-0 transition-transform">
-                  <Star className="text-white w-6 h-6 fill-white" />
-                  <span className="absolute -top-2 -right-2 bg-slate-900 text-white text-[10px] font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">
+              <div className="hidden xl:flex items-center gap-3 bg-primary/5 dark:bg-primary/10 px-3 py-1 rounded-2xl border border-primary/10 backdrop-blur-md">
+                <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg transform -rotate-3 group-hover:rotate-0 transition-transform">
+                  <Star className="text-white w-5 h-5 fill-white" />
+                  <span className="absolute -top-1.5 -right-1.5 bg-slate-900 text-white text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
                     {isMounted ? level : 1}
                   </span>
                 </div>
-                <div className="flex flex-col gap-1.5 w-32">
-                  <div className="flex justify-between items-center text-[10px] font-black text-muted-foreground">
+                <div className="flex flex-col gap-1 w-24">
+                  <div className="flex justify-between items-center text-[9px] font-black text-muted-foreground">
                     <span className="flex items-center gap-1">
-                      <Zap className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                      <Zap className="w-2.5 h-2.5 text-yellow-500 fill-yellow-500" />
                       XP {xp}
                     </span>
                     <span>{progress.toFixed(0)}%</span>
                   </div>
-                  <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
+                  <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${progress}%` }}
@@ -448,7 +448,7 @@ export function Navbar() {
                     <Link
                       href={item.href}
                       className={cn(
-                        "relative flex items-center gap-2 px-4 py-2 rounded-2xl transition-all duration-300 text-sm sm:text-base font-black",
+                        "relative flex items-center gap-2 px-3 py-1.5 rounded-2xl transition-all duration-300 text-sm font-black",
                         isActive
                           ? "text-primary bg-primary/10 shadow-[0_0_20px_rgba(var(--primary),0.1)]"
                           : !hasData &&
