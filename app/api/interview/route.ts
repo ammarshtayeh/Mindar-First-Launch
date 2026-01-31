@@ -22,42 +22,70 @@ export async function POST(req: Request) {
     const domainPrompts: Record<string, string> = {
       tech:
         language === "ar"
-          ? "أنت محاور تقني خبير في كبرى شركات البرمجيات عالمياً. ركز على المفاهيم العميقة، الخوارزميات، وتصميم النظم."
-          : "You are an expert technical interviewer from top global software companies. Focus on deep concepts, algorithms, and system design.",
+          ? "أنت محاور تقني 'نخبة' من أفضل 1% في العالم. لا تقبل إلا بالأفضل. حلل الـ CV بعمق واسأل عن تفاصيل تقنية لا يسألها إلا الخبراء."
+          : "You are a 'Top 1% Elite' technical interviewer. Accept only excellence. Deeply analyze the CV and ask about technical nuances only experts would know.",
       business:
         language === "ar"
-          ? "أنت خبير في ريادة الأعمال والاستراتيجية الإدارية. ركز على الجدوى، نموذج العمل، والتفكير الاستراتيجي."
-          : "You are an expert in entrepreneurship and management strategy. Focus on feasibility, business models, and strategic thinking.",
+          ? "أنت خبير استراتيجي عالمي ومستثمر مغامر. ركز على التفكير النقدي، الأرقام، والقدرة على مواجهة المخاطر."
+          : "You are a global strategist and venture capitalist. Focus on critical thinking, numbers, and risk management.",
       medicine:
         language === "ar"
-          ? "أنت بروفيسور طبي خبير. ركز على التشخيص الدقيق، أخلاقيات المهنة، وأحدث الأبحاث."
-          : "You are an expert medical professor. Focus on accurate diagnosis, professional ethics, and latest research.",
+          ? "أنت رئيس مجلس طبي دولي. دقيق جداً، تركز على التفاصيل السريرية المعقدة والقرارات الحاسمة."
+          : "You are the head of an international medical board. Extremely precise, focusing on complex clinical details and critical decisions.",
       hr:
         language === "ar"
-          ? "أنت مدير موارد بشرية محنك. ركز على المهارات الناعمة، القيادة، والذكاء العاطفي."
-          : "You are a seasoned HR manager. Focus on soft skills, leadership, and emotional intelligence.",
+          ? "أنت صائد مهارات (Headhunter) عالمي للمناصب القيادية العليا. ابحث عن جوهر الشخصية والذكاء العاطفي الخارق."
+          : "You are a global executive headhunter. Look for core character and exceptional emotional intelligence.",
     };
 
+    // PHASE LOGIC based on history length (each turn is 2 messages: user + assistant)
+    const turnCount = Math.floor(history.length / 2);
+    let phaseInstruction = "";
+
+    if (turnCount < 2) {
+      phaseInstruction =
+        language === "ar"
+          ? "المرحلة الأولى: مقدمة ذكية وسؤال أساسي مرتبط مباشرة بالخبرات المذكورة في الـ CV."
+          : "Phase 1: Smart introduction and a baseline question directly linked to the CV experiences.";
+    } else if (turnCount < 5) {
+      phaseInstruction =
+        language === "ar"
+          ? "المرحلة الثانية: العمق التقني والاحترافي. تحدَّ المرشح في مهارات محددة ادعى امتلاكها."
+          : "Phase 2: Technical/Professional Depth. Challenge the candidate on specific skills they claim to possess.";
+    } else if (turnCount < 7) {
+      phaseInstruction =
+        language === "ar"
+          ? "المرحلة الثالثة: سيناريو ضغط. اعطِ المرشح موقفاً صعباً يتطلب اتخاذ قرار معقد أو مفاضلة (Trade-off)."
+          : "Phase 3: Stress/Scenario. Give the candidate a tough situation requiring complex decision-making or trade-offs.";
+    } else {
+      phaseInstruction =
+        language === "ar"
+          ? "المرحلة الرابعة: الختام. لخص انطباعك بأسلوب احترافي ونخوي، واطرح سؤالاً ختامياً أو أعلن نهاية المقابلة."
+          : "Phase 4: Conclusion. Summarize your impression professionally and elitely, and ask a closing question or signal the end.";
+    }
+
     const systemPrompt = `
-      ${domainPrompts[domain] || `أنت محاور خبير في مجال ${domain}. ركز على الخبرة العملية والمهارات المطلوبة لهذا المنصب.`}
+      ${domainPrompts[domain] || `أنت صائد كفاءات خبير في مجال ${domain}.`}
       
-      ROLE:
-      - You are the INTERVIEWER. You lead the conversation.
-      - Conduct a PROFESSIONAL, CHALLENGING, and DATA-DRIVEN interview.
-      - Use a respectful but high-pressure tone (Simulating top-tier companies).
+      EXCELLENCE DIRECTIVES:
+      - You are NOT a generic AI. You are a high-level interviewer (Elite/Savage).
+      - LOGICAL FLOW: Your questions MUST follow from the previous answer but push deeper.
+      - CV FIRST: Every question must feel like it was written AFTER reading their specific CV.
+      - CONCISE: Do not waste words. Be direct, professional, and slightly intimidating.
+      - LIMIT: Total interview is roughly 6-8 questions.
       
-      INSTRUCTIONS:
-      1. ANALYZE CV: If CV text is provided below, use it to tailor the questions to the candidate's actual experience.
-      2. ASK ONE QUESTION AT A TIME: Do not overwhelm the candidate.
-      3. EVALUATE & PIVOT: Briefly acknowledge their last answer and move to a more complex or related question.
-      4. LANGUAGE: Always respond in ${language === "ar" ? "Modern Standard Arabic (Fusha) - VERY PROFESSIONAL" : "Professional Business English"}.
-      5. GO BEYOND BASICS: Ask about scenarios, trade-offs, and edge cases.
+      CURRENT PHASE INSTRUCTION:
+      ${phaseInstruction}
       
-      ${cvText ? `Candidate CV Context:\n${cvText.substring(0, 5000)}` : "No CV provided. Conduct a general interview for the role of " + domain}
+      ${cvText ? `CANDIDATE CV DATA (Tailor strictly to this):\n${cvText.substring(0, 5000)}` : "No CV provided. Ask questions based on the elite standards of " + domain}
       
       Interviewing for: ${domain}
-      Current Language: ${language}
-      Current Stage: ${history.length < 5 ? "Initial Rapport & Basics" : "Advanced Deep Dive"}
+      Current Turn: ${turnCount + 1}
+      
+      SPECIAL INSTRUCTION FOR REASONING MODELS:
+      - Leverage your internal reasoning capabilities to deeply analyze the candidate's responses.
+      - Think about the technical nuances, the "why" behind their answers, and follow up with probing questions that test the boundaries of their knowledge.
+      - Your goal is to be the MOST SOPHISTICATED interviewer they have ever encountered.
     `;
 
     const geminiApiKey = process.env.GEMINI_API_KEY;
@@ -70,16 +98,6 @@ export async function POST(req: Request) {
       // Pass reasoning_details back to OpenRouter if they exist
       ...(h.reasoning_details && { reasoning_details: h.reasoning_details }),
     }));
-
-    // Refine system prompt to encourage reasoning usage if model supports it
-    const refinedSystemPrompt = `
-      ${systemPrompt}
-      
-      SPECIAL INSTRUCTION FOR REASONING MODELS:
-      - Leverage your internal reasoning capabilities to deeply analyze the candidate's responses.
-      - Think about the technical nuances, the "why" behind their answers, and follow up with probing questions that test the boundaries of their knowledge.
-      - Your goal is to be the MOST SOPHISTICATED interviewer they have ever encountered.
-    `;
 
     // 1. OpenRouter Models (Priority reasoning Support)
     const openrouterApiKey = process.env.OPENROUTER_API_KEY;
@@ -96,7 +114,7 @@ export async function POST(req: Request) {
           const completion = await openrouter.chat.completions.create({
             model: model.id,
             messages: [
-              { role: "system", content: refinedSystemPrompt },
+              { role: "system", content: systemPrompt },
               ...standardizedHistory,
               { role: "user", content: query },
             ] as any,
@@ -128,7 +146,7 @@ export async function POST(req: Request) {
           model: "gemini-2.0-flash-lite-preview-02-05",
         });
         const result = await model.generateContent([
-          refinedSystemPrompt,
+          systemPrompt,
           ...standardizedHistory.map((h: any) => h.content),
           query,
         ]);
@@ -151,7 +169,7 @@ export async function POST(req: Request) {
         const groq = new Groq({ apiKey: groqKey });
         const completion = await groq.chat.completions.create({
           messages: [
-            { role: "system", content: refinedSystemPrompt },
+            { role: "system", content: systemPrompt },
             ...standardizedHistory,
             { role: "user", content: query },
           ] as any,

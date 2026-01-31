@@ -48,8 +48,8 @@ export default function InterviewInterface({
       role: "ai",
       content:
         interviewLanguage === "ar"
-          ? `أهلاً بك في المقابلة الاحترافية لمجال ${domain}. أنا المحاور الذكي الخاص بك اليوم. هل أنت مستعد للبدء؟`
-          : `Welcome to the professional interview for ${domain}. I am your AI interviewer today. Are you ready to begin?`,
+          ? `أهلاً بك. أنا المحاور النخبة الخاص بك اليوم لمجال ${domain}. لقد راجعتُ ملفك بعناية، وسأقوم الآن باختبار حدود قدراتك الاحترافية والتقنية. هل أنت مستعد للبدء بأول تحدٍّ؟`
+          : `Welcome. I am your elite interviewer for ${domain} today. I have carefully reviewed your background and will now test the boundaries of your professional and technical expertise. Are you ready for your first challenge?`,
       timestamp: new Date(),
     },
   ]);
@@ -180,6 +180,24 @@ export default function InterviewInterface({
     }
   };
 
+  const userMessagesCount = messages.filter((m) => m.role === "user").length;
+  const getPhase = () => {
+    if (userMessagesCount < 2)
+      return language === "ar" ? "المرحلة 1: الانطلاقة" : "Phase 1: Entry";
+    if (userMessagesCount < 5)
+      return language === "ar"
+        ? "المرحلة 2: العمق التقني"
+        : "Phase 2: Tech Depth";
+    if (userMessagesCount < 7)
+      return language === "ar"
+        ? "المرحلة 3: سيناريو الضغط"
+        : "Phase 3: Stress Scenario";
+    return language === "ar"
+      ? "المرحلة 4: التقييم الختامي"
+      : "Phase 4: Final Evaluation";
+  };
+  const getProgress = () => Math.min((userMessagesCount / 8) * 100, 100);
+
   return (
     <div className="flex flex-col h-[85vh] md:h-[80vh] bg-card/30 backdrop-blur-2xl rounded-2xl md:rounded-[3rem] border-2 md:border-4 border-primary/5 overflow-hidden shadow-2xl relative">
       {/* Header */}
@@ -191,22 +209,26 @@ export default function InterviewInterface({
           </div>
           <div>
             <h3 className="font-black text-sm md:text-lg uppercase tracking-tight truncate max-w-[150px] md:max-w-none">
-              {language === "ar" ? "المحاور الذكي" : "AI Interviewer"}
+              {language === "ar" ? "مقابلة النخبة" : "Elite Interviewer"}
             </h3>
             <div className="flex items-center gap-2">
-              <div className="flex gap-0.5">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      "w-0.5 md:w-1 h-2 md:h-3 rounded-full",
-                      i <= 3 ? "bg-green-500" : "bg-green-500/20",
-                    )}
-                  />
-                ))}
+              <Badge
+                variant="secondary"
+                className="bg-primary/10 text-primary border-none text-[8px] md:text-[10px] h-4 md:h-5"
+              >
+                {getPhase()}
+              </Badge>
+              <div className="w-12 md:w-20 h-1 md:h-1.5 bg-primary/10 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-primary"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${getProgress()}%` }}
+                />
               </div>
-              <span className="text-[8px] md:text-[10px] text-muted-foreground font-black uppercase tracking-widest truncate max-w-[80px] md:max-w-none">
-                {domain} • LIVE
+            </div>
+            <div className="mt-1">
+              <span className="text-[8px] md:text-[10px] text-muted-foreground font-black uppercase tracking-widest leading-none">
+                {domain} • {cvText ? "CV ATTACHED" : "GENERAL"}
               </span>
             </div>
           </div>
