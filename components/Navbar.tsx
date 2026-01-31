@@ -103,7 +103,7 @@ export function Navbar() {
     <>
       <LevelUpOverlay />
       <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-white/70 dark:bg-slate-950/70 backdrop-blur-2xl border-b border-white/20 dark:border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all duration-500 overflow-x-clip">
-        <div className="max-w-[1400px] w-full mx-auto px-3 sm:px-6 py-1.5 flex items-center justify-between gap-2 sm:gap-4">
+        <div className="max-w-[1700px] w-full mx-auto px-3 sm:px-6 py-1.5 flex items-center gap-2 sm:gap-4">
           {/* Right Section: Auth & Logo (for Desktop) */}
           <div className="flex items-center gap-4">
             {/* Burger Menu - Visible on all but XL screens */}
@@ -477,6 +477,8 @@ export function Navbar() {
                 );
               })}
           </ul>
+
+          <div className="flex-1" />
 
           {/* Mobile/Tablet Controls & Burger Menu */}
           <div className="flex items-center gap-2 sm:gap-3">
