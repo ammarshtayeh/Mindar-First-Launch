@@ -38,15 +38,35 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AnalyticsDashboard } from "@/components/analytics-dashboard";
-import { Flashcards } from "@/components/flashcards";
+import { useAuth } from "@/hooks/useAuth";
+import { AccessControl } from "@/lib/services/accessControl";
+import dynamic from "next/dynamic";
+
+// Dynamic imports for heavy components
+const AnalyticsDashboard = dynamic(
+  () =>
+    import("@/components/analytics-dashboard").then(
+      (mod) => mod.AnalyticsDashboard,
+    ),
+  {
+    loading: () => (
+      <div className="h-[400px] w-full bg-card/20 animate-pulse rounded-[3rem]" />
+    ),
+    ssr: false,
+  },
+);
+
+const Flashcards = dynamic(
+  () => import("@/components/flashcards").then((mod) => mod.Flashcards),
+  {
+    ssr: false,
+  },
+);
+
 import { AdPlaceholder } from "@/components/ads/AdPlaceholder";
 import { GamificationEngine } from "@/lib/gamification";
 import { triggerConfetti, triggerSuccessConfetti } from "@/lib/effects";
 import { useToast } from "@/components/ui/toast-provider";
-import { useAuth } from "@/hooks/useAuth";
-import { AccessControl } from "@/lib/services/accessControl";
-import { toPng } from "html-to-image";
 
 const AURA_TYPES = [
   {
@@ -427,6 +447,7 @@ export default function ResultsPage() {
                     if (!auraRef.current) return;
                     setIsSharingAura(true);
                     try {
+                      const { toPng } = await import("html-to-image");
                       const dataUrl = await toPng(auraRef.current, {
                         cacheBust: true,
                         pixelRatio: 2,
@@ -707,11 +728,12 @@ export default function ResultsPage() {
           </motion.div>
         )}
 
-        {/* Quiz Review Section (New) */}
+        {/* Quiz Review Section (Lazy) */}
         <motion.div
           id="quiz-review"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "200px" }}
           className="space-y-8 pt-20"
         >
           <div className="flex items-center gap-4">

@@ -128,8 +128,12 @@ export default function Home() {
         animate="show"
         className="z-10 max-w-6xl w-full flex flex-col items-center text-center gap-10"
       >
-        {/* Motivational Banner */}
-        <motion.div variants={item} className="w-full px-4">
+        {/* Motivational Banner - Fixed Height to prevent Layout Shift */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full px-4 min-h-[140px]"
+        >
           <MotivationalBanner context="home" />
         </motion.div>
 
@@ -142,7 +146,9 @@ export default function Home() {
         </motion.div>
 
         <motion.h1
-          variants={item}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
           className="text-6xl md:text-9xl font-black tracking-tighter leading-[0.95] py-4 bg-clip-text text-transparent bg-gradient-to-b from-foreground via-primary to-primary/40 font-[family-name:var(--font-orbitron)]"
         >
           {t("home.title")}
