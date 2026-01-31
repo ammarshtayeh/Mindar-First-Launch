@@ -48,8 +48,8 @@ export default function InterviewInterface({
       role: "ai",
       content:
         interviewLanguage === "ar"
-          ? `أهلاً بك. أنا المحاور النخبة الخاص بك اليوم لمجال ${domain}. لقد راجعتُ ملفك بعناية، وسأقوم الآن باختبار حدود قدراتك الاحترافية والتقنية. هل أنت مستعد للبدء بأول تحدٍّ؟`
-          : `Welcome. I am your elite interviewer for ${domain} today. I have carefully reviewed your background and will now test the boundaries of your professional and technical expertise. Are you ready for your first challenge?`,
+          ? `أهلاً بك. أنا هنا لدعمك كموجه في مجال ${domain}. سنبدأ ببعض الأساسيات الجوهرية لنتأكد من قوة قواعدك، ثم نتدرج معاً بلطف. إذا واجهت أي صعوبة أو أردت معرفة إجابة سؤال، لا تتردد في طلب ذلك. هل نبدأ بأول خطوة؟`
+          : `Welcome. I am here to support you as a mentor in ${domain}. We will start with some core fundamentals to ensure your foundation is strong, then progress gently together. If you encounter any difficulty or want to know the answer to a question, don't hesitate to ask. Shall we take the first step?`,
       timestamp: new Date(),
     },
   ]);
@@ -209,7 +209,7 @@ export default function InterviewInterface({
           </div>
           <div>
             <h3 className="font-black text-sm md:text-lg uppercase tracking-tight truncate max-w-[150px] md:max-w-none">
-              {language === "ar" ? "مقابلة النخبة" : "Elite Interviewer"}
+              {language === "ar" ? "الموجه الذكي" : "AI Mentor"}
             </h3>
             <div className="flex items-center gap-2">
               <Badge
