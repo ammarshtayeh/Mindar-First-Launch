@@ -28,6 +28,7 @@ interface Message {
   content: string;
   timestamp: Date;
   type?: "question" | "feedback" | "diagram";
+  reasoning_details?: any; // Add this for OpenRouter reasoning support
 }
 
 export default function InterviewInterface({
@@ -84,7 +85,11 @@ export default function InterviewInterface({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query: userMsg.content,
-          history: messages.map((m) => ({ role: m.role, content: m.content })),
+          history: messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+            reasoning_details: m.reasoning_details, // Pass back to maintain context
+          })),
           domain,
           cvText,
           language: language === "ar" ? "ar" : "en",
@@ -102,6 +107,7 @@ export default function InterviewInterface({
         id: (Date.now() + 1).toString(),
         role: "ai",
         content: data.response,
+        reasoning_details: data.reasoning_details, // Store reasoning if provided
         timestamp: new Date(),
         type: data.response.includes("?") ? "question" : undefined,
       };
@@ -144,7 +150,11 @@ export default function InterviewInterface({
             language === "ar"
               ? "لقد انتهت المقابلة. قم بتحليل أدائي كمرشح بناءً على هذه المحادثة، وقدم لي تقريراً مختصراً يتضمن: 1. نقاط القوة، 2. نقاط الضعف، 3. الدرجة النهائية من 100."
               : "The interview is over. Analyze my performance as a candidate based on this conversation and provide a concise report including: 1. Strengths, 2. Areas for improvement, 3. Final score out of 100.",
-          history: messages.map((m) => ({ role: m.role, content: m.content })),
+          history: messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+            reasoning_details: m.reasoning_details,
+          })),
           domain,
           cvText,
           language: language === "ar" ? "ar" : "en",

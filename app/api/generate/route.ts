@@ -141,6 +141,14 @@ export async function POST(req: Request) {
     const groqKey = process.env.GROQ_API_KEY;
     const geminiApiKey = process.env.GEMINI_API_KEY;
     const aimlApiKey = process.env.AIML_API_KEY;
+    const openrouterApiKey = process.env.OPENROUTER_API_KEY;
+
+    // 0. Primary Choice: OpenRouter (if enabled)
+    if (openrouterApiKey) {
+      console.log("ROTATION: Trying OpenRouter (Arcee Trinity) as primary...");
+      const orResult = await tryOpenRouter(openrouterApiKey, prompt);
+      if (orResult) return orResult;
+    }
 
     if (useGeminiFirst) {
       console.log("ROTATION: Trying Gemini 2.0 Flash Lite first...");
@@ -238,6 +246,37 @@ export async function POST(req: Request) {
 
 // --- HELPER CONTEXT ---
 
+async function tryOpenRouter(apiKey: string, prompt: string) {
+  const models = [
+    { id: "openai/gpt-oss-120b:free", name: "GPT-OSS-120B" },
+    { id: "liquid/lfm-2.5-1.2b-thinking:free", name: "Liquid LFM" },
+  ];
+
+  for (const model of models) {
+    try {
+      console.log(`ROTATION: Trying OpenRouter (${model.name})...`);
+      const { openrouter } = await import("@/lib/openrouter");
+      const completion = await openrouter.chat.completions.create({
+        model: model.id,
+        messages: [{ role: "user", content: prompt + "\n\nRETURN ONLY JSON" }],
+        // @ts-ignore
+        reasoning: { enabled: true },
+      });
+
+      const content = completion.choices[0]?.message?.content || "{}";
+      const quizData = parseAndVerifyQuiz(content);
+      return NextResponse.json({
+        ...quizData,
+        _provider: `openrouter:${model.name}`,
+      });
+    } catch (e: any) {
+      console.warn(`OpenRouter (${model.name}) attempt failed:`, e.message);
+      continue;
+    }
+  }
+  return null;
+}
+
 async function tryGroq(apiKey: string | undefined, prompt: string) {
   if (!apiKey) return null;
   try {
@@ -331,7 +370,7 @@ function parseAndVerifyQuiz(responseText: string) {
         // Normalize options and answer for Arabic consistency
         q.options = q.options.map((opt: string) => normalizeArabic(opt));
         q.answer = normalizeArabic(q.answer);
-        
+
         const exactMatch = q.options.find((opt: string) => opt === q.answer);
         if (!exactMatch) {
           const looseMatch = q.options.find(

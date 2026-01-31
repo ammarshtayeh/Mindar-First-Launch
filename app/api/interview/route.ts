@@ -67,67 +67,123 @@ export async function POST(req: Request) {
     const standardizedHistory = history.map((h: any) => ({
       role: h.role === "ai" ? "assistant" : h.role,
       content: h.content,
+      // Pass reasoning_details back to OpenRouter if they exist
+      ...(h.reasoning_details && { reasoning_details: h.reasoning_details }),
     }));
 
-    // Try Gemini first (Best for nuanced persona)
-    if (geminiApiKey) {
+    // Refine system prompt to encourage reasoning usage if model supports it
+    const refinedSystemPrompt = `
+      ${systemPrompt}
+      
+      SPECIAL INSTRUCTION FOR REASONING MODELS:
+      - Leverage your internal reasoning capabilities to deeply analyze the candidate's responses.
+      - Think about the technical nuances, the "why" behind their answers, and follow up with probing questions that test the boundaries of their knowledge.
+      - Your goal is to be the MOST SOPHISTICATED interviewer they have ever encountered.
+    `;
+
+    // 1. OpenRouter Models (Priority reasoning Support)
+    const openrouterApiKey = process.env.OPENROUTER_API_KEY;
+    if (openrouterApiKey) {
       const models = [
-        "gemini-2.0-flash-lite-preview-02-05",
-        "gemini-1.5-flash",
+        { id: "openai/gpt-oss-120b:free", name: "GPT-OSS-120B" },
+        { id: "liquid/lfm-2.5-1.2b-thinking:free", name: "Liquid LFM" },
       ];
-      for (const modelId of models) {
+
+      for (const model of models) {
         try {
-          console.log(`INTERVIEW: Trying Gemini ${modelId}...`);
-          const genAI = new GoogleGenerativeAI(geminiApiKey);
-          const model = genAI.getGenerativeModel({
-            model: modelId,
+          console.log(`INTERVIEW: Trying OpenRouter (${model.name})...`);
+          const { openrouter } = await import("@/lib/openrouter");
+          const completion = await openrouter.chat.completions.create({
+            model: model.id,
+            messages: [
+              { role: "system", content: refinedSystemPrompt },
+              ...standardizedHistory,
+              { role: "user", content: query },
+            ] as any,
+            // @ts-ignore
+            reasoning: { enabled: true },
           });
 
-          const result = await model.generateContent([
-            systemPrompt,
-            ...standardizedHistory.map((h: any) => h.content),
-            query,
-          ]);
-
-          const response = await result.response;
-          return NextResponse.json({ response: response.text() });
+          const choice = completion.choices[0] as any;
+          if (choice?.message?.content) {
+            return NextResponse.json({
+              response: choice.message.content,
+              reasoning_details: choice.message.reasoning_details,
+              _provider: `openrouter:${model.name}`,
+            });
+          }
         } catch (e: any) {
-          console.error(`Gemini (${modelId}) Error:`, e.message);
+          console.warn(`OpenRouter (${model.name}) attempt failed:`, e.message);
+          continue; // Try next model in chain
         }
       }
     }
 
-    // Fallback to Groq (Fast & reliable)
+    // 2. Gemini Fallback
+    if (geminiApiKey) {
+      try {
+        console.log("INTERVIEW: Trying Gemini Fallback...");
+        const genAI = new GoogleGenerativeAI(geminiApiKey);
+        const model = genAI.getGenerativeModel({
+          model: "gemini-2.0-flash-lite-preview-02-05",
+        });
+        const result = await model.generateContent([
+          refinedSystemPrompt,
+          ...standardizedHistory.map((h: any) => h.content),
+          query,
+        ]);
+        const responseText = result.response?.text();
+        if (responseText) {
+          return NextResponse.json({
+            response: responseText,
+            _provider: "gemini",
+          });
+        }
+      } catch (e: any) {
+        console.warn("Gemini interview fallback failed:", e.message);
+      }
+    }
+
+    // 3. Groq Fallback
     if (groqKey) {
       try {
         console.log("INTERVIEW: Trying Groq Fallback...");
         const groq = new Groq({ apiKey: groqKey });
         const completion = await groq.chat.completions.create({
           messages: [
-            { role: "system", content: systemPrompt },
+            { role: "system", content: refinedSystemPrompt },
             ...standardizedHistory,
             { role: "user", content: query },
           ] as any,
           model: "llama-3.3-70b-versatile",
           temperature: 0.7,
         });
-        return NextResponse.json({
-          response: completion.choices[0].message.content,
-        });
+
+        const content = completion.choices[0]?.message?.content;
+        if (content) {
+          return NextResponse.json({
+            response: content,
+            _provider: "groq",
+          });
+        }
       } catch (e: any) {
-        console.error("Groq Interview Error:", e.message);
+        console.warn("Groq interview fallback failed:", e.message);
       }
     }
 
+    // All failed
     return NextResponse.json(
       {
         error:
           "جميع مزودي الذكاء الاصطناعي فشلوا في الرد. تأكد من إعدادات الـ API Key.",
       },
-      { status: 500 },
+      { status: 503 },
     );
   } catch (error: any) {
-    console.error("Interview Route Critical Error:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Interview API Fatal Error:", error);
+    return NextResponse.json(
+      { error: "خطأ في الاتصال بالخدمة", details: error.message },
+      { status: 500 },
+    );
   }
 }
