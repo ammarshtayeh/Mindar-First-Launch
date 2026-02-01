@@ -249,7 +249,7 @@ export default function ChallengeCreatePage() {
           </h1>
           <p className="text-xl text-slate-500 dark:text-slate-400 font-bold max-w-2xl mx-auto">
             ارفع ملفاتك، اعمل امتحان، وابعث الرابط لصاحبك.. خلينا نشوف مين فيكم
-            "شطّور" ومين "تيرشرش"! 😉
+            "شطّور" ومين "لسا مش دارس"! 😉
           </p>
         </motion.div>
 
