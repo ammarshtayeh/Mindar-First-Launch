@@ -1,19 +1,22 @@
-import { Timeline } from '@/components/about/Timeline';
-import { VennDiagram } from '@/components/about/VennDiagram';
-import { CoreProcessor } from '@/components/about/CoreProcessor';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import { Timeline } from "@/components/about/Timeline";
+import { VennDiagram } from "@/components/about/VennDiagram";
+import { CoreProcessor } from "@/components/about/CoreProcessor";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function AboutPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-200 overflow-x-hidden">
-        {/* Navigation */}
-        <nav className="p-6">
-            <Link href="/hub" className="inline-flex items-center text-slate-400 hover:text-white transition-colors">
-                <ArrowLeft className="w-5 h-5 mr-2" />
-                العودة للرئيسية
-            </Link>
-        </nav>
+      {/* Navigation */}
+      <nav className="p-6">
+        <Link
+          href="/hub"
+          className="inline-flex items-center text-slate-400 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 mr-2" />
+          العودة للرئيسية
+        </Link>
+      </nav>
 
       {/* Hero Section */}
       <section className="relative py-20 text-center px-4">
@@ -22,7 +25,8 @@ export default function AboutPage() {
           قصة Mindar
         </h1>
         <p className="relative text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-          كيف تحولت الخبرات المتراكمة في الهندسة، القيادة، والريادة إلى منصة ذكية تخدم الجميع.
+          كيف تحولت الخبرات المتراكمة في التكنولوجيا، القيادة، والريادة إلى منصة
+          ذكية تخدم الجميع.
         </p>
       </section>
 
@@ -43,9 +47,11 @@ export default function AboutPage() {
 
       {/* Footer / CTA */}
       <section className="py-24 text-center px-4">
-        <h2 className="text-3xl font-bold text-white mb-8">هل أنت مستعد لتجربة النتيجة؟</h2>
-        <Link 
-          href="/hub" 
+        <h2 className="text-3xl font-bold text-white mb-8">
+          هل أنت مستعد لتجربة النتيجة؟
+        </h2>
+        <Link
+          href="/hub"
           className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-full hover:shadow-lg hover:shadow-purple-500/25 transition-all transform hover:-translate-y-1"
         >
           ابدأ رحلتك مع Mindar

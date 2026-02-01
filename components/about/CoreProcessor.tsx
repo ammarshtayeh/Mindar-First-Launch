@@ -67,7 +67,7 @@ export function CoreProcessor() {
         {/* Labels */}
         <Label x="10%" y="10%" text="علم حاسوب في سوق العمل" color="text-blue-400" align="left" />
         <Label x="90%" y="10%" text="قادة الـ AI" color="text-purple-400" align="right" />
-        <Label x="10%" y="90%" text="منسق الكلية" color="text-green-400" align="left" />
+        <Label x="10%" y="90%" text="ممثل الكلية" color="text-green-400" align="left" />
         <Label x="90%" y="90%" text="الريادة" color="text-yellow-400" align="right" />
       </div>
     </div>
