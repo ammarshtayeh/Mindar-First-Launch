@@ -27,7 +27,13 @@ import {
   Compass,
   Code as CodeIcon,
   Library as LibraryIcon,
+  GraduationCap,
+  School,
 } from "lucide-react";
+import {
+  setStoredLearningMode,
+  type LearningMode,
+} from "@/lib/learning-mode";
 import { AnimatePresence } from "framer-motion";
 import { MotivationalBanner } from "@/components/motivational-banner";
 import { AdPlaceholder } from "@/components/ads/AdPlaceholder";
@@ -97,6 +103,10 @@ export default function Home() {
       setDeferredPrompt(null);
     }
   };
+
+  const startPath = (mode: LearningMode) => {
+    setStoredLearningMode(mode);
+  };
   const container: Variants = {
     hidden: { opacity: 0 },
     show: {
@@ -163,14 +173,46 @@ export default function Home() {
 
         <motion.div
           variants={item}
-          className="flex flex-col sm:flex-row gap-6 mt-4"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl mt-2"
+        >
+          <Link href="/hub" onClick={() => startPath("catchup")} className="group">
+            <div className="h-full rounded-3xl border border-primary/25 bg-background/70 backdrop-blur-xl p-6 text-start transition-all hover:border-primary hover:shadow-xl">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-3 rounded-2xl bg-primary/10 text-primary">
+                  <School className="w-6 h-6" />
+                </div>
+                <h2 className="text-xl font-black">{t("home.pathCatchupTitle")}</h2>
+              </div>
+              <p className="text-muted-foreground font-medium leading-relaxed">
+                {t("home.pathCatchupDesc")}
+              </p>
+            </div>
+          </Link>
+          <Link href="/hub" onClick={() => startPath("exam")} className="group">
+            <div className="h-full rounded-3xl border border-primary/25 bg-background/70 backdrop-blur-xl p-6 text-start transition-all hover:border-primary hover:shadow-xl">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-3 rounded-2xl bg-primary/10 text-primary">
+                  <GraduationCap className="w-6 h-6" />
+                </div>
+                <h2 className="text-xl font-black">{t("home.pathExamTitle")}</h2>
+              </div>
+              <p className="text-muted-foreground font-medium leading-relaxed">
+                {t("home.pathExamDesc")}
+              </p>
+            </div>
+          </Link>
+        </motion.div>
+
+        <motion.div
+          variants={item}
+          className="flex flex-col sm:flex-row gap-6 mt-2"
         >
           <Link href="/hub">
             <Button
               size="lg"
-              className="h-20 px-12 text-2xl font-black rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-xl"
+              className="h-16 px-10 text-xl font-black rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-xl"
             >
-              {t("common.getStarted")} <Upload className="ml-3 w-6 h-6" />
+              {t("home.pathContinue")} <Upload className="ml-3 w-5 h-5" />
             </Button>
           </Link>
           <FeaturesModal
@@ -178,9 +220,9 @@ export default function Home() {
               <Button
                 variant="outline"
                 size="lg"
-                className="h-20 px-12 text-2xl font-black rounded-2xl border-2 border-primary bg-background/80 text-primary hover:bg-primary hover:text-primary-foreground backdrop-blur-md shadow-lg transition-all"
+                className="h-16 px-10 text-xl font-black rounded-2xl border-2 border-primary bg-background/80 text-primary hover:bg-primary hover:text-primary-foreground backdrop-blur-md shadow-lg transition-all"
               >
-                <Sparkles className="mr-3 w-6 h-6 fill-current" />{" "}
+                <Sparkles className="mr-3 w-5 h-5 fill-current" />{" "}
                 {t("common.ourFeatures")}
               </Button>
             }

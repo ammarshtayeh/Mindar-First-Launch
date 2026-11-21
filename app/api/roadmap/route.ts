@@ -50,8 +50,9 @@ export async function POST(req: Request) {
     // 1. OpenRouter Models (Priority reasoning Support)
     if (openrouterApiKey) {
       const models = [
-        { id: "openai/gpt-oss-120b:free", name: "GPT-OSS-120B" },
-        { id: "liquid/lfm-2.5-1.2b-thinking:free", name: "Liquid LFM" },
+        { id: "google/gemma-2-9b-it:free", name: "Gemma 2 9B" },
+        { id: "mistralai/mistral-7b-instruct:free", name: "Mistral 7B" },
+        { id: "meta-llama/llama-3.3-70b-instruct:free", name: "Llama 3.3 70B" },
       ];
 
       for (const model of models) {
@@ -88,7 +89,7 @@ export async function POST(req: Request) {
         console.log("ROADMAP: Trying Gemini Fallback...");
         const genAI = new GoogleGenerativeAI(geminiApiKey);
         const model = genAI.getGenerativeModel({
-          model: "gemini-2.0-flash-lite-preview-02-05",
+          model: "gemini-3.8-flash",
         });
         const result = await model.generateContent(prompt);
         const responseText = result.response.text();
@@ -113,7 +114,7 @@ export async function POST(req: Request) {
         const groq = new Groq({ apiKey: groqKey });
         const completion = await groq.chat.completions.create({
           messages: [{ role: "user", content: prompt }],
-          model: "llama-3.3-70b-versatile",
+          model: "openai/gpt-oss-120b",
         });
 
         const content = completion.choices[0]?.message?.content;

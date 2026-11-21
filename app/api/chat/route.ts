@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Groq from "groq-sdk";
+import {
+  GEMINI_MODELS,
+  GROQ_MODELS,
+  OPENROUTER_PRIORITY_MODELS,
+} from "@/lib/ai/models";
 
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
@@ -40,24 +45,72 @@ export async function POST(req: Request) {
     const groqKey = process.env.GROQ_API_KEY;
     const openrouterApiKey = process.env.OPENROUTER_API_KEY;
 
-    // --- AI STRATEGY (FALLBACK CHAIN) ---
+    if (geminiApiKey) {
+      for (const modelId of [
+        GEMINI_MODELS.primary,
+        GEMINI_MODELS.lite,
+        GEMINI_MODELS.fallback,
+      ]) {
+        try {
+          console.log(`CHAT: Trying Gemini ${modelId}...`);
+          const genAI = new GoogleGenerativeAI(geminiApiKey);
+          const model = genAI.getGenerativeModel({ model: modelId });
+          const result = await model.generateContent([
+            systemPrompt,
+            ...history.map((h: any) => h.content),
+            query,
+          ]);
+          const responseText = result.response.text();
+          if (responseText) {
+            return NextResponse.json({
+              response: responseText,
+              _provider: "gemini",
+              _model: modelId,
+            });
+          }
+        } catch (e: any) {
+          console.warn(`Gemini chat ${modelId} failed:`, e.message);
+        }
+      }
+    }
 
-    // 1. OpenRouter Models (Priority reasoning Support)
+    if (groqKey) {
+      const groq = new Groq({ apiKey: groqKey });
+      for (const modelId of [
+        GROQ_MODELS.primary,
+        GROQ_MODELS.fast,
+        GROQ_MODELS.alt,
+      ]) {
+        try {
+          console.log(`CHAT: Trying Groq ${modelId}...`);
+          const completion = await groq.chat.completions.create({
+            messages: messages as any,
+            model: modelId,
+            temperature: 0.5,
+          });
+
+          const content = completion.choices[0]?.message?.content;
+          if (content) {
+            return NextResponse.json({
+              response: content,
+              _provider: "groq",
+              _model: modelId,
+            });
+          }
+        } catch (e: any) {
+          console.warn(`Groq chat ${modelId} failed:`, e.message);
+        }
+      }
+    }
+
     if (openrouterApiKey) {
-      const models = [
-        { id: "openai/gpt-oss-120b:free", name: "GPT-OSS-120B" },
-        { id: "liquid/lfm-2.5-1.2b-thinking:free", name: "Liquid LFM" },
-      ];
-
-      for (const model of models) {
+      for (const model of OPENROUTER_PRIORITY_MODELS.slice(0, 2)) {
         try {
           console.log(`CHAT: Trying OpenRouter (${model.name})...`);
           const { openrouter } = await import("@/lib/openrouter");
           const completion = await openrouter.chat.completions.create({
             model: model.id,
             messages: messages as any,
-            // @ts-ignore
-            reasoning: { enabled: true },
           });
 
           const content = completion.choices[0]?.message?.content;
@@ -71,60 +124,6 @@ export async function POST(req: Request) {
           console.warn(`OpenRouter Chat (${model.name}) failed:`, e.message);
           continue;
         }
-      }
-    }
-
-    // 2. Gemini Fallback
-    if (geminiApiKey) {
-      try {
-        console.log("CHAT: Trying Gemini Fallback...");
-        const genAI = new GoogleGenerativeAI(geminiApiKey);
-        const model = genAI.getGenerativeModel({
-          model: "gemini-2.0-flash-lite-preview-02-05",
-        });
-        const chat = model.startChat({
-          history: history.map((h: any) => ({
-            role: h.role === "user" ? "user" : "model",
-            parts: [{ text: h.content }],
-          })),
-        });
-        const result = await model.generateContent([
-          systemPrompt,
-          ...history.map((h: any) => h.content),
-          query,
-        ]);
-        const responseText = result.response.text();
-        if (responseText) {
-          return NextResponse.json({
-            response: responseText,
-            _provider: "gemini",
-          });
-        }
-      } catch (e: any) {
-        console.warn("Gemini chat fallback failed:", e.message);
-      }
-    }
-
-    // 3. Groq Fallback
-    if (groqKey) {
-      try {
-        console.log("CHAT: Trying Groq Fallback...");
-        const groq = new Groq({ apiKey: groqKey });
-        const completion = await groq.chat.completions.create({
-          messages: messages as any,
-          model: "llama-3.3-70b-versatile",
-          temperature: 0.5,
-        });
-
-        const content = completion.choices[0]?.message?.content;
-        if (content) {
-          return NextResponse.json({
-            response: content,
-            _provider: "groq",
-          });
-        }
-      } catch (e: any) {
-        console.warn("Groq chat fallback failed:", e.message);
       }
     }
 

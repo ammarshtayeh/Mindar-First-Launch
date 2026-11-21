@@ -163,10 +163,17 @@ export const translations = {
       },
     },
     home: {
-      badge: "Expertly crafted quizzes, lightning fast 🚀",
+      badge: "Supportive catch-up + exam prep on one engine",
       title: "MINDAR",
       subtitle:
-        "Why struggle with studying? Upload your slides and I'll generate the perfect questions in seconds!",
+        "One engine for school catch-up during irregular attendance, and university exam prep from your own materials.",
+      pathCatchupTitle: "Supportive Catch-up",
+      pathCatchupDesc:
+        "Missed lessons? Turn the class file into a short recovery quiz and close the gap fast.",
+      pathExamTitle: "University Exam Prep",
+      pathExamDesc:
+        "Upload lectures and generate deep practice, flashcards, and review paths before exams.",
+      pathContinue: "Or continue without choosing",
       feature1Title: "Smart Parsing",
       feature1Desc:
         "Upload PDF or PPTX and let our engine extract the genius within.",
@@ -213,6 +220,16 @@ export const translations = {
       interviewDesc: "Professional AI interview based on your CV and material.",
       mulakhasat: "Summaries",
       mulakhasatDesc: "Share & discover study summaries from peers.",
+      galaxy: "Knowledge Galaxy",
+      galaxyDesc: "Visualize concepts in a 3D interactive space galaxy.",
+      commons: "Mindar Commons",
+      commonsDesc: "Global hub for shared AI study materials.",
+      modeCatchup: "Catch-up mode",
+      modeExam: "Exam mode",
+      modeHint: "Active path from home. Switch anytime.",
+      reel: "Educational Reel",
+      reelDesc:
+        "30–60s Instagram-style summary that plays inside the app with voice.",
       featureComingSoon:
         "This feature will be ready for use very soon. Stay tuned! 🚀",
     },
@@ -268,6 +285,8 @@ export const translations = {
       listening: "Listening...",
       autoRead: "Auto Read",
       voiceInput: "Voice Input",
+      tapToHear: "Tap speaker to hear",
+
       returnToHub: "Return to Hub",
       bugHunt: "🐞 BUG HUNT: Find the error!",
       vocabEmpty: "No difficult words found here! You're a pro already. 🧠",
@@ -294,6 +313,13 @@ export const translations = {
       notAnswered: "Not answered",
       revengeRound: "Revenge Round: {title}",
       newBadges: "New Badges! 🎖️",
+      gapTitle: "Gap Report",
+      gapDesc:
+        "These topics need recovery practice before class or the exam.",
+      gapEmpty: "No major gaps detected. Keep this level!",
+      gapMastered: "Mastered {count} of {total} checked topics",
+      gapCatchupCta: "Start catch-up drill on weak topics",
+      gapExamCta: "Generate exam review on weak topics",
     },
     medic: {
       title: "Smart Medic 🩺",
@@ -532,10 +558,17 @@ export const translations = {
       },
     },
     home: {
-      badge: "اختبارات استثنائية، بلمح البصر 🚀",
+      badge: "تعليم مساند + مراجعة امتحانية على محرك واحد",
       title: "MINDAR",
       subtitle:
-        "لماذا تعاني في الدراسة؟ ارفع ملفاتك وسأقوم بإنشاء الأسئلة المثالية لك في ثوانٍ!",
+        "محرك واحد لتعويض فجوات المدارس عند عدم انتظام الدوام، ولمراجعة امتحانات الجامعة من مادتك نفسها.",
+      pathCatchupTitle: "تعليم مساند / تعويض فجوات",
+      pathCatchupDesc:
+        "فاتتك حصص؟ حوّل ملف الدرس إلى تدريب قصير وسدّ الفجوة بسرعة.",
+      pathExamTitle: "دراسة وامتحانات جامعية",
+      pathExamDesc:
+        "ارفع المحاضرات وولّد تدريباً أعمق وبطاقات ومسارات مراجعة قبل الامتحان.",
+      pathContinue: "أو تابع بدون اختيار",
       feature1Title: "تحليل ذكي",
       feature1Desc:
         "ارفع ملفات PDF أو PPTX وسيقوم محركنا باستخراج المادة العلمية بدقة.",
@@ -580,6 +613,17 @@ export const translations = {
         "مقابلات احترافية بالذكاء الاصطناعي بناءً على مادتك وسيرتك الذاتية.",
       mulakhasat: "الملخصات",
       mulakhasatDesc: "شارك واكتشف الملخصات الدراسية من زملائك.",
+      galaxy: "مجرة المعرفة",
+      galaxyDesc: "استكشف المفاهيم في فضاء تفاعلي ثلاثي الأبعاد.",
+      commons: "مستودع العقول",
+      commonsDesc: "المركز العالمي لمشاركة المواد الدراسية الذكية.",
+      modeCatchup: "وضع التعويض / المساند",
+      modeExam: "وضع الامتحانات",
+      modeHint: "المسار النشط من الصفحة الرئيسية. بدّله في أي وقت.",
+      reel: "ريل تعليمي",
+      reelDesc:
+        "ملخص عمودي 30–60 ثانية داخل الموقع مع صوت، بأسلوب ريلز انستغرام.",
+
       featureComingSoon:
         "هذه الميزة ستكون جاهزة للاستخدام قريباً جداً. يرجى البقاء على اطلاع! 🚀",
     },
@@ -635,6 +679,8 @@ export const translations = {
       listening: "جاري الاستماع...",
       autoRead: "القراءة التلقائية",
       voiceInput: "إدخال صوتي",
+      tapToHear: "اضغط السماعة لتسمع",
+
       returnToHub: "العودة للرئيسية",
       bugHunt: "🐞 تحدي: اكتشف الخطأ!",
       vocabEmpty:
@@ -662,6 +708,13 @@ export const translations = {
       notAnswered: "لم تتم الإجابة",
       revengeRound: "جولة المراجعة: {title}",
       newBadges: "أوسمة جديدة! 🎖️",
+      gapTitle: "تقرير الفجوة",
+      gapDesc:
+        "هذه المواضيع تحتاج تعويضاً سريعاً قبل العودة للصف أو قبل الامتحان.",
+      gapEmpty: "لا توجد فجوات كبيرة. حافظ على هذا المستوى!",
+      gapMastered: "أتقنت {count} من {total} مواضيع تم فحصها",
+      gapCatchupCta: "ابدأ تدريب تعويض على نقاط الضعف",
+      gapExamCta: "ولّد مراجعة امتحانية على نقاط الضعف",
     },
     medic: {
       title: "المسعف الذكي 🩺",

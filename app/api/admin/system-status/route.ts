@@ -38,7 +38,7 @@ export async function GET() {
     // 2. Connectivity checks and detailed quotas
     const apis = [
       {
-        name: "Gemini 1.5 Flash",
+        name: "Gemini 3.8 Flash",
         provider: "Google",
         limit: 1500,
         used: dailyUsage,
@@ -48,14 +48,14 @@ export async function GET() {
         cost: (dailyUsage * 0.0002).toFixed(4),
       },
       {
-        name: "Llama 3.3 70B",
+        name: "GPT-OSS 120B",
         provider: "Groq",
-        limit: 14400,
+        limit: 1000,
         used: Math.floor(dailyUsage * 0.4),
-        remaining: 14400 - Math.floor(dailyUsage * 0.4),
+        remaining: 1000 - Math.floor(dailyUsage * 0.4),
         status: process.env.GROQ_API_KEY ? "Online" : "Missing Key",
-        type: "RPM",
-        cost: 0, // Groq is currently free tier
+        type: "RPD",
+        cost: 0,
       },
       {
         name: "GPT-4o Mini",
@@ -66,6 +66,16 @@ export async function GET() {
         status: process.env.AIML_API_KEY ? "Online" : "Missing Key",
         type: "Tokens",
         cost: (Math.floor(dailyUsage * 0.1) * 0.00015).toFixed(4),
+      },
+      {
+        name: "OpenRouter Free Models",
+        provider: "OpenRouter",
+        limit: "Free Tier",
+        used: dailyUsage,
+        remaining: "N/A",
+        status: process.env.OPENROUTER_API_KEY ? "Online" : "Missing Key",
+        type: "Free",
+        cost: 0,
       },
     ];
 

@@ -146,7 +146,7 @@ async function performGeminiOCR(buffer: Buffer, mimeType: string): Promise<strin
     const base64Data = buffer.toString("base64");
     
     // Try models in rotation to balance load
-    const models = ["gemini-2.0-flash-lite-preview-02-05", "gemini-1.5-flash"];
+    const models = ["gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash-lite"];
     const useSecondModelFirst = Math.random() > 0.5;
     if (useSecondModelFirst) models.reverse();
 

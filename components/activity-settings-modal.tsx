@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -12,6 +12,10 @@ import {
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
+import {
+  applyLearningModeDefaults,
+  getStoredLearningMode,
+} from "@/lib/learning-mode";
 
 interface ActivitySettingsModalProps {
   isOpen: boolean;
@@ -28,7 +32,9 @@ interface ActivitySettingsModalProps {
     | "coding"
     | "mindmap"
     | "checklist"
-    | "rooms";
+    | "rooms"
+    | "galaxy"
+    | "commons";
 }
 
 export function ActivitySettingsModal({
@@ -46,6 +52,17 @@ export function ActivitySettingsModal({
     "multiple-choice",
     "true-false",
   ]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const mode = getStoredLearningMode();
+    const defaults = applyLearningModeDefaults({ mode });
+    setNumQuestions(defaults.numQuestions);
+    const d = String(defaults.difficulty).toLowerCase();
+    setDifficulty(
+      d === "easy" || d === "hard" || d === "medium" ? d : "medium",
+    );
+  }, [isOpen]);
 
   const toggleType = (id: string) => {
     setSelectedTypes((prev) =>

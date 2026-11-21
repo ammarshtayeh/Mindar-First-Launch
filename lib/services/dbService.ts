@@ -80,6 +80,9 @@ export interface StudyMaterial {
   fileUrl?: string;
   folderId: string | null;
   tags: string[];
+  isPublic?: boolean;
+  userName?: string;
+  category?: string;
   createdAt: any;
   lastUsed: any;
 }
@@ -478,6 +481,27 @@ export const updateStudyMaterial = async (
   }
 };
 
+export const getPublicMaterials = async (
+  limitCount: number = 20,
+): Promise<StudyMaterial[]> => {
+  try {
+    const materialsRef = collection(db, "materials");
+    const q = query(
+      materialsRef,
+      where("isPublic", "==", true),
+      orderBy("lastUsed", "desc"),
+      limit(limitCount),
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(
+      (doc) => ({ id: doc.id, ...doc.data() }) as StudyMaterial,
+    );
+  } catch (error) {
+    console.error("Error fetching public materials:", error);
+    return [];
+  }
+};
+
 // --- System Configuration Service ---
 
 export interface SystemFeatures {
@@ -492,6 +516,9 @@ export interface SystemFeatures {
   roadmap: boolean;
   rooms: boolean;
   interview: boolean;
+  galaxy: boolean;
+  commons: boolean;
+  reel: boolean;
 }
 
 const DEFAULT_FEATURES: SystemFeatures = {
@@ -506,6 +533,9 @@ const DEFAULT_FEATURES: SystemFeatures = {
   roadmap: true,
   rooms: true,
   interview: true,
+  galaxy: true,
+  commons: true,
+  reel: true,
 };
 
 export const getSystemConfig = async (): Promise<SystemFeatures | null> => {

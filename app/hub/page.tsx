@@ -24,7 +24,18 @@ import {
   Map as MapIcon,
   Microscope,
   Users,
+  Orbit,
+  Globe,
+  Share2,
+  School,
+  GraduationCap,
+  Clapperboard,
 } from "lucide-react";
+import {
+  getStoredLearningMode,
+  setStoredLearningMode,
+  type LearningMode,
+} from "@/lib/learning-mode";
 import { ChatPanel } from "@/components/ChatPanel";
 import { RoadmapView } from "@/components/RoadmapView";
 import { MasteryHeatmap } from "@/components/MasteryHeatmap";
@@ -82,7 +93,9 @@ export default function StudyHub() {
       | "coding"
       | "mindmap"
       | "checklist"
-      | "rooms";
+      | "rooms"
+      | "galaxy"
+      | "commons";
   }>({
     open: false,
     type: "quiz",
@@ -95,6 +108,11 @@ export default function StudyHub() {
   const [roadmap, setRoadmap] = useState<any[] | null>(null);
   const { toast } = useToast();
   const [featureFlags, setFeatureFlags] = useState<SystemFeatures | null>(null);
+  const [learningMode, setLearningMode] = useState<LearningMode>("exam");
+
+  useEffect(() => {
+    setLearningMode(getStoredLearningMode());
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onSystemConfig((flags: SystemFeatures) => {
@@ -102,6 +120,11 @@ export default function StudyHub() {
     });
     return () => unsubscribe();
   }, []);
+
+  const switchLearningMode = (mode: LearningMode) => {
+    setStoredLearningMode(mode);
+    setLearningMode(mode);
+  };
 
   const loadingMessages =
     language === "ar"
@@ -221,7 +244,10 @@ export default function StudyHub() {
       | "ask"
       | "roadmap"
       | "rooms"
-      | "interview",
+      | "interview"
+      | "galaxy"
+      | "commons"
+      | "reel",
   ) => {
     if (type === "roadmap") {
       generateRoadmap();
@@ -250,6 +276,21 @@ export default function StudyHub() {
 
     if (type === "interview") {
       router.push("/interview");
+      return;
+    }
+
+    if (type === "galaxy") {
+      router.push("/hub/galaxy");
+      return;
+    }
+
+    if (type === "reel") {
+      router.push("/hub/reel");
+      return;
+    }
+
+    if (type === "commons") {
+      router.push("/commons");
       return;
     }
 
@@ -305,6 +346,7 @@ export default function StudyHub() {
     localStorage.removeItem("hub_source_text");
     localStorage.removeItem("lastQuizResults");
     localStorage.removeItem("challengeQuiz");
+    localStorage.removeItem("mindar_last_reel");
     if (user) sessionStorage.removeItem(`logged_study_${user.uid}`);
   };
 
@@ -385,6 +427,24 @@ export default function StudyHub() {
         body: JSON.stringify({
           text: extractedText, // STRICT: Only use currently extracted text, never fall back to old quizData
           ...settings,
+          mode:
+            typeof window !== "undefined"
+              ? localStorage.getItem("mindar_learning_mode") || "exam"
+              : "exam",
+          focusTopics:
+            typeof window !== "undefined"
+              ? (() => {
+                  try {
+                    const raw = localStorage.getItem("mindar_gap_focus_topics");
+                    const parsed = raw ? JSON.parse(raw) : [];
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                      localStorage.removeItem("mindar_gap_focus_topics");
+                      return parsed;
+                    }
+                  } catch {}
+                  return [];
+                })()
+              : [],
           types:
             settingsModal.type === "coding"
               ? ["coding"]
@@ -443,8 +503,66 @@ export default function StudyHub() {
         trackQuizStart(data.title || "New Quiz");
       if (settingsModal.type === "flashcards") trackFlashcardView();
       if (settingsModal.type === "coding") trackQuizStart("Coding Challenge"); // Use existing track function or new one
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      toast({
+        type: "error",
+        message:
+          language === "ar" ? "فشل التوليد" : "Generation failed",
+        description:
+          err?.message ||
+          (language === "ar"
+            ? "حاول مرة أخرى بعد لحظات"
+            : "Please try again in a moment"),
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!user || !extractedText) return;
+
+    try {
+      setIsGenerating(true);
+      const { updateStudyMaterial, saveStudyMaterial } =
+        await import("@/lib/services/dbService");
+
+      const materialId = quizData?.id;
+      const title = quizData?.title || "Shared Material";
+
+      const dataToSave = {
+        userId: user.uid,
+        userName: user.displayName || user.email?.split("@")[0] || "Student",
+        title: title,
+        extractedText: extractedText,
+        isPublic: true,
+        category: "Community Shared",
+        tags: ["commons"],
+        folderId: null,
+      };
+
+      if (materialId) {
+        await updateStudyMaterial(materialId, dataToSave);
+      } else {
+        await saveStudyMaterial(dataToSave);
+      }
+
+      toast({
+        type: "success",
+        message:
+          language === "ar"
+            ? "تم النشر في مستودع العقول! 🌍"
+            : "Published to Mindar Commons! 🌍",
+        description:
+          language === "ar"
+            ? "مادتك التعليمية متاحة الآن للجميع."
+            : "Your material is now available to the community.",
+      });
+
+      router.push("/commons");
+    } catch (err: any) {
+      toast({ type: "error", message: err.message });
     } finally {
       setIsGenerating(false);
     }
@@ -550,6 +668,33 @@ export default function StudyHub() {
       badgeKey: "LIVE",
       isComingSoon: false,
     },
+    {
+      key: "hub.galaxy",
+      descKey: "hub.galaxyDesc",
+      icon: Orbit,
+      color: "from-indigo-900 via-purple-900 to-black",
+      type: "galaxy" as const,
+      badgeKey: "NEW",
+      isComingSoon: false,
+    },
+    {
+      key: "hub.reel",
+      descKey: "hub.reelDesc",
+      icon: Clapperboard,
+      color: "from-rose-600 via-orange-500 to-amber-400",
+      type: "reel" as const,
+      badgeKey: "REEL",
+      isComingSoon: false,
+    },
+    {
+      key: "hub.commons",
+      descKey: "hub.commonsDesc",
+      icon: Globe,
+      color: "from-emerald-500 to-teal-600",
+      type: "commons" as const,
+      badgeKey: "COMMUNITY",
+      isComingSoon: false,
+    },
   ];
 
   return (
@@ -584,6 +729,35 @@ export default function StudyHub() {
                   </span>
                 </div>
               )}
+
+              <div className="flex items-center gap-2 bg-card/80 border border-border px-2 py-1.5 rounded-full">
+                <button
+                  type="button"
+                  onClick={() => switchLearningMode("catchup")}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black transition-all",
+                    learningMode === "catchup"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <School className="w-3.5 h-3.5" />
+                  {t("hub.modeCatchup")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => switchLearningMode("exam")}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black transition-all",
+                    learningMode === "exam"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <GraduationCap className="w-3.5 h-3.5" />
+                  {t("hub.modeExam")}
+                </button>
+              </div>
             </motion.div>
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -619,16 +793,29 @@ export default function StudyHub() {
           </div>
 
           {isMounted && quizData && (
-            <Button
-              variant="outline"
-              onClick={handleClear}
-              className="h-14 px-8 rounded-2xl border-2 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all gap-2 font-black"
-            >
-              <Trash2 className="w-5 h-5" />
-              <span>
-                {language === "ar" ? "تغيير المادة" : "Change Material"}
-              </span>
-            </Button>
+            <div className="flex gap-4">
+              <Button
+                variant="outline"
+                onClick={handlePublish}
+                disabled={isGenerating}
+                className="h-14 px-8 rounded-2xl border-2 border-emerald-500/20 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all gap-2 font-black"
+              >
+                <Share2 className="w-5 h-5" />
+                <span>
+                  {language === "ar" ? "نشر للجميع" : "Publish to Commons"}
+                </span>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleClear}
+                className="h-14 px-8 rounded-2xl border-2 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all gap-2 font-black"
+              >
+                <Trash2 className="w-5 h-5" />
+                <span>
+                  {language === "ar" ? "تغيير المادة" : "Change Material"}
+                </span>
+              </Button>
+            </div>
           )}
         </div>
 

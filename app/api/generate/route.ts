@@ -2,6 +2,16 @@ import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Groq from "groq-sdk";
 import { normalizeArabic } from "@/lib/text-normalizer";
+import {
+  GEMINI_FALLBACK_CHAIN,
+  GEMINI_MODELS,
+  GROQ_MODELS,
+  OPENROUTER_PRIORITY_MODELS,
+} from "@/lib/ai/models";
+import {
+  applyLearningModeDefaults,
+  learningModePromptBlock,
+} from "@/lib/learning-mode";
 
 export const maxDuration = 60; // Allow up to 60 seconds for AI generation (Vercel limit)
 export const dynamic = "force-dynamic";
@@ -16,10 +26,23 @@ export async function POST(req: Request) {
       type = "multiple-choice",
       language: requestedLang,
       topic: requestedTopic,
+      mode: requestedMode,
+      focusTopics: requestedFocusTopics = [],
     } = body;
 
-    // Enforce limit: 1-20 questions
-    numQuestions = Math.max(1, Math.min(20, numQuestions));
+    const modeDefaults = applyLearningModeDefaults({
+      mode: requestedMode,
+      numQuestions,
+      difficulty,
+    });
+    numQuestions = modeDefaults.numQuestions;
+    difficulty = modeDefaults.difficulty;
+    const learningMode = modeDefaults.mode;
+    const focusTopics = Array.isArray(requestedFocusTopics)
+      ? requestedFocusTopics.filter(
+          (t: unknown) => typeof t === "string" && String(t).trim().length > 0,
+        )
+      : [];
 
     // Default to detecting language from text if not specific
     const language = requestedLang || "SAME AS SOURCE TEXT";
@@ -105,6 +128,7 @@ export async function POST(req: Request) {
             - Target Language: ${requestedLang || "SAME AS SOURCE TEXT"}
             - Difficulty: ${difficulty}.
             - Topic: ${topic}.
+            ${learningModePromptBlock(learningMode, language, focusTopics)}
             
             Text: ${text.substring(0, 60000)}
             
@@ -136,67 +160,41 @@ export async function POST(req: Request) {
             }
         `;
 
-    // --- DUAL-MODEL ROTATION STRATEGY ---
-    const useGeminiFirst = Math.random() > 0.5;
+    // --- RELIABLE ROTATION: Gemini → Groq → AIML → OpenRouter ---
     const groqKey = process.env.GROQ_API_KEY;
     const geminiApiKey = process.env.GEMINI_API_KEY;
     const aimlApiKey = process.env.AIML_API_KEY;
     const openrouterApiKey = process.env.OPENROUTER_API_KEY;
 
-    // 0. Primary Choice: OpenRouter (if enabled)
-    if (openrouterApiKey) {
-      console.log("ROTATION: Trying OpenRouter (Arcee Trinity) as primary...");
-      const orResult = await tryOpenRouter(openrouterApiKey, prompt);
-      if (orResult) return orResult;
-    }
+    console.log(`ROTATION: Trying Gemini ${GEMINI_MODELS.primary} first...`);
+    const geminiResult = await tryGemini(
+      geminiApiKey,
+      GEMINI_MODELS.primary,
+      prompt,
+    );
+    if (geminiResult) return await withMode(geminiResult, learningMode);
 
-    if (useGeminiFirst) {
-      console.log("ROTATION: Trying Gemini 2.0 Flash Lite first...");
-      const geminiResult = await tryGemini(
-        geminiApiKey,
-        "gemini-2.0-flash-lite-preview-02-05",
-        prompt,
-      );
-      if (geminiResult) return geminiResult;
+    console.log("ROTATION: Gemini failed, trying Groq fallback...");
+    const groqResult = await tryGroq(groqKey, prompt);
+    if (groqResult) return await withMode(groqResult, learningMode);
 
-      console.log("ROTATION: Gemini failed, trying Groq fallback...");
-      const groqResult = await tryGroq(groqKey, prompt);
-      if (groqResult) return groqResult;
-    } else {
-      console.log("ROTATION: Trying Groq first...");
-      const groqResult = await tryGroq(groqKey, prompt);
-      if (groqResult) return groqResult;
-
-      console.log(
-        "ROTATION: Groq failed, trying Gemini 2.0 Flash Lite fallback...",
-      );
-      const geminiResult = await tryGemini(
-        geminiApiKey,
-        "gemini-2.0-flash-lite-preview-02-05",
-        prompt,
-      );
-      if (geminiResult) return geminiResult;
-    }
-
-    // --- THIRD LAYER FALLBACK: AIML API ---
     if (aimlApiKey) {
-      console.log("ALL PRIMARY FAILED. Trying AIML API Fallback...");
+      console.log("ROTATION: Trying AIML API Fallback...");
       const aimlResult = await tryAimlApi(aimlApiKey, prompt);
-      if (aimlResult) return aimlResult;
+      if (aimlResult) return await withMode(aimlResult, learningMode);
+    }
+
+    if (openrouterApiKey) {
+      console.log("ROTATION: Trying OpenRouter as last resort...");
+      const orResult = await tryOpenRouter(prompt);
+      if (orResult) return await withMode(orResult, learningMode);
     }
 
     // --- DEEP FALLBACK CHAIN (If both primary models fail) ---
-    const configs = [
-      { id: "gemini-2.0-flash-lite-preview-02-05", version: "v1beta" },
-      { id: "gemini-1.5-flash", version: "v1beta" },
-      { id: "gemini-1.5-flash-8b", version: "v1beta" },
-      { id: "gemini-2.0-flash", version: "v1beta" },
-    ];
-
     let lastError: any = null;
     if (geminiApiKey) {
       const genAI = new GoogleGenerativeAI(geminiApiKey);
-      for (const config of configs) {
+      for (const config of GEMINI_FALLBACK_CHAIN) {
         try {
           const model = genAI.getGenerativeModel(
             { model: config.id, generationConfig: { temperature: 0.3 } },
@@ -209,6 +207,7 @@ export async function POST(req: Request) {
             ...quizData,
             _provider: "gemini_fallback",
             _model: config.id,
+            _learningMode: learningMode,
           });
         } catch (err: any) {
           console.warn(`DEEP FALLBACK FAILED: ${config.id}`, err.message);
@@ -246,24 +245,41 @@ export async function POST(req: Request) {
 
 // --- HELPER CONTEXT ---
 
-async function tryOpenRouter(apiKey: string, prompt: string) {
-  const models = [
-    { id: "openai/gpt-oss-120b:free", name: "GPT-OSS-120B" },
-    { id: "liquid/lfm-2.5-1.2b-thinking:free", name: "Liquid LFM" },
-  ];
+async function withMode(response: NextResponse, learningMode: string) {
+  const data = await response.json();
+  return NextResponse.json({ ...data, _learningMode: learningMode });
+}
 
-  for (const model of models) {
+async function tryOpenRouter(prompt: string) {
+  // Keep OpenRouter short — free models can hang and burn Vercel time.
+  for (const model of OPENROUTER_PRIORITY_MODELS.slice(0, 2)) {
     try {
       console.log(`ROTATION: Trying OpenRouter (${model.name})...`);
-      const { openrouter } = await import("@/lib/openrouter");
-      const completion = await openrouter.chat.completions.create({
-        model: model.id,
-        messages: [{ role: "user", content: prompt + "\n\nRETURN ONLY JSON" }],
-        // @ts-ignore
-        reasoning: { enabled: true },
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 12000);
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://mindar.tech",
+          "X-Title": "Mindar",
+        },
+        body: JSON.stringify({
+          model: model.id,
+          messages: [
+            { role: "user", content: prompt + "\n\nRETURN ONLY JSON" },
+          ],
+        }),
+        signal: controller.signal,
       });
-
-      const content = completion.choices[0]?.message?.content || "{}";
+      clearTimeout(timer);
+      if (!res.ok) {
+        console.warn(`OpenRouter (${model.name}) HTTP ${res.status}`);
+        continue;
+      }
+      const completion = await res.json();
+      const content = completion.choices?.[0]?.message?.content || "{}";
       const quizData = parseAndVerifyQuiz(content);
       return NextResponse.json({
         ...quizData,
@@ -279,20 +295,32 @@ async function tryOpenRouter(apiKey: string, prompt: string) {
 
 async function tryGroq(apiKey: string | undefined, prompt: string) {
   if (!apiKey) return null;
-  try {
-    const groq = new Groq({ apiKey });
-    const completion = await groq.chat.completions.create({
-      messages: [{ role: "user", content: prompt + "\n\nRETURN ONLY JSON" }],
-      model: "llama-3.3-70b-versatile",
-      temperature: 0.3,
-      response_format: { type: "json_object" },
-    });
-    const data = JSON.parse(completion.choices[0].message.content || "{}");
-    return NextResponse.json({ ...data, _provider: "groq" });
-  } catch (e) {
-    console.warn("Groq attempt failed");
-    return null;
+  const groq = new Groq({ apiKey });
+  const models = [
+    GROQ_MODELS.primary,
+    GROQ_MODELS.fast,
+    GROQ_MODELS.alt,
+  ];
+
+  for (const modelId of models) {
+    try {
+      const completion = await groq.chat.completions.create({
+        messages: [{ role: "user", content: prompt + "\n\nRETURN ONLY JSON" }],
+        model: modelId,
+        temperature: 0.3,
+        response_format: { type: "json_object" },
+      });
+      const data = JSON.parse(completion.choices[0].message.content || "{}");
+      return NextResponse.json({
+        ...data,
+        _provider: "groq",
+        _model: modelId,
+      });
+    } catch (e: any) {
+      console.warn(`Groq ${modelId} attempt failed:`, e.message);
+    }
   }
+  return null;
 }
 
 async function tryAimlApi(apiKey: string, prompt: string) {

@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { voiceManager } from "@/lib/voice-manager";
+import { SpeakButton } from "@/components/speak-button";
 import { VocabularyPanel } from "@/components/vocabulary-panel";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -213,11 +214,10 @@ export default function QuizPage() {
       [currentQuestionIndex]: { selectedOption: option, isCorrect },
     }));
 
-    if (isCorrect) {
-      voiceManager.speakFeedback("correct");
-    } else {
-      voiceManager.speakFeedback("wrong");
-    }
+    // Karaoke-style: read what was pressed, then give feedback
+    voiceManager.speakThen(option, () => {
+      voiceManager.speakFeedback(isCorrect ? "correct" : "wrong");
+    });
   };
 
   // Basic auto-indent helper
@@ -624,12 +624,15 @@ export default function QuizPage() {
               })}
             </div>
 
-            <CardTitle
-              className="text-2xl sm:text-3xl md:text-5xl font-black text-foreground leading-[1.3] text-center"
-              dir="auto"
-            >
-              {currentQuestion.question}
-            </CardTitle>
+            <div className="flex items-start justify-center gap-3">
+              <CardTitle
+                className="text-2xl sm:text-3xl md:text-5xl font-black text-foreground leading-[1.3] text-center"
+                dir="auto"
+              >
+                {currentQuestion.question}
+              </CardTitle>
+              <SpeakButton text={currentQuestion.question} size="md" />
+            </div>
 
             {/* Code Snippet Display */}
             {(currentQuestion as any).codeSnippet && (
@@ -715,7 +718,7 @@ export default function QuizPage() {
                           className="absolute inset-0 bg-green-500/5 pointer-events-none"
                         />
                       )}
-                      <div className="flex justify-between items-center z-10 relative">
+                      <div className="flex justify-between items-center z-10 relative gap-2">
                         {isAnswered && isCorrect && (
                           <CheckCircle className="w-8 h-8 text-green-500" />
                         )}
@@ -725,6 +728,7 @@ export default function QuizPage() {
                         <span className="flex-1 px-4 text-glow-sm">
                           {option}
                         </span>
+                        <SpeakButton text={option} />
                         <div className="flex flex-col items-center">
                           <span
                             className={cn(

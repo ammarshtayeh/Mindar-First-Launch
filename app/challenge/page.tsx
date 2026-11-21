@@ -165,6 +165,10 @@ export default function ChallengeCreatePage() {
           numQuestions,
           types: selectedQuestionTypes,
           language: "Arabic", // Or detect
+          mode:
+            typeof window !== "undefined"
+              ? localStorage.getItem("mindar_learning_mode") || "exam"
+              : "exam",
         }),
       });
 

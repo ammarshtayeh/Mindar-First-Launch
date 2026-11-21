@@ -100,37 +100,69 @@ class VoiceManager {
     if (this.synth) this.synth.cancel()
   }
 
-  speak(text: string) {
-    if (!this.enabled || !this.synth) return
-    
+  private buildUtterance(text: string) {
+    const clean = (text || "").replace(/\s+/g, " ").trim()
+    if (!clean) return null
+
     // Ensure voices are loaded
     if (!this.arVoice && !this.enVoice) {
-        this.loadVoice()
+      this.loadVoice()
+    }
+
+    const utterance = new SpeechSynthesisUtterance(clean)
+
+    // Auto-detect language: Check if text has considerable Arabic characters
+    const isArabic = /[\u0600-\u06FF]/.test(clean)
+
+    if (isArabic && this.arVoice) {
+      utterance.voice = this.arVoice
+      utterance.lang = "ar-SA"
+      utterance.rate = 1.0
+    } else if (this.enVoice) {
+      utterance.voice = this.enVoice
+      utterance.lang = "en-US"
+      utterance.rate = 1.0
+    } else {
+      utterance.lang = isArabic ? "ar-SA" : "en-US"
+    }
+
+    utterance.volume = 1.0
+    utterance.pitch = 1.0
+    return utterance
+  }
+
+  speak(text: string) {
+    if (!this.enabled || !this.synth) return
+
+    const utterance = this.buildUtterance(text)
+    if (!utterance) return
+
+    this.synth.cancel()
+    this.synth.speak(utterance)
+  }
+
+  /** Speak text, then run a callback (e.g. feedback phrase). */
+  speakThen(text: string, then?: () => void) {
+    if (!this.enabled || !this.synth) {
+      then?.()
+      return
+    }
+
+    const utterance = this.buildUtterance(text)
+    if (!utterance) {
+      then?.()
+      return
     }
 
     this.synth.cancel()
-
-    const utterance = new SpeechSynthesisUtterance(text)
-    
-    // Auto-detect language: Check if text has considerable Arabic characters
-    const isArabic = /[\u0600-\u06FF]/.test(text);
-
-    if (isArabic && this.arVoice) {
-        utterance.voice = this.arVoice
-        utterance.lang = 'ar-SA'
-        utterance.rate = 1.0
-    } else if (this.enVoice) {
-        utterance.voice = this.enVoice
-        utterance.lang = 'en-US'
-        utterance.rate = 1.0
-    } else {
-        // Fallback
-        utterance.lang = isArabic ? 'ar-SA' : 'en-US'
+    let done = false
+    const finish = () => {
+      if (done) return
+      done = true
+      then?.()
     }
-    
-    utterance.volume = 1.0
-    utterance.pitch = 1.0
-    
+    utterance.onend = finish
+    utterance.onerror = finish
     this.synth.speak(utterance)
   }
 

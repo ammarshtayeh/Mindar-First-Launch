@@ -1,20 +1,24 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Groq from "groq-sdk";
 
 export const maxDuration = 60;
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-    try {
-        const body = await req.json();
-        const { text, language: requestedLang = "ar", materialTitle = "Study Material" } = body;
+  try {
+    const body = await req.json();
+    const {
+      text,
+      language: requestedLang = "ar",
+      materialTitle = "Study Material",
+    } = body;
 
-        if (!text) {
-            return NextResponse.json({ error: 'No text provided' }, { status: 400 });
-        }
+    if (!text) {
+      return NextResponse.json({ error: "No text provided" }, { status: 400 });
+    }
 
-        const prompt = `
+    const prompt = `
             system: You are a professional study advisor and personal tutor.
             Your Goal: Analyze the provided study material and create a structured, actionable study checklist (To-Do list) to help the student master the content.
 
@@ -43,62 +47,101 @@ export async function POST(req: Request) {
             }
         `;
 
-        const groqKey = process.env.GROQ_API_KEY;
-        const geminiApiKey = process.env.GEMINI_API_KEY;
+    const groqKey = process.env.GROQ_API_KEY;
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    const openrouterApiKey = process.env.OPENROUTER_API_KEY;
 
-        // Try Gemini first as it's usually better for long context extraction
-        let result = await tryGemini(geminiApiKey, "gemini-2.0-flash-lite-preview-02-05", prompt);
-        
-        if (!result) {
-            console.log("Gemini failed for checklist, trying Groq fallback...");
-            result = await tryGroq(groqKey, prompt);
-        }
-
-        if (!result) {
-            throw new Error("All AI providers failed to generate checklist");
-        }
-
-        return result;
-
-    } catch (error: any) {
-        console.error("Checklist Generation Error:", error);
-        return NextResponse.json({ error: "Failed to generate study checklist", details: error.message }, { status: 500 });
+    // Try OpenRouter first with free models
+    let result = null;
+    if (openrouterApiKey) {
+      console.log("Checklist: Trying OpenRouter free models...");
+      result = await tryOpenRouter(openrouterApiKey, prompt);
     }
+
+    // Fallback to Gemini
+    if (!result) {
+      console.log("Checklist: Gemini fallback...");
+      result = await tryGemini(
+        geminiApiKey,
+        "gemini-3.8-flash",
+        prompt,
+      );
+    }
+
+    // Fallback to Groq
+    if (!result) {
+      console.log("Checklist: Groq fallback...");
+      result = await tryGroq(groqKey, prompt);
+    }
+
+    if (!result) {
+      throw new Error("All AI providers failed to generate checklist");
+    }
+
+    return result;
+  } catch (error: any) {
+    console.error("Checklist Generation Error:", error);
+    return NextResponse.json(
+      { error: "Failed to generate study checklist", details: error.message },
+      { status: 500 },
+    );
+  }
 }
 
-async function tryGemini(apiKey: string | undefined, modelId: string, prompt: string) {
-    if (!apiKey) return null;
-    try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel(
-            { model: modelId, generationConfig: { temperature: 0.3 } },
-            { apiVersion: "v1beta" }
-        );
-        const result = await model.generateContent(prompt);
-        const responseText = (await result.response).text();
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        const data = JSON.parse(jsonMatch ? jsonMatch[0] : responseText);
-        return NextResponse.json({ ...data, _provider: 'gemini' });
-    } catch (e) {
-        console.warn(`Gemini ${modelId} checklist attempt failed`);
-        return null;
-    }
+async function tryGemini(
+  apiKey: string | undefined,
+  modelId: string,
+  prompt: string,
+) {
+  if (!apiKey) return null;
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel(
+      { model: modelId, generationConfig: { temperature: 0.3 } },
+      { apiVersion: "v1beta" },
+    );
+    const result = await model.generateContent(prompt);
+    const responseText = (await result.response).text();
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    const data = JSON.parse(jsonMatch ? jsonMatch[0] : responseText);
+    return NextResponse.json({ ...data, _provider: "gemini" });
+  } catch (e) {
+    console.warn(`Gemini ${modelId} checklist attempt failed`);
+    return null;
+  }
+}
+
+async function tryOpenRouter(apiKey: string | undefined, prompt: string) {
+  if (!apiKey) return null;
+  try {
+    const { openrouter } = await import("@/lib/openrouter");
+    const completion = await openrouter.chat.completions.create({
+      model: "google/gemma-2-9b-it:free",
+      messages: [{ role: "user", content: prompt + "\n\nRETURN ONLY JSON" }],
+      response_format: { type: "json_object" },
+    });
+    const data = JSON.parse(completion.choices[0].message.content || "{}");
+    return NextResponse.json({ ...data, _provider: "openrouter" });
+  } catch (e) {
+    console.warn("OpenRouter checklist attempt failed");
+    return null;
+  }
 }
 
 async function tryGroq(apiKey: string | undefined, prompt: string) {
-    if (!apiKey) return null;
-    try {
-        const groq = new Groq({ apiKey });
-        const completion = await groq.chat.completions.create({
-            messages: [{ role: "user", content: prompt + "\n\nRETURN ONLY JSON" }],
-            model: "llama-3.3-70b-versatile",
-            temperature: 0.3,
-            response_format: { type: "json_object" }
-        });
-        const data = JSON.parse(completion.choices[0].message.content || "{}");
-        return NextResponse.json({ ...data, _provider: 'groq' });
-    } catch (e) {
-        console.warn("Groq checklist attempt failed");
-        return null;
-    }
+  if (!apiKey) return null;
+  try {
+    const groq = new Groq({ apiKey });
+    const completion = await groq.chat.completions.create({
+      messages: [{ role: "user", content: prompt + "\n\nRETURN ONLY JSON" }],
+      model: "openai/gpt-oss-120b",
+      temperature: 0.3,
+      response_format: { type: "json_object" },
+    });
+    const data = JSON.parse(completion.choices[0].message.content || "{}");
+    return NextResponse.json({ ...data, _provider: "groq" });
+  } catch (e) {
+    console.warn("Groq checklist attempt failed");
+    return null;
+  }
 }

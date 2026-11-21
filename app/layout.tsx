@@ -14,6 +14,7 @@ import { ToastProvider } from "@/components/ui/toast-provider";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { MicrosoftClarity } from "@/components/microsoft-clarity";
 import { CommandPalette } from "@/components/CommandPalette";
 
 const inter = Inter({
@@ -201,6 +202,7 @@ export default function RootLayout({
                   <AppContent>{children}</AppContent>
                 </ToastProvider>
                 <Footer />
+                <MicrosoftClarity />
                 <VercelAnalytics />
                 <SpeedInsights />
               </I18nProvider>

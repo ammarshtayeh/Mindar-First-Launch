@@ -14,6 +14,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
+import { SpeakButton } from "@/components/speak-button";
+import { voiceManager } from "@/lib/voice-manager";
 
 interface Flashcard {
   question: string;
@@ -90,14 +92,37 @@ export function Flashcards({
                   </p>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="w-14 h-14 hover:bg-red-500/10 hover:text-red-500 rounded-2xl transition-all border-2 border-transparent hover:border-red-500/20"
-              >
-                <X className="w-8 h-8" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <SpeakButton
+                  size="md"
+                  text={
+                    isFlipped
+                      ? [
+                          cards[currentIndex].answer,
+                          cards[currentIndex].explanation || "",
+                        ]
+                          .filter(Boolean)
+                          .join(". ")
+                      : cards[currentIndex].question
+                  }
+                  label={
+                    language === "ar"
+                      ? "اقرأ البطاقة الحالية"
+                      : "Read current card"
+                  }
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    voiceManager.stopSpeak();
+                    onClose();
+                  }}
+                  className="w-14 h-14 hover:bg-red-500/10 hover:text-red-500 rounded-2xl transition-all border-2 border-transparent hover:border-red-500/20"
+                >
+                  <X className="w-8 h-8" />
+                </Button>
+              </div>
             </div>
 
             <div className="relative h-[450px] perspective-1000">

@@ -67,6 +67,12 @@ import { AdPlaceholder } from "@/components/ads/AdPlaceholder";
 import { GamificationEngine } from "@/lib/gamification";
 import { triggerConfetti, triggerSuccessConfetti } from "@/lib/effects";
 import { useToast } from "@/components/ui/toast-provider";
+import {
+  GAP_FOCUS_TOPICS_KEY,
+  getStoredLearningMode,
+} from "@/lib/learning-mode";
+import { SpeakButton } from "@/components/speak-button";
+import { voiceManager } from "@/lib/voice-manager";
 
 const AURA_TYPES = [
   {
@@ -647,6 +653,96 @@ export default function ResultsPage() {
             </p>
           </motion.div>
         </div>
+
+        {/* Gap Report — bridges school catch-up + university exam prep */}
+        {(() => {
+          const weakTopics = topics.filter((topic) => topic.percentage < 70);
+          const masteredCount = topics.filter(
+            (topic) => topic.percentage >= 70,
+          ).length;
+          const learningMode = getStoredLearningMode();
+
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-primary/5 border border-primary/20 rounded-[3rem] p-8 md:p-10"
+            >
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+                <div className="space-y-3 text-start">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/15 text-primary flex items-center justify-center">
+                      <ListChecks className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-3xl font-black">
+                      {t("results.gapTitle")}
+                    </h3>
+                  </div>
+                  <p className="text-muted-foreground font-bold max-w-2xl">
+                    {t("results.gapDesc")}
+                  </p>
+                  <p className="text-sm font-black text-primary">
+                    {t("results.gapMastered", {
+                      count: masteredCount,
+                      total: topics.length || 0,
+                    })}
+                  </p>
+                  {weakTopics.length === 0 ? (
+                    <p className="font-bold text-green-600">
+                      {t("results.gapEmpty")}
+                    </p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {weakTopics.map((topic) => {
+                        const speakText =
+                          language === "ar"
+                            ? `${topic.topic}. النسبة ${topic.percentage} بالمئة`
+                            : `${topic.topic}. ${topic.percentage} percent`;
+                        return (
+                          <div
+                            key={topic.topic}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-background border border-border text-sm font-black"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => voiceManager.speak(speakText)}
+                              className="hover:text-primary transition-colors"
+                              title={
+                                language === "ar"
+                                  ? "اضغط لتسمع الموضوع"
+                                  : "Tap to hear topic"
+                              }
+                            >
+                              {topic.topic} · {topic.percentage}%
+                            </button>
+                            <SpeakButton text={speakText} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+                <Button
+                  size="lg"
+                  className="rounded-2xl font-black h-14 px-6 shrink-0"
+                  onClick={() => {
+                    if (weakTopics.length > 0) {
+                      localStorage.setItem(
+                        GAP_FOCUS_TOPICS_KEY,
+                        JSON.stringify(weakTopics.map((t) => t.topic)),
+                      );
+                    }
+                    router.push("/hub");
+                  }}
+                >
+                  {learningMode === "catchup"
+                    ? t("results.gapCatchupCta")
+                    : t("results.gapExamCta")}
+                </Button>
+              </div>
+            </motion.div>
+          );
+        })()}
 
         {/* Analytics Section */}
         <div className="space-y-8">

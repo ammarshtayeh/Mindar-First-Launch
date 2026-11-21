@@ -140,7 +140,7 @@ export async function POST(req: Request) {
       try {
         console.log("INTERVIEW: Trying Gemini...");
         const genAI = new GoogleGenerativeAI(geminiApiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-3.8-flash" });
 
         const contents = [
           { role: "user", parts: [{ text: systemPrompt }] },
@@ -183,7 +183,7 @@ export async function POST(req: Request) {
             ...standardizedHistory,
             { role: "user", content: query },
           ] as any,
-          model: "llama-3.3-70b-versatile",
+          model: "openai/gpt-oss-120b",
           temperature: 0.7,
         });
 
