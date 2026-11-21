@@ -5,6 +5,7 @@ import { Loader2, Sparkles, AlertCircle, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n";
+import { getMaterialText } from "@/lib/material-session";
 
 export default function GalaxyPage() {
   const { language } = useI18n();
@@ -15,7 +16,7 @@ export default function GalaxyPage() {
 
   useEffect(() => {
     const generateGalaxy = async () => {
-      const text = localStorage.getItem("hub_source_text");
+      const text = getMaterialText();
       if (!text) {
         setError(
           language === "ar"

@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowLeft,
+  ChevronDown,
   Loader2,
   Pause,
   Play,
-  RotateCcw,
   Sparkles,
   Volume2,
   VolumeX,
@@ -17,6 +17,13 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { voiceManager } from "@/lib/voice-manager";
 import { getStoredLearningMode } from "@/lib/learning-mode";
+import {
+  getMaterialMeta,
+  getMaterialText,
+  getMaterialTitle,
+  hashMaterial,
+  REEL_CACHE_KEY,
+} from "@/lib/material-session";
 import { useAuth } from "@/hooks/useAuth";
 import { logActivity } from "@/lib/services/dbService";
 import { cn } from "@/lib/utils";
@@ -34,6 +41,7 @@ type ReelData = {
   hook: string;
   totalDurationSec: number;
   scenes: ReelScene[];
+  _sourceHash?: string;
 };
 
 export default function EducationalReelPage() {
@@ -43,15 +51,13 @@ export default function EducationalReelPage() {
   const [data, setData] = useState<ReelData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [index, setIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const startedAtRef = useRef<number>(0);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const sceneRefs = useRef<(HTMLElement | null)[]>([]);
   const loggedRef = useRef(false);
-
-  const scene = data?.scenes[index];
+  const lastSpokenRef = useRef<number>(-1);
 
   const gradients = useMemo(
     () => [
@@ -67,7 +73,7 @@ export default function EducationalReelPage() {
 
   useEffect(() => {
     const generate = async () => {
-      const text = localStorage.getItem("hub_source_text");
+      const text = getMaterialText();
       if (!text) {
         setError(
           language === "ar"
@@ -79,17 +85,19 @@ export default function EducationalReelPage() {
       }
 
       try {
-        const cached = localStorage.getItem("mindar_last_reel");
-        const sourceHash = String(text.length);
+        const sourceHash = getMaterialMeta()?.hash || hashMaterial(text);
+        const cached = localStorage.getItem(REEL_CACHE_KEY);
         if (cached) {
           try {
-            const parsed = JSON.parse(cached);
+            const parsed = JSON.parse(cached) as ReelData;
             if (parsed?._sourceHash === sourceHash && parsed?.scenes?.length) {
               setData(parsed);
               setLoading(false);
               return;
             }
-          } catch {}
+          } catch {
+            localStorage.removeItem(REEL_CACHE_KEY);
+          }
         }
 
         const res = await fetch("/api/generate-reel", {
@@ -99,18 +107,14 @@ export default function EducationalReelPage() {
             text: text.substring(0, 45000),
             language: language === "ar" ? "ar" : "en",
             mode: getStoredLearningMode(),
-            materialTitle:
-              localStorage.getItem("currentQuiz")
-                ? JSON.parse(localStorage.getItem("currentQuiz") || "{}")
-                    ?.title || "Study Material"
-                : "Study Material",
+            materialTitle: getMaterialTitle(),
           }),
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || "Failed to generate reel");
 
         const reel = { ...json, _sourceHash: sourceHash };
-        localStorage.setItem("mindar_last_reel", JSON.stringify(reel));
+        localStorage.setItem(REEL_CACHE_KEY, JSON.stringify(reel));
         setData(reel);
       } catch (err: any) {
         setError(err.message || "Error");
@@ -120,91 +124,67 @@ export default function EducationalReelPage() {
     };
 
     generate();
-    return () => {
-      voiceManager.stopSpeak();
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
+    return () => voiceManager.stopSpeak();
   }, [language]);
 
   useEffect(() => {
     if (!data || !user || loggedRef.current) return;
     loggedRef.current = true;
-    const name =
-      user.displayName || user.email?.split("@")[0] || "Student";
+    const name = user.displayName || user.email?.split("@")[0] || "Student";
     logActivity(user.uid, name, "action_started_study").catch(() => {});
   }, [data, user]);
 
-  const clearTimer = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  };
-
-  const goNext = useCallback(() => {
-    if (!data) return;
-    if (index >= data.scenes.length - 1) {
-      setPlaying(false);
-      setProgress(1);
-      voiceManager.stopSpeak();
-      clearTimer();
-      return;
-    }
-    setIndex((i) => i + 1);
-    setProgress(0);
-  }, [data, index]);
-
-  const goPrev = useCallback(() => {
-    setIndex((i) => Math.max(0, i - 1));
-    setProgress(0);
-  }, []);
-
-  // Speak + progress when scene changes while playing
+  // Track which stacked scene is in view
   useEffect(() => {
-    if (!playing || !scene) return;
+    if (!data?.scenes?.length) return;
+    const nodes = sceneRefs.current.filter(Boolean) as HTMLElement[];
+    if (!nodes.length) return;
 
-    clearTimer();
-    startedAtRef.current = Date.now();
-    setProgress(0);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible) return;
+        const idx = Number((visible.target as HTMLElement).dataset.index);
+        if (!Number.isNaN(idx)) setActiveIndex(idx);
+      },
+      {
+        root: scrollerRef.current,
+        threshold: [0.55, 0.7, 0.85],
+      },
+    );
 
-    if (!muted && voiceManager.isMasterEnabled()) {
-      voiceManager.speak(`${scene.title}. ${scene.narration}`);
-    }
+    nodes.forEach((n) => observer.observe(n));
+    return () => observer.disconnect();
+  }, [data]);
 
-    const durationMs = Math.max(5000, (scene.durationSec || 8) * 1000);
-    timerRef.current = setInterval(() => {
-      const p = Math.min(1, (Date.now() - startedAtRef.current) / durationMs);
-      setProgress(p);
-      if (p >= 1) {
-        clearTimer();
-        goNext();
-      }
-    }, 50);
+  // Auto-narrate active scene while playing
+  useEffect(() => {
+    if (!playing || !data?.scenes?.[activeIndex]) return;
+    if (muted || !voiceManager.isMasterEnabled()) return;
+    if (lastSpokenRef.current === activeIndex) return;
+    lastSpokenRef.current = activeIndex;
+    const scene = data.scenes[activeIndex];
+    voiceManager.speak(`${scene.title}. ${scene.narration}`);
+  }, [playing, activeIndex, data, muted]);
 
-    return () => clearTimer();
-  }, [playing, index, scene, muted, goNext]);
+  const scrollToScene = (idx: number) => {
+    sceneRefs.current[idx]?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
 
   const togglePlay = () => {
     if (!data) return;
     if (playing) {
       setPlaying(false);
       voiceManager.stopSpeak();
-      clearTimer();
     } else {
-      if (index >= data.scenes.length - 1 && progress >= 1) {
-        setIndex(0);
-        setProgress(0);
-      }
+      lastSpokenRef.current = -1;
       setPlaying(true);
     }
-  };
-
-  const restart = () => {
-    voiceManager.stopSpeak();
-    clearTimer();
-    setIndex(0);
-    setProgress(0);
-    setPlaying(true);
   };
 
   if (loading) {
@@ -212,19 +192,24 @@ export default function EducationalReelPage() {
       <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6 text-white">
         <Loader2 className="w-12 h-12 animate-spin text-pink-400" />
         <p className="font-black text-xl animate-pulse">
-          {language === "ar" ? "جاري تجهيز الريل التعليمي..." : "Crafting your educational reel..."}
+          {language === "ar"
+            ? "جاري تجهيز الريل التعليمي..."
+            : "Crafting your educational reel..."}
         </p>
       </div>
     );
   }
 
-  if (error || !data || !scene) {
+  if (error || !data?.scenes?.length) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6 p-6 text-white">
         <p className="text-xl font-black text-center max-w-md">
           {error || (language === "ar" ? "لا يوجد ريل" : "No reel")}
         </p>
-        <Button onClick={() => router.push("/hub")} className="rounded-2xl font-black">
+        <Button
+          onClick={() => router.push("/hub")}
+          className="rounded-2xl font-black"
+        >
           <ArrowLeft className="w-4 h-4 mr-2" />
           {language === "ar" ? "رجوع للـ Hub" : "Back to Hub"}
         </Button>
@@ -233,147 +218,135 @@ export default function EducationalReelPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col items-center pt-24 pb-10 px-4">
-      <div className="w-full max-w-md flex items-center justify-between mb-4">
-        <Button
-          variant="ghost"
-          className="text-white hover:bg-white/10 rounded-2xl font-black"
-          onClick={() => {
-            voiceManager.stopSpeak();
-            router.push("/hub");
-          }}
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Hub
-        </Button>
-        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-pink-300">
-          <Sparkles className="w-4 h-4" />
-          {language === "ar" ? "ريل تعليمي" : "Edu Reel"}
+    <main className="h-[100dvh] bg-black text-white flex flex-col overflow-hidden">
+      {/* Sticky top bar */}
+      <div className="shrink-0 z-40 pt-20 px-4 pb-3 bg-gradient-to-b from-black via-black/95 to-transparent">
+        <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
+          <Button
+            variant="ghost"
+            className="text-white hover:bg-white/10 rounded-2xl font-black"
+            onClick={() => {
+              voiceManager.stopSpeak();
+              router.push("/hub");
+            }}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Hub
+          </Button>
+          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-pink-300">
+            <Sparkles className="w-4 h-4" />
+            {language === "ar" ? "ريل تعليمي" : "Edu Reel"}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="icon"
+              variant="secondary"
+              className="rounded-2xl bg-white/10 text-white border-white/10"
+              onClick={() => {
+                setMuted((m) => {
+                  const next = !m;
+                  if (next) voiceManager.stopSpeak();
+                  return next;
+                });
+              }}
+            >
+              {muted ? (
+                <VolumeX className="w-4 h-4" />
+              ) : (
+                <Volume2 className="w-4 h-4" />
+              )}
+            </Button>
+            <Button
+              size="icon"
+              className="rounded-2xl bg-white text-black hover:bg-white/90"
+              onClick={togglePlay}
+            >
+              {playing ? (
+                <Pause className="w-4 h-4" />
+              ) : (
+                <Play className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
+        </div>
+        <div className="max-w-lg mx-auto mt-2 text-center">
+          <h1 className="text-lg font-black truncate">{data.title}</h1>
+          <p className="text-[11px] text-white/50 font-bold">
+            {activeIndex + 1}/{data.scenes.length} · ~{data.totalDurationSec}s ·{" "}
+            {language === "ar" ? "مرّر لتحت" : "Scroll down"}
+          </p>
         </div>
       </div>
 
-      {/* Instagram-like phone frame */}
-      <div className="relative w-full max-w-[380px] aspect-[9/16] rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 bg-zinc-900">
-        {/* Story progress bars */}
-        <div className="absolute top-3 inset-x-3 z-30 flex gap-1">
-          {data.scenes.map((s, i) => (
-            <div key={s.id} className="h-1 flex-1 rounded-full bg-white/25 overflow-hidden">
-              <div
-                className="h-full bg-white transition-[width] duration-75 ease-linear"
-                style={{
-                  width:
-                    i < index ? "100%" : i === index ? `${progress * 100}%` : "0%",
-                }}
-              />
-            </div>
-          ))}
-        </div>
-
-        <AnimatePresence mode="wait">
-          <motion.div
+      {/* Vertical stacked scenes */}
+      <div
+        ref={scrollerRef}
+        className="flex-1 overflow-y-auto snap-y snap-mandatory scroll-smooth"
+      >
+        {data.scenes.map((scene, idx) => (
+          <section
             key={scene.id}
-            initial={{ opacity: 0.4, scale: 1.04 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className={cn(
-              "absolute inset-0 bg-gradient-to-br flex flex-col justify-end p-6 pb-28",
-              gradients[index % gradients.length],
-            )}
+            data-index={idx}
+            ref={(el) => {
+              sceneRefs.current[idx] = el;
+            }}
+            className="min-h-[calc(100dvh-8rem)] snap-start snap-always px-4 py-4 flex items-stretch"
           >
-            <div className="absolute inset-0 bg-black/25" />
-            <div className="relative z-10 space-y-4 text-start">
-              <div className="text-5xl">{scene.emoji}</div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-white/80">
-                {index + 1}/{data.scenes.length} · ~{data.totalDurationSec}s
-              </p>
-              <h1 className="text-3xl font-black leading-tight drop-shadow-lg">
-                {scene.title}
-              </h1>
-              <p className="text-lg font-bold leading-relaxed text-white/95 drop-shadow">
-                {scene.narration}
-              </p>
-            </div>
-          </motion.div>
-        </AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0.6, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ amount: 0.4 }}
+              transition={{ duration: 0.35 }}
+              className={cn(
+                "relative w-full max-w-lg mx-auto rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-gradient-to-br flex flex-col justify-end p-6 min-h-[70dvh]",
+                gradients[idx % gradients.length],
+                activeIndex === idx && "ring-2 ring-white/40",
+              )}
+            >
+              <div className="absolute inset-0 bg-black/30" />
+              <div className="relative z-10 space-y-4 text-start">
+                <div className="text-5xl">{scene.emoji}</div>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-white/80">
+                  {language === "ar" ? "مشهد" : "Scene"} {idx + 1}
+                </p>
+                <h2 className="text-3xl md:text-4xl font-black leading-tight drop-shadow-lg">
+                  {scene.title}
+                </h2>
+                <p className="text-lg md:text-xl font-bold leading-relaxed text-white/95 drop-shadow">
+                  {scene.narration}
+                </p>
+                {idx < data.scenes.length - 1 && (
+                  <button
+                    type="button"
+                    onClick={() => scrollToScene(idx + 1)}
+                    className="mt-6 inline-flex items-center gap-2 text-sm font-black text-white/80 hover:text-white"
+                  >
+                    {language === "ar" ? "المشهد التالي" : "Next scene"}
+                    <ChevronDown className="w-4 h-4 animate-bounce" />
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </section>
+        ))}
 
-        {/* Tap zones like Instagram */}
-        <button
-          type="button"
-          aria-label="previous"
-          className="absolute inset-y-0 left-0 w-1/3 z-20"
-          onClick={(e) => {
-            e.stopPropagation();
-            goPrev();
-          }}
-        />
-        <button
-          type="button"
-          aria-label="next"
-          className="absolute inset-y-0 right-0 w-1/3 z-20"
-          onClick={(e) => {
-            e.stopPropagation();
-            goNext();
-          }}
-        />
-        <button
-          type="button"
-          aria-label="play pause"
-          className="absolute inset-y-0 left-1/3 right-1/3 z-20"
-          onClick={togglePlay}
-        />
-
-        {/* Bottom controls */}
-        <div className="absolute bottom-4 inset-x-4 z-30 flex items-center justify-between gap-2">
+        <div className="px-4 pb-16 pt-4 max-w-lg mx-auto text-center space-y-3">
+          {data.hook && (
+            <p className="text-white/70 font-bold text-sm">{data.hook}</p>
+          )}
+          <p className="text-xs text-white/40 font-bold">
+            {language === "ar"
+              ? "المشاهد تحت بعض · مرّر للأسفل · الصوت يقرأ المشهد الظاهر"
+              : "Scenes stacked · Scroll down · Voice reads the visible scene"}
+          </p>
           <Button
-            size="icon"
             variant="secondary"
-            className="rounded-2xl bg-black/40 text-white border-white/20"
-            onClick={(e) => {
-              e.stopPropagation();
-              setMuted((m) => {
-                const next = !m;
-                if (next) voiceManager.stopSpeak();
-                return next;
-              });
-            }}
+            className="rounded-2xl font-black"
+            onClick={() => scrollToScene(0)}
           >
-            {muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-          </Button>
-          <Button
-            size="icon"
-            className="rounded-2xl w-14 h-14 bg-white text-black hover:bg-white/90"
-            onClick={(e) => {
-              e.stopPropagation();
-              togglePlay();
-            }}
-          >
-            {playing ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
-          </Button>
-          <Button
-            size="icon"
-            variant="secondary"
-            className="rounded-2xl bg-black/40 text-white border-white/20"
-            onClick={(e) => {
-              e.stopPropagation();
-              restart();
-            }}
-          >
-            <RotateCcw className="w-5 h-5" />
+            {language === "ar" ? "ارجع للبداية" : "Back to top"}
           </Button>
         </div>
-      </div>
-
-      <div className="mt-6 text-center max-w-md space-y-2">
-        <h2 className="text-2xl font-black">{data.title}</h2>
-        {data.hook && (
-          <p className="text-white/70 font-bold text-sm">{data.hook}</p>
-        )}
-        <p className="text-xs text-white/40 font-bold">
-          {language === "ar"
-            ? "تشغيل داخل الموقع فقط · اضغط يمين/يسار للتنقل"
-            : "In-app only · Tap left/right to navigate"}
-        </p>
       </div>
     </main>
   );

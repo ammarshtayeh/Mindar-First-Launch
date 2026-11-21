@@ -21,6 +21,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { toggleVoice, setLanguage } from "@/redux/slices/settingsSlice";
 import { cn } from "@/lib/utils";
+import { setMaterialSession } from "@/lib/material-session";
 
 export function CommandPalette() {
   const { t, language, setLanguage: setI18nLanguage } = useI18n();
@@ -112,7 +113,11 @@ export function CommandPalette() {
         quickActions[selectedIndex].action();
       } else {
         const mat = filteredMaterials[selectedIndex - quickActions.length];
-        localStorage.setItem("hub_source_text", mat.extractedText);
+        setMaterialSession(mat.extractedText, {
+          title: mat.title,
+          source: "command",
+          clearDerived: true,
+        });
         router.push("/hub");
       }
       setIsOpen(false);
@@ -201,10 +206,11 @@ export function CommandPalette() {
                         <div
                           key={mat.id}
                           onClick={() => {
-                            localStorage.setItem(
-                              "hub_source_text",
-                              mat.extractedText,
-                            );
+                            setMaterialSession(mat.extractedText, {
+                              title: mat.title,
+                              source: "command",
+                              clearDerived: true,
+                            });
                             router.push("/hub");
                             setIsOpen(false);
                           }}

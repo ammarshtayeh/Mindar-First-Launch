@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { getPublicMaterials, StudyMaterial } from "@/lib/services/dbService";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast-provider";
+import { setMaterialSession } from "@/lib/material-session";
 
 export default function CommonsPage() {
   const { t, language } = useI18n();
@@ -41,7 +42,11 @@ export default function CommonsPage() {
   }, []);
 
   const handleClone = (material: StudyMaterial) => {
-    localStorage.setItem("hub_source_text", material.extractedText);
+    setMaterialSession(material.extractedText, {
+      title: material.title,
+      source: "commons",
+      clearDerived: true,
+    });
     toast({
       type: "success",
       message:

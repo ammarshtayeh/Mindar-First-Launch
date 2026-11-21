@@ -36,6 +36,11 @@ import {
   setStoredLearningMode,
   type LearningMode,
 } from "@/lib/learning-mode";
+import {
+  clearMaterialSession,
+  getMaterialText,
+  setMaterialSession,
+} from "@/lib/material-session";
 import { ChatPanel } from "@/components/ChatPanel";
 import { RoadmapView } from "@/components/RoadmapView";
 import { MasteryHeatmap } from "@/components/MasteryHeatmap";
@@ -153,16 +158,22 @@ export default function StudyHub() {
     return () => clearInterval(interval);
   }, [isGenerating, loadingMessages.length]);
 
-  // Load persisted text on mount
+  // Load persisted text on mount (single material session)
   useEffect(() => {
-    const savedText = localStorage.getItem("hub_source_text");
+    const savedText = getMaterialText();
     if (savedText) setExtractedText(savedText);
   }, []);
 
-  // Persist text when updated
-  const handleTextReady = (text: string) => {
+  // Persist text when updated + invalidate stale quiz/reel caches
+  const handleTextReady = (text: string, title?: string) => {
     setExtractedText(text);
-    localStorage.setItem("hub_source_text", text);
+    setMaterialSession(text, {
+      title,
+      source: "upload",
+      clearDerived: true,
+    });
+    // Prevent old quiz/session from sticking to the new material
+    dispatch(clearQuiz());
   };
 
   const [activities, setActivities] = useState<UserActivity[]>([]);
@@ -342,11 +353,8 @@ export default function StudyHub() {
     // Force UploadSection to re-mount/clear
     setResetKey((prev) => prev + 1);
 
-    // STRICT RESET
-    localStorage.removeItem("hub_source_text");
-    localStorage.removeItem("lastQuizResults");
-    localStorage.removeItem("challengeQuiz");
-    localStorage.removeItem("mindar_last_reel");
+    // STRICT RESET — one session cleaner for text + derived AI caches
+    clearMaterialSession();
     if (user) sessionStorage.removeItem(`logged_study_${user.uid}`);
   };
 
@@ -359,6 +367,18 @@ export default function StudyHub() {
     setIsGenerating(true);
 
     try {
+      const sourceText = extractedText || getMaterialText();
+      if (!sourceText) {
+        toast({
+          type: "error",
+          message:
+            language === "ar"
+              ? "ارفع مادة أولاً قبل التوليد"
+              : "Upload material before generating",
+        });
+        return;
+      }
+
       if (!user) {
         toast({
           type: "error",
@@ -376,20 +396,22 @@ export default function StudyHub() {
         // Try to find existing first
         const existing = await getChecklistByMaterial(
           user!.uid,
-          quizData?.id || extractedText.substring(0, 50),
+          quizData?.id || sourceText.substring(0, 50),
         );
         if (existing) {
           router.push(`/checklist/${existing.materialId}`);
           return;
         }
 
+        const { getMaterialTitle } = await import("@/lib/material-session");
         const res = await fetch("/api/generate-checklist", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            text: extractedText,
+            text: sourceText,
             language: language === "ar" ? "ar" : "en",
-            materialTitle: quizData?.title || "New Study Material",
+            materialTitle:
+              quizData?.title || getMaterialTitle() || "New Study Material",
           }),
         });
 
@@ -425,26 +447,20 @@ export default function StudyHub() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          text: extractedText, // STRICT: Only use currently extracted text, never fall back to old quizData
+          text: sourceText, // STRICT: active material session only
           ...settings,
-          mode:
-            typeof window !== "undefined"
-              ? localStorage.getItem("mindar_learning_mode") || "exam"
-              : "exam",
-          focusTopics:
-            typeof window !== "undefined"
-              ? (() => {
-                  try {
-                    const raw = localStorage.getItem("mindar_gap_focus_topics");
-                    const parsed = raw ? JSON.parse(raw) : [];
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                      localStorage.removeItem("mindar_gap_focus_topics");
-                      return parsed;
-                    }
-                  } catch {}
-                  return [];
-                })()
-              : [],
+          mode: getStoredLearningMode(),
+          focusTopics: (() => {
+            try {
+              const raw = localStorage.getItem("mindar_gap_focus_topics");
+              const parsed = raw ? JSON.parse(raw) : [];
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                localStorage.removeItem("mindar_gap_focus_topics");
+                return parsed;
+              }
+            } catch {}
+            return [];
+          })(),
           types:
             settingsModal.type === "coding"
               ? ["coding"]
